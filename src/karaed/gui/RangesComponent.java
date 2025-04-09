@@ -2,6 +2,7 @@ package karaed.gui;
 
 import karaed.ErrorLogger;
 import karaed.VoiceRanges;
+import karaed.karagen.RunSync;
 import karaed.model.MaxAudioSource;
 import karaed.model.Range;
 
@@ -137,6 +138,17 @@ final class RangesComponent extends JComponent implements Scrollable{
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     resplit(index);
+                }
+            });
+            menu.add(new AbstractAction("Sync") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        RunSync.sync(source.source, range);
+                    } catch (Exception ex) {
+                        logger.error(ex);
+                        ShowMessage.error(RangesComponent.this, ex);
+                    }
                 }
             });
             menu.show(this, e.getX() - 5, e.getY() - 5);
