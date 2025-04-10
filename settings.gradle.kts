@@ -12,7 +12,8 @@ fun add(name: String) {
 
 
 add("java-ass")
-add("io-util")
+add("run-util")
 add("json-util")
 add("workdir")
 add("gui-manual")
+add("gui")

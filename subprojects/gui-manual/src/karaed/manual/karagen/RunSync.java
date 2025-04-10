@@ -2,7 +2,7 @@ package karaed.manual.karagen;
 
 import karaed.manual.FileAudioSource;
 import karaed.manual.gui.save.SaveData;
-import karaed.io.ProcUtil;
+import karaed.tools.ProcUtil;
 import karaed.json.JsonUtil;
 import karaed.manual.karagen.json.aligned.AlignSegment;
 import karaed.manual.karagen.json.aligned.Aligned;

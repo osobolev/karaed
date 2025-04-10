@@ -1,4 +1,4 @@
-package karaed.io;
+package karaed.tools;
 
 import java.io.File;
 import java.io.IOException;
