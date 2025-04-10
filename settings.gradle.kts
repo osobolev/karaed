@@ -5,4 +5,6 @@ plugins {
 rootProject.name = "karaed"
 
 include("java-ass")
+include("io-util")
+include("json-util")
 include("gui-manual")
