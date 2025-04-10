@@ -140,17 +140,17 @@ final class RangesComponent extends JComponent implements Scrollable{
                     resplit(index);
                 }
             });
-            menu.add(new AbstractAction("Sync") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        RunSync.sync(source.source, range);
-                    } catch (Exception ex) {
-                        logger.error(ex);
-                        ShowMessage.error(RangesComponent.this, ex);
-                    }
-                }
-            });
+//            menu.add(new AbstractAction("Sync") {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    try {
+//                        RunSync.sync(source.source, range);
+//                    } catch (Exception ex) {
+//                        logger.error(ex);
+//                        ShowMessage.error(RangesComponent.this, ex);
+//                    }
+//                }
+//            });
             menu.show(this, e.getX() - 5, e.getY() - 5);
         }
     }

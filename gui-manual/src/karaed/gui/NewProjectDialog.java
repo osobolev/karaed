@@ -16,7 +16,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 final class NewProjectDialog extends JDialog {
@@ -84,7 +83,7 @@ final class NewProjectDialog extends JDialog {
             ShowMessage.error(this, "Please enter vocals path");
             return false;
         }
-        Path path = Paths.get(vocalsPath);
+        Path path = Path.of(vocalsPath);
         if (!Files.isRegularFile(path)) {
             ShowMessage.error(this, "Please enter a valid vocals path");
             return false;

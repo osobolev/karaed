@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +30,7 @@ public final class FileLogger implements ErrorLogger {
         if (out == null) {
             PrintWriter pw;
             try {
-                Path path = Paths.get(fileName);
+                Path path = Path.of(fileName);
                 BufferedWriter w = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 pw = new PrintWriter(w);
                 String startMessage = "Log started: " + getTimestamp();

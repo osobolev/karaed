@@ -1,11 +1,10 @@
 package karaed.gui;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import karaed.ErrorLogger;
 import karaed.FileAudioSource;
 import karaed.FileLogger;
 import karaed.gui.save.SaveData;
+import karaed.json.JsonUtil;
 import karaed.model.AudioSource;
 import karaed.model.MaxAudioSource;
 
@@ -16,10 +15,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -27,7 +23,6 @@ public final class KaraGui {
 
     private final ErrorLogger logger;
     private final ColorSequence colors = new ColorSequence();
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private final RangesComponent vocals;
     private final JSlider scaleSlider = new JSlider(2, 50, 30);
@@ -166,8 +161,8 @@ public final class KaraGui {
             projectFile = selectedFile.toPath();
         }
         SaveData data = new SaveData(vocalsPath, vocals.getRanges(), origLines, lyrics.getLines());
-        try (BufferedWriter out = Files.newBufferedWriter(projectFile)) {
-            gson.toJson(data, out);
+        try {
+            JsonUtil.writeFile(projectFile, data);
         } catch (Exception ex) {
             logger.error(ex);
             ShowMessage.error(main, ex);
@@ -184,8 +179,8 @@ public final class KaraGui {
         if (selectedFile == null)
             return;
         SaveData data;
-        try (BufferedReader in = Files.newBufferedReader(selectedFile.toPath())) {
-            data = gson.fromJson(in, SaveData.class);
+        try {
+            data = JsonUtil.readFile(selectedFile.toPath(), SaveData.class);
         } catch (Exception ex) {
             logger.error(ex);
             ShowMessage.error(main, ex);
