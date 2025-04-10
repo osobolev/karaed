@@ -7,4 +7,5 @@ rootProject.name = "karaed"
 include("java-ass")
 include("io-util")
 include("json-util")
+include("workdir")
 include("gui-manual")

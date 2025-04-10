@@ -8,4 +8,5 @@ dependencies {
     implementation("io.github.java-diff-utils:java-diff-utils:4.15")
     implementation(project(":io-util"))
     implementation(project(":json-util"))
+    implementation(project(":workdir"))
 }
