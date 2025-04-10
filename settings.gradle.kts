@@ -4,8 +4,15 @@ plugins {
 
 rootProject.name = "karaed"
 
-include("java-ass")
-include("io-util")
-include("json-util")
-include("workdir")
-include("gui-manual")
+fun add(name: String) {
+    val mname = "subprojects/$name"
+    include(mname)
+    project(":$mname").name = name
+}
+
+
+add("java-ass")
+add("io-util")
+add("json-util")
+add("workdir")
+add("gui-manual")
