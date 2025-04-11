@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -16,26 +14,6 @@ import java.util.stream.Collectors;
 public final class ProcUtil {
 
     private static final Set<Process> running = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public static void log(String format, Object... args) {
-        Object[] normalized;
-        if (args.length > 0) {
-            normalized = new Object[args.length];
-            for (int i = 0; i < args.length; i++) {
-                Object arg = args[i];
-                if (arg instanceof Path path) {
-                    normalized[i] = path.normalize();
-                } else {
-                    normalized[i] = arg;
-                }
-            }
-        } else {
-            normalized = args;
-        }
-        String message = String.format(format, normalized);
-        System.out.printf(">>>>> [%s] %s%n", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")), message);
-    }
 
     private static void capture(InputStream is, OutputStream os) {
         Thread thread = new Thread(() -> {
@@ -48,7 +26,6 @@ public final class ProcUtil {
         thread.start();
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
                                   Consumer<Process> out, IntPredicate exitOk) throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
@@ -68,19 +45,18 @@ public final class ProcUtil {
             }
             String addPath = pathDirs.stream().map(Path::toString).collect(Collectors.joining(File.pathSeparator));
             for (String name : pathLike) {
-                String pathValue = pb.environment().get(name);
-                pb.environment().put(name, pathValue == null ? addPath : addPath + File.pathSeparator + pathValue);
+                pb.environment().compute(name, (k, pathValue) -> pathValue == null ? addPath : addPath + File.pathSeparator + pathValue);
             }
         }
         Process p = pb.start();
         running.add(p);
         int exitCode;
         try {
-            capture(p.getErrorStream(), System.err);
             if (out != null) {
                 out.accept(p);
             } else {
-                capture(p.getInputStream(), System.out);
+                capture(p.getErrorStream(), OutputStream.nullOutputStream());
+                capture(p.getInputStream(), OutputStream.nullOutputStream());
             }
             exitCode = p.waitFor();
         } finally {
@@ -106,8 +82,9 @@ public final class ProcUtil {
         return command;
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void kill(ProcessHandle ph) {
-        log("Killing %s", ph.info().command().map(ProcUtil::getSimpleName).orElse("-"));
+        System.out.printf("Killing %s%n", ph.info().command().map(ProcUtil::getSimpleName).orElse("-"));
         ph.descendants().forEach(ProcessHandle::destroy);
         ph.destroy();
     }
