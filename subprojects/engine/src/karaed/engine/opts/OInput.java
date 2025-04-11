@@ -1,4 +1,4 @@
-package karaed.gui.opts;
+package karaed.engine.opts;
 
 public record OInput(
     String url,

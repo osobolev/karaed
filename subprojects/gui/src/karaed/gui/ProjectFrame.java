@@ -1,6 +1,6 @@
 package karaed.gui;
 
-import karaed.gui.opts.OInput;
+import karaed.engine.opts.OInput;
 import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
