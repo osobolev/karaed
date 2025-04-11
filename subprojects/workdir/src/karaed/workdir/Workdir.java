@@ -16,6 +16,10 @@ public final class Workdir {
         this.workDir = workDir;
     }
 
+    public Path dir() {
+        return workDir;
+    }
+
     private interface NameParts {
 
         String process(String baseName, String ext);
@@ -41,6 +45,10 @@ public final class Workdir {
 
     public Path audio() {
         return file(BASE_NAME + ".mp3");
+    }
+
+    public Path demuxed(String name) {
+        return file("htdemucs/" + BASE_NAME + "/" + name);
     }
 
     private Path oneOf(Supplier<Stream<String>> getNames) {
