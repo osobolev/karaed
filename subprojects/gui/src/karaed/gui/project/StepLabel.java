@@ -12,6 +12,7 @@ final class StepLabel {
 
     StepLabel(PipeStep step) {
         this.label = new JLabel(step.text);
+        label.setFont(label.getFont().deriveFont(20f));
         label.setHorizontalTextPosition(JLabel.LEFT);
     }
 

@@ -76,6 +76,7 @@ public final class ProjectFrame extends JFrame {
 
         JPanel top = new JPanel();
         top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+        top.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         JTextField tfPath = new JTextField(40);
         tfPath.setEditable(false);
         InputUtil.setText(tfPath, workDir.dir().toString());
@@ -95,6 +96,7 @@ public final class ProjectFrame extends JFrame {
             labels.put(step, label);
             steps.add(label.getVisual());
         }
+        steps.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         main.add(steps, BorderLayout.CENTER);
 
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
