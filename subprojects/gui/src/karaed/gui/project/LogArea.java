@@ -1,4 +1,4 @@
-package karaed.gui;
+package karaed.gui.project;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;

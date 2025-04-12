@@ -1,5 +1,6 @@
 package karaed.gui;
 
+import karaed.gui.project.ProjectFrame;
 import karaed.tools.ProcUtil;
 import karaed.tools.Tools;
 import karaed.workdir.Workdir;

@@ -1,4 +1,4 @@
-package karaed.gui;
+package karaed.gui.project;
 
 import karaed.engine.KaraException;
 import karaed.engine.opts.ODemucs;
@@ -6,6 +6,7 @@ import karaed.engine.opts.OInput;
 import karaed.engine.steps.align.Align;
 import karaed.engine.steps.demucs.Demucs;
 import karaed.engine.steps.youtube.Youtube;
+import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
