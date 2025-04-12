@@ -50,6 +50,7 @@ public final class OptionsDialog extends JDialog {
         }
 
         add(new InputPanel(ctx), false);
+        add(new LyricsPanel(ctx), false);
         add(new DemucsPanel(ctx), true);
 
         JTabbedPane tabs = new JTabbedPane();

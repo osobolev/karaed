@@ -16,13 +16,18 @@ abstract class BasePanel<T> {
     final T origData;
     final JPanel main = new JPanel(new GridBagLayout());
 
+    interface DataReader<T> {
+
+        T read(Path file) throws IOException;
+    }
+
     protected BasePanel(String title, Supplier<Path> getFile,
-                        Class<T> cls, Supplier<T> defValue) throws IOException {
+                        DataReader<T> reader, Supplier<T> defValue) throws IOException {
         this.getFile = getFile;
 
         Path file = getFile.get();
-        if (file != null) {
-            this.origData = JsonUtil.readFile(file, cls, defValue);
+        if (file != null && Files.exists(file)) {
+            this.origData = reader.read(file);
         } else {
             this.origData = defValue.get();
         }
@@ -33,11 +38,20 @@ abstract class BasePanel<T> {
         ));
     }
 
+    protected BasePanel(String title, Supplier<Path> getFile,
+                        Class<T> cls, Supplier<T> defValue) throws IOException {
+        this(title, getFile, file -> JsonUtil.readFile(file, cls), defValue);
+    }
+
     final JComponent getVisual() {
         return main;
     }
 
     abstract T newData();
+
+    void writeData(Path file, T data) throws IOException {
+        JsonUtil.writeFile(file, data);
+    }
 
     final void save() throws IOException {
         T newData = newData();
@@ -45,6 +59,6 @@ abstract class BasePanel<T> {
             return;
         Path file = getFile.get();
         Files.createDirectories(file.getParent());
-        JsonUtil.writeFile(file, newData);
+        writeData(file, newData);
     }
 }
