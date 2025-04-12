@@ -10,7 +10,6 @@ fun add(name: String) {
     project(":$mname").name = name
 }
 
-
 add("java-ass")
 add("run-util")
 add("json-util")

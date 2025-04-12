@@ -8,6 +8,8 @@ import karaed.engine.steps.demucs.Demucs;
 import karaed.engine.steps.youtube.Youtube;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
+import karaed.gui.options.OptionsDialog;
+import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
@@ -17,6 +19,7 @@ import karaed.workdir.Workdir;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -34,48 +37,73 @@ public final class ProjectFrame extends JFrame {
     private final ProcRunner runner;
     private final LogArea taLog = new LogArea();
 
+    private final Action runAction = new AbstractAction("Run") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            runPipeline();
+        }
+    };
+
     public ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir) {
         super("KaraEd");
         this.logger = logger;
         this.workDir = workDir;
         this.runner = new ProcRunner(tools, rootDir, taLog::append);
 
+        JToolBar toolBar = new JToolBar();
+        toolBar.add(new AbstractAction("Options") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    new OptionsDialog(logger, ProjectFrame.this, workDir);
+                } catch (Exception ex) {
+                    ShowMessage.error(ProjectFrame.this, logger, ex);
+                }
+            }
+        });
+        toolBar.addSeparator();
+        toolBar.add(runAction);
+        add(toolBar, BorderLayout.NORTH);
+
+        JPanel main = new JPanel(new BorderLayout());
+        add(main, BorderLayout.CENTER);
+
         JTextField tfPath = new JTextField(30);
         tfPath.setEditable(false);
-        tfPath.setText(workDir.dir().toString());
-        add(tfPath, BorderLayout.NORTH);
+        InputUtil.setText(tfPath, workDir.dir().toString());
+        main.add(tfPath, BorderLayout.NORTH);
+        // todo: display from info.json
 
-        add(new JScrollPane(taLog.getVisual()), BorderLayout.CENTER);
+        // todo: display performed steps:
+        main.add(new JLabel("Info"), BorderLayout.CENTER);
 
-        JButton btnRun = new JButton("Run");
-        btnRun.addActionListener(e -> {
-            btnRun.setEnabled(false);
-            Thread thread = new Thread(() -> {
-                try {
-                    getAudio();
-                    demucs();
-                    ranges();
-                    align();
-                } catch (Throwable ex) {
-                    if (ex instanceof KaraException) {
-                        SwingUtilities.invokeLater(() -> ShowMessage.error(this, ex.getMessage()));
-                    } else if (!(ex instanceof CancelledException)) {
-                        SwingUtilities.invokeLater(() -> ShowMessage.error(this, logger, ex));
-                    }
-                } finally {
-                    SwingUtilities.invokeLater(() -> btnRun.setEnabled(true));
-                }
-            });
-            thread.start();
-        });
-        JPanel butt = new JPanel();
-        butt.add(btnRun);
-        add(btnRun, BorderLayout.SOUTH);
+        main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    private void runPipeline() {
+        runAction.setEnabled(false);
+        Thread thread = new Thread(() -> {
+            try {
+                getAudio();
+                demucs();
+                ranges();
+                align();
+            } catch (Throwable ex) {
+                if (ex instanceof KaraException) {
+                    SwingUtilities.invokeLater(() -> ShowMessage.error(this, ex.getMessage()));
+                } else if (!(ex instanceof CancelledException)) {
+                    SwingUtilities.invokeLater(() -> ShowMessage.error(this, logger, ex));
+                }
+            } finally {
+                SwingUtilities.invokeLater(() -> runAction.setEnabled(true));
+            }
+        });
+        thread.start();
     }
 
     private void getAudio() throws IOException, InterruptedException {
