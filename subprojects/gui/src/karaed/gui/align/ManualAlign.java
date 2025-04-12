@@ -7,6 +7,7 @@ import karaed.engine.audio.VoiceRanges;
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
+import karaed.gui.util.CloseUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
 
@@ -16,8 +17,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -114,16 +113,7 @@ public final class ManualAlign extends JDialog {
         vocals.recolor();
         lyrics.recolor();
 
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                if (onClosing()) {
-                    dispose();
-                }
-            }
-        });
-
+        CloseUtil.listen(this, this::onClosing);
         pack();
         setLocationRelativeTo(null);
     }

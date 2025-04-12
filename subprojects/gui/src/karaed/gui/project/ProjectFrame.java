@@ -11,6 +11,8 @@ import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.start.RecentItems;
+import karaed.gui.start.StartFrame;
+import karaed.gui.util.CloseUtil;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
@@ -60,10 +62,10 @@ public final class ProjectFrame extends JFrame {
             return null;
         }
         RecentItems.addRecentItem(logger, workDir.dir());
-        return new ProjectFrame(logger, tools, rootDir, workDir);
+        return new ProjectFrame(logger, tools, rootDir, workDir, current != null);
     }
 
-    private ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir) {
+    private ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir, boolean reopenStart) {
         super("KaraEd");
         this.logger = logger;
         this.workDir = workDir;
@@ -114,8 +116,12 @@ public final class ProjectFrame extends JFrame {
 
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
 
-        // todo: reopen start frame if was opened from start
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        CloseUtil.listen(this, () -> {
+            if (reopenStart) {
+                new StartFrame(logger, tools, rootDir);
+            }
+            return true;
+        });
         pack();
         setLocationRelativeTo(null);
     }

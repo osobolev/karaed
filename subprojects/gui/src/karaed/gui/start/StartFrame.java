@@ -4,6 +4,7 @@ import karaed.engine.formats.info.Info;
 import karaed.gui.ErrorLogger;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
+import karaed.gui.util.CloseUtil;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
@@ -116,7 +117,7 @@ public final class StartFrame extends JFrame {
             }
         }).start();
 
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        CloseUtil.listen(this, () -> true);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
