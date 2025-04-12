@@ -7,6 +7,7 @@ import karaed.tools.Tools;
 import karaed.workdir.Workdir;
 
 import javax.swing.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class Main {
@@ -24,7 +25,13 @@ public final class Main {
 
         SwingUtilities.invokeLater(() -> {
             if (args.length > 0) {
-                Path dir = Path.of(args[0]);
+                Path path = Path.of(args[0]);
+                Path dir;
+                if (Files.isDirectory(path)) {
+                    dir = path;
+                } else {
+                    dir = path.getParent();
+                }
                 // todo: check if really project dir
                 new ProjectFrame(logger, tools, rootDir, new Workdir(dir));
             } else {

@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public final class ManualAlign extends JDialog{
+public final class ManualAlign extends JDialog {
 
     private final ErrorLogger logger;
     private final Path rangesFile;
@@ -41,7 +41,7 @@ public final class ManualAlign extends JDialog{
     private boolean ok = false;
 
     private ManualAlign(Window owner, ErrorLogger logger, Path rangesFile, MaxAudioSource maxSource, Ranges data) {
-        super(owner, "Align vocals & lyrics");
+        super(owner, "Align vocals & lyrics", ModalityType.APPLICATION_MODAL);
         this.logger = logger;
         this.rangesFile = rangesFile;
 

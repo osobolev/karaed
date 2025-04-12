@@ -1,6 +1,7 @@
 package karaed.gui.project;
 
 import karaed.engine.KaraException;
+import karaed.engine.formats.info.Info;
 import karaed.engine.opts.ODemucs;
 import karaed.engine.opts.OInput;
 import karaed.engine.steps.align.Align;
@@ -24,6 +25,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumMap;
+import java.util.Map;
 
 // todo: options/cut.json - what piece of original file to use (from-to)
 // todo: options/demucs.json - number of shifts
@@ -35,6 +38,9 @@ public final class ProjectFrame extends JFrame {
     private final ErrorLogger logger;
     private final Workdir workDir;
     private final ProcRunner runner;
+
+    private final JTextField tfTitle = new JTextField(40);
+    private final Map<PipeStep, StepLabel> labels = new EnumMap<>(PipeStep.class);
     private final LogArea taLog = new LogArea();
 
     private final Action runAction = new AbstractAction("Run") {
@@ -68,14 +74,28 @@ public final class ProjectFrame extends JFrame {
         JPanel main = new JPanel(new BorderLayout());
         add(main, BorderLayout.CENTER);
 
-        JTextField tfPath = new JTextField(30);
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+        JTextField tfPath = new JTextField(40);
         tfPath.setEditable(false);
         InputUtil.setText(tfPath, workDir.dir().toString());
-        main.add(tfPath, BorderLayout.NORTH);
-        // todo: display from info.json
 
-        // todo: display performed steps:
-        main.add(new JLabel("Info"), BorderLayout.CENTER);
+        tfTitle.setEditable(false);
+        showTitle();
+
+        top.add(tfPath);
+        top.add(tfTitle);
+        main.add(top, BorderLayout.NORTH);
+
+        JPanel steps = new JPanel();
+        steps.setLayout(new BoxLayout(steps, BoxLayout.Y_AXIS));
+        for (PipeStep step : PipeStep.values()) {
+            StepLabel label = new StepLabel(step);
+            label.setState(StepState.INIT);
+            labels.put(step, label);
+            steps.add(label.getVisual());
+        }
+        main.add(steps, BorderLayout.CENTER);
 
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
 
@@ -85,15 +105,49 @@ public final class ProjectFrame extends JFrame {
         setVisible(true);
     }
 
+    private void showTitle() {
+        try {
+            Path infoFile = workDir.info();
+            if (Files.exists(infoFile)) {
+                Info info = JsonUtil.readFile(infoFile, Info.class);
+                InputUtil.setText(tfTitle, info.toString());
+            }
+        } catch (Exception ex) {
+            // ignore
+        }
+    }
+
+    private void setState(PipeStep step, StepState state) {
+        SwingUtilities.invokeLater(() -> {
+            StepLabel label = labels.get(step);
+            label.setState(state);
+        });
+    }
+
     private void runPipeline() {
         runAction.setEnabled(false);
+        for (StepLabel label : labels.values()) {
+            label.setState(StepState.INIT);
+        }
         Thread thread = new Thread(() -> {
             try {
-                getAudio();
+                setState(PipeStep.DOWNLOAD, StepState.RUNNING);
+                downloadAudio();
+                setState(PipeStep.DOWNLOAD, StepState.COMPLETE);
+
+                setState(PipeStep.DEMUCS, StepState.RUNNING);
                 demucs();
+                setState(PipeStep.DEMUCS, StepState.COMPLETE);
+
+                setState(PipeStep.RANGES, StepState.RUNNING);
                 ranges();
+                setState(PipeStep.RANGES, StepState.COMPLETE);
+
+                setState(PipeStep.ALIGN, StepState.RUNNING);
                 align();
+                setState(PipeStep.ALIGN, StepState.COMPLETE);
             } catch (Throwable ex) {
+                // todo: mark current pipe stage as bad!!!
                 if (ex instanceof KaraException) {
                     SwingUtilities.invokeLater(() -> ShowMessage.error(this, ex.getMessage()));
                 } else if (!(ex instanceof CancelledException)) {
@@ -102,16 +156,17 @@ public final class ProjectFrame extends JFrame {
             } finally {
                 SwingUtilities.invokeLater(() -> runAction.setEnabled(true));
             }
-        });
+        }, "KaraEd pipe");
         thread.start();
     }
 
-    private void getAudio() throws IOException, InterruptedException {
+    private void downloadAudio() throws IOException, InterruptedException {
         Path audio = workDir.audio();
         if (Files.exists(audio)) // todo: check input.json + options/cut.json
             return;
         OInput input = JsonUtil.readFile(workDir.file("input.json"), OInput.class);
         Youtube.download(runner, input, audio);
+        SwingUtilities.invokeLater(this::showTitle);
     }
 
     private void demucs() throws IOException, InterruptedException {
