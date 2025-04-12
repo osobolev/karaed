@@ -1,4 +1,4 @@
-package karaed.gui;
+package karaed.engine;
 
 public final class KaraException extends RuntimeException{
 

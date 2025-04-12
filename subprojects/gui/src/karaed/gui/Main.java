@@ -18,7 +18,7 @@ public final class Main {
                 Path.of("C:\\Users\\sobol\\.jkara\\ffmpeg\\bin")
             );
             new ProjectFrame(
-                tools,
+                new FileLogger("karaed.log"), tools,
                 Path.of("C:\\home\\projects\\my\\kara2"),
                 new Workdir(Path.of("C:\\home\\projects\\my\\kara2\\work\\test"))
             );

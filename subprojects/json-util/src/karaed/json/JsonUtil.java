@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public final class JsonUtil {
 
@@ -20,6 +21,12 @@ public final class JsonUtil {
         try (BufferedReader rdr = Files.newBufferedReader(file)) {
             return GSON.fromJson(rdr, cls);
         }
+    }
+
+    public static <T> T readFile(Path file, Class<T> cls, Supplier<T> defValue) throws IOException {
+        if (!Files.exists(file))
+            return defValue.get();
+        return readFile(file, cls);
     }
 
     public static void writeFile(Path file, Object obj) throws IOException {
