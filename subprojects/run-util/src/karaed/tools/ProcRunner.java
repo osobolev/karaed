@@ -31,6 +31,10 @@ public final class ProcRunner {
         this.output = output;
     }
 
+    public void log(boolean stderr, String text) {
+        output.output(stderr, text);
+    }
+
     private static Path exe(Path dir, String name) {
         return dir == null ? Path.of(name) : dir.resolve(name);
     }

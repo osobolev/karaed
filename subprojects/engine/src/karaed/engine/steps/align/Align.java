@@ -61,7 +61,7 @@ public final class Align {
         // todo: use audio format to detect frame rate:
         double frameRate = 44_100.0;
         for (int i = 0; i < ranges.size(); i++) {
-            // todo: log output
+            runner.log(false, String.format("Aligning range %d of %d", i + 1, ranges.size()));
             Range range = ranges.get(i);
             String line = lines.get(i);
             Aligned alignedData = alignRange(runner, tmpDir, source, frameRate, i, range, line);
