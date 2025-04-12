@@ -32,8 +32,10 @@ public final class Main {
                 } else {
                     dir = path.getParent();
                 }
-                // todo: check if really project dir
-                new ProjectFrame(logger, tools, rootDir, new Workdir(dir));
+                ProjectFrame pf = ProjectFrame.create(logger, null, tools, rootDir, new Workdir(dir));
+                if (pf != null) {
+                    pf.setVisible(true);
+                }
             } else {
                 new StartFrame(logger, tools, rootDir);
             }

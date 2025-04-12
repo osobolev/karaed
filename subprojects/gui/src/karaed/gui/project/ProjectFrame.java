@@ -10,8 +10,10 @@ import karaed.engine.steps.youtube.Youtube;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
+import karaed.gui.start.RecentItems;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
+import karaed.gui.util.TitleUtil;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
 import karaed.tools.Tools;
@@ -20,6 +22,7 @@ import karaed.workdir.Workdir;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.BorderLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +53,17 @@ public final class ProjectFrame extends JFrame {
         }
     };
 
-    public ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir) {
+    public static ProjectFrame create(ErrorLogger logger, Window current, Tools tools, Path rootDir, Workdir workDir) {
+        String error = RecentItems.isProjectDir(workDir);
+        if (error != null) {
+            ShowMessage.error(current, error);
+            return null;
+        }
+        RecentItems.addRecentItem(logger, workDir.dir());
+        return new ProjectFrame(logger, tools, rootDir, workDir);
+    }
+
+    private ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir) {
         super("KaraEd");
         this.logger = logger;
         this.workDir = workDir;
@@ -101,21 +114,16 @@ public final class ProjectFrame extends JFrame {
 
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
 
+        // todo: reopen start frame if was opened from start
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
-        setVisible(true);
     }
 
     private void showTitle() {
-        try {
-            Path infoFile = workDir.info();
-            if (Files.exists(infoFile)) {
-                Info info = JsonUtil.readFile(infoFile, Info.class);
-                InputUtil.setText(tfTitle, info.toString());
-            }
-        } catch (Exception ex) {
-            // ignore
+        Info info = TitleUtil.getInfo(workDir);
+        if (info != null) {
+            InputUtil.setText(tfTitle, info.toString());
         }
     }
 

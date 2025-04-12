@@ -1,23 +1,27 @@
 package karaed.gui.start;
 
+import karaed.engine.formats.info.Info;
 import karaed.gui.ErrorLogger;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
+import karaed.gui.util.TitleUtil;
 import karaed.tools.Tools;
 import karaed.workdir.Workdir;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
-// todo: new file (show new project dialog with input & options)
-// todo: load project
-// todo: show recent projects
 public final class StartFrame extends JFrame {
 
     private final ErrorLogger logger;
@@ -75,7 +79,42 @@ public final class StartFrame extends JFrame {
         top.add(btnOpen);
         add(top, BorderLayout.NORTH);
 
-        // todo: show recent projects
+        List<Path> recent = RecentItems.loadRecentItems(logger);
+
+        JPanel rip = new JPanel();
+        rip.setLayout(new BoxLayout(rip, BoxLayout.Y_AXIS));
+        Map<Path, RecentItem> ripMap = new LinkedHashMap<>();
+        Consumer<Path> listener = dir -> {
+            if (!openProject(new Workdir(dir))) {
+                // todo: merge error dialog with confirm dialog
+                if (!ShowMessage.confirm2(this, "Remove this project from list?"))
+                    return;
+                RecentItems.removeRecentItem(logger, dir);
+                RecentItem recentItem = ripMap.remove(dir);
+                if (recentItem != null) {
+                    rip.remove(recentItem.getVisual());
+                    rip.revalidate();
+                }
+            }
+        };
+        for (Path dir : recent) {
+            RecentItem itemPanel = new RecentItem(dir, listener);
+            rip.add(itemPanel.getVisual());
+            ripMap.put(dir, itemPanel);
+        }
+        JScrollPane sp = new JScrollPane(rip, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sp.setPreferredSize(new Dimension(600, 400));
+        add(sp, BorderLayout.CENTER);
+
+        new Thread(() -> {
+            for (RecentItem itemPanel : ripMap.values()) {
+                Workdir workDir = new Workdir(itemPanel.dir);
+                boolean exists = RecentItems.isProjectDir(workDir) == null;
+                Info info = TitleUtil.getInfo(workDir);
+                String title = info == null ? null : info.toString();
+                SwingUtilities.invokeLater(() -> itemPanel.updateInfo(exists, title));
+            }
+        }).start();
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
@@ -83,9 +122,12 @@ public final class StartFrame extends JFrame {
         setVisible(true);
     }
 
-    private void openProject(Workdir workDir) {
+    private boolean openProject(Workdir workDir) {
+        ProjectFrame pf = ProjectFrame.create(logger, this, tools, rootDir, workDir);
+        if (pf == null)
+            return false;
         dispose();
-        // todo: on close re-open start frame
-        new ProjectFrame(logger, tools, rootDir, workDir);
+        pf.setVisible(true);
+        return true;
     }
 }
