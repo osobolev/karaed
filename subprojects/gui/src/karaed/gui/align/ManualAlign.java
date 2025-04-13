@@ -8,6 +8,7 @@ import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.CloseUtil;
+import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
 
@@ -23,6 +24,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 public final class ManualAlign extends JDialog {
+
+    private static final Icon ICON_STOP = InputUtil.getIcon("/stop.png");
 
     private final ErrorLogger logger;
     private final Path rangesFile;
@@ -45,7 +48,7 @@ public final class ManualAlign extends JDialog {
         this.rangesFile = rangesFile;
 
         this.vocals = new RangesComponent(logger, colors);
-        this.actionStop = new AbstractAction("Stop") { // todo: change to icon
+        this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 vocals.stop();
@@ -59,7 +62,7 @@ public final class ManualAlign extends JDialog {
         vocals.addPlayChanged(this::enableDisableStop);
 
         JToolBar toolBar = new JToolBar();
-        toolBar.add(actionStop);
+        toolBar.add(new JButton(actionStop));
         toolBar.addSeparator();
         toolBar.add(new JLabel("Scale:"));
         toolBar.add(scaleSlider);

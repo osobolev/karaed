@@ -1,12 +1,14 @@
 package karaed.gui.project;
 
+import karaed.gui.util.InputUtil;
+
 import javax.swing.*;
 import java.awt.Font;
 
 final class StepLabel {
 
-    private static final Icon RUNNING = new ImageIcon(StepLabel.class.getResource("/running.png"));
-    private static final Icon COMPLETE = new ImageIcon(StepLabel.class.getResource("/complete.png"));
+    private static final Icon RUNNING = InputUtil.getIcon("/running.png");
+    private static final Icon COMPLETE = InputUtil.getIcon("/complete.png");
 
     private final JLabel label;
 

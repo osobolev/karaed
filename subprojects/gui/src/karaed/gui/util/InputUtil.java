@@ -8,8 +8,15 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.net.URL;
 
 public final class InputUtil {
+
+    public static Icon getIcon(String path) {
+        URL url = InputUtil.class.getResource(path);
+        assert url != null;
+        return new ImageIcon(url);
+    }
 
     public static void setText(JTextComponent tc, String text) {
         tc.setText(text);
