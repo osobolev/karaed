@@ -96,12 +96,14 @@ final class KeyRangeDetector {
     CutRange getRealCut(Path file) throws IOException, InterruptedException {
         double duration;
         {
-            String json = runner.runFFProbe(List.of(
-                "-print_format", "json",
-                "-show_entries", "format",
-                file.toString()
-            ));
-            FFFormatOutput format = JsonUtil.parse(json, FFFormatOutput.class);
+            FFFormatOutput format = runner.runFFProbe(
+                List.of(
+                    "-print_format", "json",
+                    "-show_entries", "format",
+                    file.toString()
+                ),
+                rdr -> JsonUtil.parse(rdr, FFFormatOutput.class)
+            );
             duration = Double.parseDouble(format.format().duration());
         }
         {
@@ -123,14 +125,15 @@ final class KeyRangeDetector {
                     "-show_frames",
                     "-show_entries", "frame=best_effort_timestamp_time,pict_type",
                     file.toString()
-                ), stdout -> {
+                ), null, stdout -> {
                     try (PipedOutputStream out = new PipedOutputStream(sink)) {
                         sinkReader.start();
                         stdout.transferTo(out);
                     } catch (IOException ex) {
                         // ignore
                     }
-                }, null);
+                }
+                );
 
                 sinkReader.join();
             }

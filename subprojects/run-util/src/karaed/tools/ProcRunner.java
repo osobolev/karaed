@@ -1,9 +1,9 @@
 package karaed.tools;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.IntPredicate;
 
 public final class ProcRunner {
@@ -63,7 +65,7 @@ public final class ProcRunner {
         thread.start();
     }
 
-    private void runCommand(String what, Path exe, List<String> args, Consumer<InputStream> out, IntPredicate exitOk) throws IOException, InterruptedException {
+    private void runCommand(String what, Path exe, List<String> args, IntPredicate exitOk, Consumer<InputStream> out) throws IOException, InterruptedException {
         List<Path> pathDirs;
         if (tools.ffmpegDir != null) {
             pathDirs = Collections.singletonList(tools.ffmpegDir);
@@ -93,30 +95,27 @@ public final class ProcRunner {
         runCommand(exe, exe(tools.pythonExeDir, exe), List.of(args), null, null);
     }
 
-    private void runFF(String ff, List<String> args, Consumer<InputStream> out, IntPredicate exitOk) throws IOException, InterruptedException {
+    private void runFF(String ff, List<String> args, IntPredicate exitOk, Consumer<InputStream> out) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
         list.addAll(List.of("-v", "quiet"));
         list.addAll(args);
-        runCommand(ff, exe(tools.ffmpegDir, ff), list, out, exitOk);
+        runCommand(ff, exe(tools.ffmpegDir, ff), list, exitOk, out);
     }
 
     public void runFFMPEG(List<String> args) throws IOException, InterruptedException {
         runFF("ffmpeg", args, null, null);
     }
 
-    public void runFFProbe(List<String> args, Consumer<InputStream> out, IntPredicate exitOk) throws IOException, InterruptedException {
-        runFF("ffprobe", args, out, exitOk);
+    public void runFFProbe(List<String> args, IntPredicate exitOk, Consumer<InputStream> out) throws IOException, InterruptedException {
+        runFF("ffprobe", args, exitOk, out);
     }
 
-    public String runFFProbe(List<String> args) throws IOException, InterruptedException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        runFFProbe(args, out -> {
-            try {
-                out.transferTo(bos);
-            } catch (IOException ex) {
-                // ignore
-            }
-        }, null);
-        return bos.toString(StandardCharsets.UTF_8);
+    public <T> T runFFProbe(List<String> args, Function<Reader, T> parseStdout) throws IOException, InterruptedException {
+        AtomicReference<T> ref = new AtomicReference<>();
+        runFFProbe(
+            args, null,
+            stdout -> ref.set(parseStdout.apply(new InputStreamReader(stdout, StandardCharsets.UTF_8)))
+        );
+        return ref.get();
     }
 }
