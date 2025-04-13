@@ -7,6 +7,7 @@ import karaed.gui.ErrorLogger;
 import karaed.gui.util.ShowMessage;
 
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -33,6 +34,7 @@ final class RangesComponent extends JComponent implements Scrollable{
 
     private float pixPerSec = 30.0f;
 
+    private Range playingRange = null;
     private Clip playing = null;
 
     RangesComponent(ErrorLogger logger, ColorSequence colors) {
@@ -101,12 +103,20 @@ final class RangesComponent extends JComponent implements Scrollable{
             float secTo = range.to() / frameRate;
             int from = Math.round(secFrom * pixPerSec);
             int to = Math.round(secTo * pixPerSec);
-            g.fillRect(LPAD + from, h + 20, to - from, 20);
+            int x = LPAD + from;
+            int y = h + 20;
+            int width = Math.max(to - from, 1);
+            int height = 20;
+            g.fillRect(x, y, width, height);
+            if (range == playingRange) {
+                g.setColor(Color.red);
+                g.drawRect(x - 1, y - 1, width + 1, height + 1);
+            }
         }
     }
 
-    private void mouseClick(MouseEvent e) {
-        int x = e.getX() - LPAD;
+    private void mouseClick(MouseEvent me) {
+        int x = me.getX() - LPAD;
         float second = x / pixPerSec;
         int frame = Math.round(second * frameRate);
         int irange = -1;
@@ -120,17 +130,24 @@ final class RangesComponent extends JComponent implements Scrollable{
         if (irange < 0)
             return;
         Range range = ranges.get(irange);
-        if (e.getButton() == MouseEvent.BUTTON1) {
+        if (me.getButton() == MouseEvent.BUTTON1) {
             stop();
             try {
                 Clip clip = source.source.open(range.from(), range.to());
+                playingRange = range;
                 playing = clip;
+                clip.addLineListener(le -> {
+                    if (le.getType() == LineEvent.Type.STOP) {
+                        stop();
+                    }
+                });
                 firePlayChanged();
                 clip.start();
+                repaint();
             } catch (Exception ex) {
                 ShowMessage.error(this, logger, ex);
             }
-        } else if (e.getButton() == MouseEvent.BUTTON3) {
+        } else if (me.getButton() == MouseEvent.BUTTON3) {
             JPopupMenu menu = new JPopupMenu();
             int index = irange;
             menu.add(new AbstractAction("Resplit") {
@@ -139,18 +156,7 @@ final class RangesComponent extends JComponent implements Scrollable{
                     resplit(index);
                 }
             });
-//            menu.add(new AbstractAction("Sync") {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    try {
-//                        RunSync.sync(source.source, range);
-//                    } catch (Exception ex) {
-//                        logger.error(ex);
-//                        ShowMessage.error(RangesComponent.this, ex);
-//                    }
-//                }
-//            });
-            menu.show(this, e.getX() - 5, e.getY() - 5);
+            menu.show(this, me.getX() - 5, me.getY() - 5);
         }
     }
 
@@ -191,8 +197,10 @@ final class RangesComponent extends JComponent implements Scrollable{
     void stop() {
         if (playing != null) {
             playing.stop();
+            playingRange = null;
             playing = null;
             firePlayChanged();
+            repaint();
         }
     }
 

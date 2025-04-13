@@ -160,6 +160,7 @@ public final class ManualAlign extends JDialog {
     }
 
     private boolean onClosing() {
+        vocals.stop();
         if (!changed)
             return true;
         return ShowMessage.confirm2(this, "You have unsaved changes. Really close?");
