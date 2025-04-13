@@ -4,15 +4,18 @@ import com.google.gson.annotations.SerializedName;
 import karaed.engine.formats.Shiftable;
 
 public record CharSegment(
-    double start,
-    double end,
-    double score,
+    Double start,
+    Double end,
+    Double score,
     @SerializedName("char")
     String ch
 ) implements Shiftable<CharSegment> {
 
     @Override
     public CharSegment shift(double shift) {
-        return new CharSegment(shift + start, shift + end, score, ch);
+        return new CharSegment(
+            Shiftable.shift(start, shift), Shiftable.shift(end, shift),
+            score, ch
+        );
     }
 }

@@ -5,8 +5,8 @@ import karaed.engine.formats.Shiftable;
 import java.util.List;
 
 public record AlignSegment(
-    double start,
-    double end,
+    Double start,
+    Double end,
     String text,
     List<WordSegment> words,
     List<CharSegment> chars
@@ -15,7 +15,7 @@ public record AlignSegment(
     @Override
     public AlignSegment shift(double shift) {
         return new AlignSegment(
-            shift + start, shift + end,
+            Shiftable.shift(start, shift), Shiftable.shift(end, shift),
             text,
             Shiftable.shiftList(words, shift),
             Shiftable.shiftList(chars, shift)
