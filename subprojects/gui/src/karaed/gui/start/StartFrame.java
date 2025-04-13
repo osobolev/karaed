@@ -40,7 +40,7 @@ public final class StartFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = new OptionsDialog(logger, StartFrame.this, null);
+                    OptionsDialog dlg = new OptionsDialog(logger, "New project", StartFrame.this, null);
                     Workdir workDir = dlg.getWorkDir();
                     if (workDir == null)
                         return;

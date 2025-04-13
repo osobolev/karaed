@@ -1,13 +1,14 @@
 package karaed.gui.options;
 
 import karaed.gui.ErrorLogger;
+import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.workdir.Workdir;
 
 import javax.swing.*;
-import java.awt.BorderLayout;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,8 +31,8 @@ public final class OptionsDialog extends JDialog {
         panels.add(panel);
     }
 
-    public OptionsDialog(ErrorLogger logger, Window owner, Workdir workDir) throws IOException {
-        super(owner, "Options", ModalityType.APPLICATION_MODAL);
+    public OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir) throws IOException {
+        super(owner, title, ModalityType.APPLICATION_MODAL);
         this.logger = logger;
         this.ctx = new OptCtx(workDir);
 
@@ -40,10 +41,29 @@ public final class OptionsDialog extends JDialog {
 
         if (ctx.workDir == null) {
             tfDir = new JTextField(40);
-            JPanel top = new JPanel(new BorderLayout());
-            top.add(new JLabel("Directory:"), BorderLayout.WEST);
-            top.add(tfDir, BorderLayout.CENTER);
-            // todo: add choose button
+            JButton btnChoose = InputUtil.getChooseButtonFor(tfDir, "...", () -> {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int ans = chooser.showSaveDialog(this);
+                if (ans == JFileChooser.APPROVE_OPTION) {
+                    File file = chooser.getSelectedFile();
+                    if (file != null) {
+                        tfDir.setText(file.getAbsolutePath());
+                    }
+                }
+            });
+            btnChoose.setToolTipText("Choose directory");
+            JPanel top = new JPanel(new GridBagLayout());
+            top.add(new JLabel("Directory:"), new GridBagConstraints(
+                0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
+            ));
+            top.add(tfDir, new GridBagConstraints(
+                1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
+            ));
+            top.add(btnChoose, new GridBagConstraints(
+                2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
+            ));
+            top.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
             add(top, BorderLayout.NORTH);
         } else {
             tfDir = null;

@@ -77,7 +77,7 @@ public final class ProjectFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new OptionsDialog(logger, ProjectFrame.this, workDir);
+                    new OptionsDialog(logger, "Options", ProjectFrame.this, workDir);
                 } catch (Exception ex) {
                     ShowMessage.error(ProjectFrame.this, logger, ex);
                 }

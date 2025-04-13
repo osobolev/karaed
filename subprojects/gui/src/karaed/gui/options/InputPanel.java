@@ -2,13 +2,16 @@ package karaed.gui.options;
 
 import karaed.engine.opts.OInput;
 import karaed.gui.util.InputUtil;
+import karaed.gui.util.ShowMessage;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 final class InputPanel extends BasePanel<OInput> {
 
@@ -16,6 +19,16 @@ final class InputPanel extends BasePanel<OInput> {
     private final JRadioButton rbFile = new JRadioButton("File:");
     private final JTextField tfURL = new JTextField(40);
     private final JTextField tfFile = new JTextField(40);
+    private final JButton btnBrowse = InputUtil.getChooseButtonFor(tfURL, ">", () -> {
+        try {
+            URI uri = URI.create(tfURL.getText());
+            if (uri.getScheme() == null)
+                return;
+            Desktop.getDesktop().browse(uri);
+        } catch (Exception ex) {
+            ShowMessage.error(main, ex.toString());
+        }
+    });
     private final JButton btnChoose = InputUtil.getChooseButtonFor(tfFile, "...", () -> {
         File file = InputUtil.chooseFile(main, new FileNameExtensionFilter("MP3 files", "mp3"));
         if (file == null)
@@ -32,6 +45,9 @@ final class InputPanel extends BasePanel<OInput> {
         main.add(tfURL, new GridBagConstraints(
             1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
         ));
+        main.add(btnBrowse, new GridBagConstraints(
+            2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
+        ));
 
         main.add(rbFile, new GridBagConstraints(
             0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
@@ -40,8 +56,11 @@ final class InputPanel extends BasePanel<OInput> {
             1, 1, 1, 1, 0.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
         ));
         main.add(btnChoose, new GridBagConstraints(
-            2, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
+            2, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
         ));
+
+        btnBrowse.setToolTipText("Browse URL");
+        btnChoose.setToolTipText("Choose file");
 
         ButtonGroup bg = new ButtonGroup();
         bg.add(rbURL);
@@ -62,6 +81,7 @@ final class InputPanel extends BasePanel<OInput> {
 
     private void enableDisable() {
         tfURL.setEnabled(rbURL.isSelected());
+        btnBrowse.setEnabled(rbURL.isSelected());
         tfFile.setEnabled(rbFile.isSelected());
         btnChoose.setEnabled(rbFile.isSelected());
     }
