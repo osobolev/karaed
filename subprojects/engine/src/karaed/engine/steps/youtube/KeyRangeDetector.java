@@ -2,7 +2,7 @@ package karaed.engine.steps.youtube;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import karaed.engine.formats.ffprobe.FFFormatOutput;
+import karaed.engine.formats.ffprobe.FFFormat;
 import karaed.engine.formats.ffprobe.FFFrame;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
@@ -67,13 +67,14 @@ final class KeyRangeDetector {
         FrameAcc keyAcc = new FrameAcc();
         FrameAcc nonKeyAcc = new FrameAcc();
         long prevPercent = -1;
+        runner.log(false, "Scanning frames...");
         while (tok.peek() != JsonToken.END_ARRAY) {
             FFFrame frame = JsonUtil.GSON.fromJson(tok, FFFrame.class);
             try {
                 double ts = Double.parseDouble(frame.best_effort_timestamp_time());
                 long percent = Math.round(ts / duration * 100.0);
                 if (percent != prevPercent) {
-                    runner.log(false, String.format("Scanning frames: %s%%\r", percent));
+                    runner.log(false, String.format("\rScanning frames: %s%%", percent));
                     prevPercent = percent;
                 }
                 String type = frame.pict_type();
@@ -96,15 +97,8 @@ final class KeyRangeDetector {
     CutRange getRealCut(Path file) throws IOException, InterruptedException {
         double duration;
         {
-            FFFormatOutput format = runner.runFFProbe(
-                List.of(
-                    "-print_format", "json",
-                    "-show_entries", "format",
-                    file.toString()
-                ),
-                rdr -> JsonUtil.parse(rdr, FFFormatOutput.class)
-            );
-            duration = Double.parseDouble(format.format().duration());
+            FFFormat format = FileFormatUtil.getFormat(runner, file);
+            duration = Double.parseDouble(format.duration());
         }
         {
             AtomicReference<CutRange> realCut = new AtomicReference<>(original);
@@ -118,21 +112,23 @@ final class KeyRangeDetector {
                     }
                 });
 
-                runner.runFFProbe(List.of(
-                    "-print_format", "json",
-                    "-select_streams", "v",
-                    "-skip_frame", "nokey",
-                    "-show_frames",
-                    "-show_entries", "frame=best_effort_timestamp_time,pict_type",
-                    file.toString()
-                ), null, stdout -> {
-                    try (PipedOutputStream out = new PipedOutputStream(sink)) {
-                        sinkReader.start();
-                        stdout.transferTo(out);
-                    } catch (IOException ex) {
-                        // ignore
+                runner.runFFProbeStreaming(
+                    List.of(
+                        "-print_format", "json",
+                        "-select_streams", "v",
+                        "-skip_frame", "nokey",
+                        "-show_frames",
+                        "-show_entries", "frame=best_effort_timestamp_time,pict_type",
+                        file.toString()
+                    ),
+                    stdout -> {
+                        try (PipedOutputStream out = new PipedOutputStream(sink)) {
+                            sinkReader.start();
+                            stdout.transferTo(out);
+                        } catch (IOException ex) {
+                            // ignore
+                        }
                     }
-                }
                 );
 
                 sinkReader.join();

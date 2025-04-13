@@ -106,14 +106,14 @@ public final class ProcRunner {
         runFF("ffmpeg", args, null, null);
     }
 
-    public void runFFProbe(List<String> args, IntPredicate exitOk, Consumer<InputStream> out) throws IOException, InterruptedException {
-        runFF("ffprobe", args, exitOk, out);
+    public void runFFProbeStreaming(List<String> args, Consumer<InputStream> out) throws IOException, InterruptedException {
+        runFF("ffprobe", args, null, out);
     }
 
     public <T> T runFFProbe(List<String> args, Function<Reader, T> parseStdout) throws IOException, InterruptedException {
         AtomicReference<T> ref = new AtomicReference<>();
-        runFFProbe(
-            args, null,
+        runFFProbeStreaming(
+            args,
             stdout -> ref.set(parseStdout.apply(new InputStreamReader(stdout, StandardCharsets.UTF_8)))
         );
         return ref.get();
