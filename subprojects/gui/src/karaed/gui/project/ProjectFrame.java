@@ -2,6 +2,7 @@ package karaed.gui.project;
 
 import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
+import karaed.engine.opts.OCut;
 import karaed.engine.opts.ODemucs;
 import karaed.engine.opts.OInput;
 import karaed.engine.steps.align.Align;
@@ -181,7 +182,8 @@ public final class ProjectFrame extends JFrame {
         if (Files.exists(audio)) // todo: check input.json + options/cut.json
             return;
         OInput input = JsonUtil.readFile(workDir.file("input.json"), OInput.class);
-        Youtube.download(runner, input, audio);
+        OCut cut = JsonUtil.readFile(workDir.option("cut.json"), OCut.class, OCut::new);
+        Youtube.download(runner, input, cut, audio);
         SwingUtilities.invokeLater(this::showTitle);
     }
 

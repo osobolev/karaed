@@ -10,9 +10,9 @@ public record Range(int from, int to) {
         int minutes = duration.toMinutesPart();
         int seconds = duration.toSecondsPart();
         if (hours > 0) {
-            return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+            return String.format("%s:%02d:%02d", hours, minutes, seconds);
         } else {
-            return String.format("%02d:%02d", minutes, seconds);
+            return String.format("%s:%02d", minutes, seconds);
         }
     }
 

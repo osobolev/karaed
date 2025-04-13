@@ -15,10 +15,10 @@ public final class ProcUtil {
 
     private static final Set<Process> running = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    private static void capture(InputStream is, OutputStream os) {
+    public static void eatOutput(InputStream is) {
         Thread thread = new Thread(() -> {
             try {
-                is.transferTo(os);
+                is.transferTo(OutputStream.nullOutputStream());
             } catch (IOException ex) {
                 // ignore
             }
@@ -55,8 +55,8 @@ public final class ProcUtil {
             if (out != null) {
                 out.accept(p);
             } else {
-                capture(p.getErrorStream(), OutputStream.nullOutputStream());
-                capture(p.getInputStream(), OutputStream.nullOutputStream());
+                eatOutput(p.getErrorStream());
+                eatOutput(p.getInputStream());
             }
             exitCode = p.waitFor();
         } finally {

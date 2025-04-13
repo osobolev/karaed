@@ -7,7 +7,8 @@ public record Info(
     String artist,
     String track,
     String title,
-    String fulltitle
+    String fulltitle,
+    String ext
 ) {
 
     public List<String> getTitles() {

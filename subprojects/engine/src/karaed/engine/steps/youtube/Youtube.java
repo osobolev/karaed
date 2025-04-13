@@ -1,31 +1,89 @@
 package karaed.engine.steps.youtube;
 
+import karaed.engine.KaraException;
+import karaed.engine.formats.info.Info;
+import karaed.engine.opts.OCut;
 import karaed.engine.opts.OInput;
+import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public final class Youtube {
 
-    public static void download(ProcRunner runner, OInput input, Path audio) throws IOException, InterruptedException {
+    private static String nameWithoutExtension(Path file) {
+        String name = file.getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        if (dot < 0) {
+            return name;
+        } else {
+            return name.substring(0, dot);
+        }
+    }
+
+    private static String getVideoExt(Path audio, String base) throws IOException {
+        Path infoFile = audio.resolveSibling(base + ".info.json");
+        Info info = JsonUtil.readFile(infoFile, Info.class);
+        return info.ext();
+    }
+
+    private static Path getVideoFile(Path audio, String base, String ext) {
+        return audio.resolveSibling(base + "." + ext);
+    }
+
+    public static Path download(ProcRunner runner, OInput input, OCut cut, Path audio) throws IOException, InterruptedException {
+        CutRange range = CutRange.create(cut);
         if (input.url() != null) {
-            runner.runPythonExe(
-                "yt-dlp",
-                "--write-info-json", "-k",
-                "--extract-audio",
-                "--audio-format", "mp3",
-                "--output", audio.toString(),
-                input.url()
-            );
-            // todo: possibly cut audio/video
+            String base = nameWithoutExtension(audio);
+            String basePath = audio.getParent().resolve(base).toString();
+            runner.println(String.format("Downloading from Youtube%s...", range == null ? "" : " (range " + range + ")"));
+            if (range == null) {
+                runner.runPythonExe(
+                    "yt-dlp",
+                    "--write-info-json", "-k",
+                    "--extract-audio",
+                    "--audio-format", "mp3",
+                    "--output", basePath + ".%(ext)s",
+                    input.url()
+                );
+                String ext = getVideoExt(audio, base);
+                return getVideoFile(audio, base, ext);
+            } else {
+                runner.runPythonExe(
+                    "yt-dlp",
+                    "--write-info-json",
+                    "--output", basePath + ".full.%(ext)s",
+                    input.url()
+                );
+                String ext = getVideoExt(audio, base);
+                Path fullVideo = getVideoFile(audio, base, "full." + ext);
+
+                runner.println("Cutting downloaded video...");
+                CutRange realCut = new KeyRangeDetector(runner, range).getRealCut(fullVideo);
+                Path cutVideo = getVideoFile(audio, base, "tmp." + ext);
+                realCut.cutFile(runner, fullVideo, cutVideo);
+                Files.delete(fullVideo);
+
+                runner.runFFMPEG(List.of(
+                    "-y", "-stats",
+                    "-i", cutVideo.toString(),
+                    "-vn",
+                    "-b:a", "192k",
+                    "-f", "mp3",
+                    audio.toString()
+                ));
+                return cutVideo;
+            }
         } else if (input.file() != null) {
             Files.copy(Path.of(input.file()), audio);
+            // todo: extract audio.info.json from mp3
             // todo: possibly cut audio
+            return null;
         } else {
-            // todo: error
-            return;
+            throw new KaraException("Either URL or file must be specified");
         }
     }
 }

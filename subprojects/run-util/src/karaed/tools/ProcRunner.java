@@ -35,6 +35,10 @@ public final class ProcRunner {
         output.output(stderr, text);
     }
 
+    public void println(String line) {
+        log(false, line + System.lineSeparator());
+    }
+
     private static Path exe(Path dir, String name) {
         return dir == null ? Path.of(name) : dir.resolve(name);
     }
@@ -67,10 +71,11 @@ public final class ProcRunner {
             pathDirs = Collections.emptyList();
         }
         Consumer<Process> capture = p -> {
-            capture(p.getErrorStream(), true);
             if (out != null) {
+                ProcUtil.eatOutput(p.getErrorStream());
                 out.accept(p.getInputStream());
             } else {
+                capture(p.getErrorStream(), true);
                 capture(p.getInputStream(), false);
             }
         };

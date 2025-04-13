@@ -12,10 +12,15 @@ import java.util.function.Supplier;
 
 public final class JsonUtil {
 
-    private static final Gson GSON = new GsonBuilder()
+    public static final Gson GSON = new GsonBuilder()
         .setPrettyPrinting()
         .serializeSpecialFloatingPointValues()
         .create();
+
+    // todo: remove, use only streaming version
+    public static <T> T parse(String json, Class<T> cls) {
+        return GSON.fromJson(json, cls);
+    }
 
     public static <T> T readFile(Path file, Class<T> cls) throws IOException {
         try (BufferedReader rdr = Files.newBufferedReader(file)) {
