@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.IntPredicate;
 
 public final class ProcRunner {
 
@@ -65,7 +63,7 @@ public final class ProcRunner {
         thread.start();
     }
 
-    private void runCommand(String what, Path exe, List<String> args, IntPredicate exitOk, Consumer<InputStream> out) throws IOException, InterruptedException {
+    private void runCommand(String what, Path exe, List<String> args, Consumer<InputStream> out) throws IOException, InterruptedException {
         List<Path> pathDirs;
         if (tools.ffmpegDir != null) {
             pathDirs = Collections.singletonList(tools.ffmpegDir);
@@ -81,41 +79,65 @@ public final class ProcRunner {
                 capture(p.getInputStream(), false);
             }
         };
-        ProcUtil.runCommand(what, exe, args, pathDirs, capture, exitOk);
+        ProcUtil.runCommand(what, exe, args, pathDirs, capture, null);
     }
 
-    public void runPythonScript(String script, String... args) throws IOException, InterruptedException {
+    public <T> T runPythonScript(String script, Function<Reader, T> parseStdout, String... args) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
         list.add(rootDir.resolve(script).toString());
         list.addAll(Arrays.asList(args));
-        runCommand("script " + script, exe(tools.pythonDir, "python"), list, null, null);
+        ParseCapture<T> capture = new ParseCapture<>(parseStdout);
+        runCommand("script " + script, exe(tools.pythonDir, "python"), list, capture);
+        return capture.getParsed();
+    }
+
+    public void runPythonScript(String script, String... args) throws IOException, InterruptedException {
+        runPythonScript(script, null, args);
     }
 
     public void runPythonExe(String exe, String... args) throws IOException, InterruptedException {
-        runCommand(exe, exe(tools.pythonExeDir, exe), List.of(args), null, null);
+        runCommand(exe, exe(tools.pythonExeDir, exe), List.of(args), null);
     }
 
-    private void runFF(String ff, List<String> args, IntPredicate exitOk, Consumer<InputStream> out) throws IOException, InterruptedException {
+    private void runFF(String ff, List<String> args, Consumer<InputStream> out) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
         list.addAll(List.of("-v", "quiet"));
         list.addAll(args);
-        runCommand(ff, exe(tools.ffmpegDir, ff), list, exitOk, out);
+        runCommand(ff, exe(tools.ffmpegDir, ff), list, out);
     }
 
     public void runFFMPEG(List<String> args) throws IOException, InterruptedException {
-        runFF("ffmpeg", args, null, null);
+        runFF("ffmpeg", args, null);
     }
 
     public void runFFProbeStreaming(List<String> args, Consumer<InputStream> out) throws IOException, InterruptedException {
-        runFF("ffprobe", args, null, out);
+        runFF("ffprobe", args, out);
     }
 
     public <T> T runFFProbe(List<String> args, Function<Reader, T> parseStdout) throws IOException, InterruptedException {
-        AtomicReference<T> ref = new AtomicReference<>();
-        runFFProbeStreaming(
-            args,
-            stdout -> ref.set(parseStdout.apply(new InputStreamReader(stdout, StandardCharsets.UTF_8)))
-        );
-        return ref.get();
+        ParseCapture<T> capture = new ParseCapture<>(parseStdout);
+        runFFProbeStreaming(args, capture);
+        return capture.getParsed();
+    }
+
+    private static final class ParseCapture<T> implements Consumer<InputStream> {
+
+        private final Function<Reader, T> parser;
+        private T parsed = null;
+
+        ParseCapture(Function<Reader, T> parser) {
+            this.parser = parser;
+        }
+
+        @Override
+        public void accept(InputStream stdout) {
+            if (parser != null) {
+                parsed = parser.apply(new InputStreamReader(stdout, StandardCharsets.UTF_8));
+            }
+        }
+
+        T getParsed() {
+            return parsed;
+        }
     }
 }

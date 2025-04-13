@@ -15,6 +15,11 @@ public final class FileAudioSource implements AudioSource {
     }
 
     @Override
+    public AudioFormat getFormat() throws UnsupportedAudioFileException, IOException {
+        return AudioSystem.getAudioFileFormat(file).getFormat();
+    }
+
+    @Override
     public AudioInputStream getStream() throws UnsupportedAudioFileException, IOException {
         return AudioSystem.getAudioInputStream(file);
     }

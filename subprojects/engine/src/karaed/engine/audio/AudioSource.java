@@ -1,13 +1,12 @@
 package karaed.engine.audio;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.*;
 import java.io.IOException;
 import java.io.OutputStream;
 
 public interface AudioSource {
+
+    AudioFormat getFormat() throws UnsupportedAudioFileException, IOException;
 
     AudioInputStream getStream() throws UnsupportedAudioFileException, IOException;
 
