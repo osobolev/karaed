@@ -15,6 +15,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
@@ -75,7 +76,7 @@ public final class StartFrame extends JFrame {
                 openProject(new Workdir(file.toPath().getParent()));
             }
         });
-        JPanel top = new JPanel();
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         top.add(btnNew);
         top.add(btnOpen);
         add(top, BorderLayout.NORTH);

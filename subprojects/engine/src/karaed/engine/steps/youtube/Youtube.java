@@ -2,7 +2,6 @@ package karaed.engine.steps.youtube;
 
 import karaed.engine.KaraException;
 import karaed.engine.formats.ffprobe.FFFormat;
-import karaed.engine.formats.ffprobe.FFFormatOutput;
 import karaed.engine.formats.ffprobe.FFTags;
 import karaed.engine.formats.info.Info;
 import karaed.engine.opts.OCut;
@@ -90,7 +89,7 @@ public final class Youtube {
             if (range == null) {
                 Files.copy(srcFile, audio);
             } else {
-                range.cutFile(runner, srcFile, audio); // todo: does it work for mp3???
+                range.cutFile(runner, srcFile, audio);
             }
             FFFormat format = FileFormatUtil.getFormat(runner, audio);
             FFTags tags = format.tags();
