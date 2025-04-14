@@ -7,10 +7,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public final class MakeSubs {
+
+    private static final double VIDEO_FRAME_RATE = 23.976;
 
     // todo: explore the effect of PlayResX/PlayResY
     private static final String HEADER = """
@@ -19,6 +22,11 @@ public final class MakeSubs {
         PlayResX: 384
         PlayResY: 288
         ScaledBorderAndShadow: yes
+
+        [Aegisub Project Garbage]
+        Audio File: audio.mp3
+        Video File: ?dummy:%s:%s:640:480:47:163:254:
+        Video AR Value: 1.333333
 
         [V4+ Styles]
         Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
@@ -30,10 +38,13 @@ public final class MakeSubs {
 
     // todo: optionally word-by-word
     public static void makeSubs(Path textFile, Path alignedFile, Path subsFile) throws IOException {
-        List<List<CSegment>> lines = SyncChars.sync(textFile, alignedFile);
+        List<List<CSegment>> lines = new ArrayList<>();
+        double lastEnd = SyncChars.sync(textFile, alignedFile, lines);
 
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
-            HEADER.lines().forEach(pw::println);
+            long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
+            String header = String.format(HEADER, VIDEO_FRAME_RATE, dummyFrames);
+            header.lines().forEach(pw::println);
             lines
                 .stream()
                 .map(MakeSubs::assLine)

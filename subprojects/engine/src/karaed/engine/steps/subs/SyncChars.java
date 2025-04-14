@@ -22,7 +22,7 @@ final class SyncChars {
         }
     }
 
-    static List<List<CSegment>> sync(Path textFile, Path alignedFile) throws IOException {
+    static double sync(Path textFile, Path alignedFile, List<List<CSegment>> lines) throws IOException {
         List<CSegment> lyrics = new ArrayList<>();
         {
             String text = String.join("\n", Files.readAllLines(textFile));
@@ -32,6 +32,7 @@ final class SyncChars {
         }
 
         List<CharSegment> aligned = new ArrayList<>();
+        double lastEnd = 0;
         {
             Aligned alignedLyrics = JsonUtil.readFile(alignedFile, Aligned.class);
             for (int i = 0; i < alignedLyrics.segments().size(); i++) {
@@ -42,6 +43,7 @@ final class SyncChars {
                     checkTimestamp(cs.start(), "start", i, segText, j);
                     checkTimestamp(cs.end(), "end", i, segText, j);
                     aligned.add(cs);
+                    lastEnd = Math.max(lastEnd, cs.end().doubleValue());
                 }
             }
         }
@@ -79,11 +81,11 @@ final class SyncChars {
             ia++;
         }
 
-        return splitToLines(lyrics);
+        splitToLines(lyrics, lines);
+        return lastEnd;
     }
 
-    private static List<List<CSegment>> splitToLines(List<CSegment> lyrics) {
-        List<List<CSegment>> lines = new ArrayList<>();
+    private static void splitToLines(List<CSegment> lyrics, List<List<CSegment>> lines) {
         lines.add(new ArrayList<>());
         for (CSegment cs : lyrics) {
             char ch = cs.ch;
@@ -94,6 +96,5 @@ final class SyncChars {
             List<CSegment> currentLine = lines.get(lines.size() - 1);
             currentLine.add(cs);
         }
-        return lines;
     }
 }
