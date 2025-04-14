@@ -17,23 +17,22 @@ import java.util.List;
 
 public final class Youtube {
 
-    public static Path download(ProcRunner runner, OInput input, OCut cut, Path audio) throws IOException, InterruptedException {
+    public static void download(ProcRunner runner, OInput input, OCut cut, Path audio) throws IOException, InterruptedException {
         CutRange range = CutRange.create(cut);
         String base = VideoFinder.nameWithoutExtension(audio);
         if (input.url() != null) {
             String basePath = audio.getParent().resolve(base).toString();
             runner.println(String.format("Downloading from Youtube%s...", range == null ? "" : " (range " + range + ")"));
+            Path video;
             if (range == null) {
-                // todo: simplify by always extracting mp3 by ffmpeg???
                 runner.runPythonExe(
                     "yt-dlp",
-                    "--write-info-json", "-k",
-                    "--extract-audio",
-                    "--audio-format", "mp3",
+                    "--write-info-json",
                     "--output", basePath + ".%(ext)s",
                     input.url()
                 );
-                return VideoFinder.create(audio).getVideoFile();
+                VideoFinder finder = VideoFinder.create(audio);
+                video = finder.getVideoFile();
             } else {
                 runner.runPythonExe(
                     "yt-dlp",
@@ -51,16 +50,17 @@ public final class Youtube {
                 realCut.cutFile(runner, fullVideo, cutVideo);
                 Files.delete(fullVideo);
 
-                runner.runFFMPEG(List.of(
-                    "-y", "-stats",
-                    "-i", cutVideo.toString(),
-                    "-vn",
-                    "-b:a", "192k",
-                    "-f", "mp3",
-                    audio.toString()
-                ));
-                return cutVideo;
+                video = cutVideo;
             }
+            runner.println("Extracting audio.mp3...");
+            runner.runFFMPEG(List.of(
+                "-y", "-stats",
+                "-i", video.toString(),
+                "-vn",
+                "-b:a", "192k",
+                "-f", "mp3",
+                audio.toString()
+            ));
         } else if (input.file() != null) {
             Path srcFile = Path.of(input.file());
             if (range == null) {
@@ -80,7 +80,6 @@ public final class Youtube {
                 artist, tags.title(), null, null, null
             );
             JsonUtil.writeFile(VideoFinder.getInfoFile(audio, base), info);
-            return null;
         } else {
             throw new KaraException("Either URL or file must be specified");
         }
