@@ -127,6 +127,8 @@ public final class MakeVideo {
     public static void karaokeVideo(ProcRunner runner,
                                     Path audio, Path noVocals, Path assFile,
                                     OVideo options, Path outputVideo) throws IOException, InterruptedException {
+        runner.println("Adding subtitles...");
+
         Path useVideo = chooseVideo(audio, options);
         List<String> videoInput;
         if (useVideo != null) {
