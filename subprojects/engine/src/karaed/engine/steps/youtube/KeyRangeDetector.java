@@ -67,14 +67,13 @@ final class KeyRangeDetector {
         FrameAcc keyAcc = new FrameAcc();
         FrameAcc nonKeyAcc = new FrameAcc();
         long prevPercent = -1;
-        runner.log(false, "Scanning frames...");
         while (tok.peek() != JsonToken.END_ARRAY) {
             FFFrame frame = JsonUtil.GSON.fromJson(tok, FFFrame.class);
             try {
                 double ts = Double.parseDouble(frame.best_effort_timestamp_time());
                 long percent = Math.round(ts / duration * 100.0);
                 if (percent != prevPercent) {
-                    runner.log(false, String.format("\rScanning frames: %s%%", percent));
+                    runner.log(false, String.format("Scanning frames: %s%%\r", percent));
                     prevPercent = percent;
                 }
                 String type = frame.pict_type();
