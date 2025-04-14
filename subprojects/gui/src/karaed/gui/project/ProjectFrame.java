@@ -5,8 +5,10 @@ import karaed.engine.formats.info.Info;
 import karaed.engine.opts.OCut;
 import karaed.engine.opts.ODemucs;
 import karaed.engine.opts.OInput;
+import karaed.engine.opts.OKaraoke;
 import karaed.engine.steps.align.Align;
 import karaed.engine.steps.demucs.Demucs;
+import karaed.engine.steps.karaoke.AssJoiner;
 import karaed.engine.steps.subs.MakeSubs;
 import karaed.engine.steps.youtube.Youtube;
 import karaed.gui.ErrorLogger;
@@ -168,6 +170,10 @@ public final class ProjectFrame extends JFrame {
                 setState(PipeStep.SUBS, StepState.RUNNING);
                 subs();
                 setState(PipeStep.SUBS, StepState.COMPLETE);
+
+                setState(PipeStep.KARAOKE, StepState.RUNNING);
+                karaokeSubs();
+                setState(PipeStep.KARAOKE, StepState.COMPLETE);
             } catch (Throwable ex) {
                 // todo: mark current pipe stage as bad!!!
                 if (ex instanceof KaraException) {
@@ -252,8 +258,14 @@ public final class ProjectFrame extends JFrame {
         MakeSubs.makeSubs(text, aligned, subs);
     }
 
-    private void karaokeSubs() {
-        // todo
+    private void karaokeSubs() throws IOException {
+        Path karaoke = workDir.file("karaoke.ass");
+        if (Files.exists(karaoke)) // todo: check subs.ass + info.json + options/karaoke.json
+            return;
+        Path subs = workDir.file("subs.ass");
+        Path info = workDir.info();
+        OKaraoke options = JsonUtil.readFile(workDir.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
+        AssJoiner.join(subs, info, options, karaoke);
     }
 
     private void karaokeVideo() {

@@ -11,8 +11,7 @@ public record Info(
     String ext
 ) {
 
-    public List<String> getTitles() {
-        List<String> titles = new ArrayList<>();
+    public void getTitles(List<String> titles) {
         if (track != null) {
             titles.add(track);
             if (artist != null) {
@@ -23,7 +22,6 @@ public record Info(
         } else if (title != null) {
             titles.add(title);
         }
-        return titles;
     }
 
     @Override
