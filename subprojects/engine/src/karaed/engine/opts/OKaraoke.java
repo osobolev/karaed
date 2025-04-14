@@ -11,9 +11,7 @@ public record OKaraoke(
 
     double minTitles,
     double maxTitles,
-    double minAfterTitles,
-
-    boolean video
+    double minAfterTitles
 ) {
 
     public OKaraoke() {
@@ -22,9 +20,7 @@ public record OKaraoke(
 
             2.0, 0.75, 0.75, 20.0,
 
-            1.0, 5.0, 1.0,
-
-            true
+            1.0, 5.0, 1.0
         );
     }
 }
