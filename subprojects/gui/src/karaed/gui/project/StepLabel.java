@@ -3,12 +3,14 @@ package karaed.gui.project;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
-import java.awt.Font;
+import java.awt.Color;
 
 final class StepLabel {
 
     private static final Icon RUNNING = InputUtil.getIcon("/running.png");
     private static final Icon COMPLETE = InputUtil.getIcon("/complete.png");
+
+    private static final Color INIT_COLOR = new Color(150, 150, 150);
 
     private final JLabel label;
 
@@ -21,15 +23,15 @@ final class StepLabel {
     void setState(StepState state) {
         switch (state) {
         case INIT:
-            label.setFont(label.getFont().deriveFont(Font.PLAIN));
+            label.setForeground(INIT_COLOR);
             label.setIcon(null);
             break;
         case RUNNING:
-            label.setFont(label.getFont().deriveFont(Font.BOLD));
+            label.setForeground(Color.black);
             label.setIcon(RUNNING);
             break;
         case COMPLETE:
-            label.setFont(label.getFont().deriveFont(Font.BOLD));
+            label.setForeground(Color.black);
             label.setIcon(COMPLETE);
             break;
         }
