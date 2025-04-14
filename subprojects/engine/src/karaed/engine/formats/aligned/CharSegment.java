@@ -18,4 +18,8 @@ public record CharSegment(
             score, ch
         );
     }
+
+    public char getChar() {
+        return ch.length() > 0 ? ch.charAt(0) : ' ';
+    }
 }

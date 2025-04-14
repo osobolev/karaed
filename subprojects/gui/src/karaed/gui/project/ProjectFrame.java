@@ -7,6 +7,7 @@ import karaed.engine.opts.ODemucs;
 import karaed.engine.opts.OInput;
 import karaed.engine.steps.align.Align;
 import karaed.engine.steps.demucs.Demucs;
+import karaed.engine.steps.subs.MakeSubs;
 import karaed.engine.steps.youtube.Youtube;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
@@ -163,6 +164,10 @@ public final class ProjectFrame extends JFrame {
                 setState(PipeStep.ALIGN, StepState.RUNNING);
                 align();
                 setState(PipeStep.ALIGN, StepState.COMPLETE);
+
+                setState(PipeStep.SUBS, StepState.RUNNING);
+                subs();
+                setState(PipeStep.SUBS, StepState.COMPLETE);
             } catch (Throwable ex) {
                 // todo: mark current pipe stage as bad!!!
                 if (ex instanceof KaraException) {
@@ -238,8 +243,13 @@ public final class ProjectFrame extends JFrame {
         Align.align(runner, vocals, ranges, workDir.file("tmp"), aligned);
     }
 
-    private void subs() {
-        // todo
+    private void subs() throws IOException {
+        Path subs = workDir.file("subs.ass");
+        if (Files.exists(subs)) // todo: check text.txt + aligned.json + options/align.json
+            return;
+        Path text = workDir.file("text.txt");
+        Path aligned = workDir.file("aligned.json");
+        MakeSubs.makeSubs(text, aligned, subs);
     }
 
     private void karaokeSubs() {
