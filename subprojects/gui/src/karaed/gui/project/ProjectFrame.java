@@ -216,8 +216,6 @@ public final class ProjectFrame extends JFrame {
 
     private void ranges() throws Throwable {
         Path ranges = workDir.file("ranges.json");
-        if (Files.exists(ranges)) // todo: check text.txt + vocals.wav + options/ranges.json
-            return;
         Path vocals = workDir.vocals();
         Path text = workDir.file("text.txt");
         Runnable editRanges = () -> {
