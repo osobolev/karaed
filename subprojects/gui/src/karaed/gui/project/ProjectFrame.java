@@ -2,14 +2,12 @@ package karaed.gui.project;
 
 import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
-import karaed.engine.opts.OCut;
-import karaed.engine.opts.ODemucs;
-import karaed.engine.opts.OInput;
-import karaed.engine.opts.OKaraoke;
+import karaed.engine.opts.*;
 import karaed.engine.steps.align.Align;
 import karaed.engine.steps.demucs.Demucs;
 import karaed.engine.steps.karaoke.AssJoiner;
 import karaed.engine.steps.subs.MakeSubs;
+import karaed.engine.steps.video.MakeVideo;
 import karaed.engine.steps.youtube.Youtube;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
@@ -37,11 +35,8 @@ import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
-// todo: options/cut.json - what piece of original file to use (from-to)
-// todo: options/demucs.json - number of shifts
 // todo: options/ranges.json - auto/manual
 // todo: options/align.json - by words/chars
-// todo: options/karaoke.json - karaoke generation properties
 public final class ProjectFrame extends JFrame {
 
     private final ErrorLogger logger;
@@ -88,6 +83,7 @@ public final class ProjectFrame extends JFrame {
         });
         toolBar.addSeparator();
         toolBar.add(runAction);
+        // todo: stop button
         add(toolBar, BorderLayout.NORTH);
 
         JPanel main = new JPanel(new BorderLayout());
@@ -121,6 +117,7 @@ public final class ProjectFrame extends JFrame {
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
 
         CloseUtil.listen(this, () -> {
+            // todo: do not close if running
             if (reopenStart) {
                 new StartFrame(logger, tools, rootDir);
             }
@@ -174,6 +171,10 @@ public final class ProjectFrame extends JFrame {
                 setState(PipeStep.KARAOKE, StepState.RUNNING);
                 karaokeSubs();
                 setState(PipeStep.KARAOKE, StepState.COMPLETE);
+
+                setState(PipeStep.VIDEO, StepState.RUNNING);
+                karaokeVideo();
+                setState(PipeStep.VIDEO, StepState.COMPLETE);
             } catch (Throwable ex) {
                 // todo: mark current pipe stage as bad!!!
                 if (ex instanceof KaraException) {
@@ -268,7 +269,13 @@ public final class ProjectFrame extends JFrame {
         AssJoiner.join(subs, info, options, karaoke);
     }
 
-    private void karaokeVideo() {
-        // todo
+    private void karaokeVideo() throws IOException, InterruptedException {
+        Path karaokeVideo = workDir.file("karaoke.mp4");
+        if (Files.exists(karaokeVideo)) // todo: check no_vocals.wav + karaoke.ass + options/video.json
+            return;
+        Path noVocals = workDir.demuxed("no_vocals.wav");
+        Path karaoke = workDir.file("karaoke.ass");
+        OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
+        MakeVideo.karaokeVideo(runner, workDir.audio(), noVocals, karaoke, options, karaokeVideo);
     }
 }
