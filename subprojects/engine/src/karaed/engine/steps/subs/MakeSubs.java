@@ -29,10 +29,10 @@ public final class MakeSubs {
         """;
 
     // todo: optionally word-by-word
-    public static void makeSubs(Path textFile, Path alignedFile, Path subs) throws IOException {
+    public static void makeSubs(Path textFile, Path alignedFile, Path subsFile) throws IOException {
         List<List<CSegment>> lines = SyncChars.sync(textFile, alignedFile);
 
-        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subs))) {
+        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
             HEADER.lines().forEach(pw::println);
             lines
                 .stream()
