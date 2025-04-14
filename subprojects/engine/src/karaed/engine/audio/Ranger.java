@@ -47,6 +47,7 @@ final class Ranger {
         if (voiceStarted >= 0) {
             finishRange(frame);
         }
+        ranges.removeIf(range -> range.to() - range.from() < ignoreShortSilence);
         return ranges;
     }
 }
