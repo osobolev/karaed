@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 public final class Demucs {
 
-    public static void demucs(ProcRunner runner, ODemucs options, Path audio, Path outputDir) throws IOException, InterruptedException {
+    public static void demucs(ProcRunner runner, Path audio, ODemucs options, Path outputDir) throws IOException, InterruptedException {
         runner.runPythonExe(
             "demucs",
             "--two-stems=vocals",

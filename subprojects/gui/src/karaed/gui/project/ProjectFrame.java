@@ -199,7 +199,7 @@ public final class ProjectFrame extends JFrame {
             return;
         Path configFile = workDir.option("demucs.json");
         ODemucs options = JsonUtil.readFile(configFile, ODemucs.class, ODemucs::new);
-        Demucs.demucs(runner, options, workDir.audio(), workDir.dir());
+        Demucs.demucs(runner, workDir.audio(), options, workDir.dir());
     }
 
     private void ranges() throws Throwable {
