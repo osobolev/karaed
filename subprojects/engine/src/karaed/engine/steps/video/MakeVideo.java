@@ -36,15 +36,8 @@ public final class MakeVideo {
         runner.runFFMPEG(ffmpeg);
     }
 
-    public static void prepareVideo(ProcRunner runner, Path audio, OVideo options) throws IOException, InterruptedException {
-        if (!options.useOriginalVideo())
-            return;
-        VideoFinder finder = VideoFinder.maybeCreate(audio);
-        if (finder == null)
-            return;
+    private static void prepareVideo(ProcRunner runner, VideoFinder finder) throws IOException, InterruptedException {
         Path video = finder.getVideoFile();
-        if (!Files.exists(video))
-            return;
         FFStreams streams = runner.runFFProbe(
             List.of(
                 "-print_format", "json",
@@ -54,7 +47,7 @@ public final class MakeVideo {
             ),
             stdout -> JsonUtil.parse(stdout, FFStreams.class)
         );
-        Path preparedVideo = finder.getVideoFile("prepared.");
+        Path preparedVideo = finder.getPreparedVideoFile();
         FFStream stream = streams.streams().get(0);
         int width = stream.width();
         int height = stream.height();
@@ -66,6 +59,39 @@ public final class MakeVideo {
         } else {
             Files.write(preparedVideo, new byte[0]);
         }
+    }
+
+    public static final class Preparer {
+
+        final VideoFinder finder;
+
+        Preparer(VideoFinder finder) {
+            this.finder = finder;
+        }
+
+        public Path getOriginalVideo() {
+            return finder.getVideoFile();
+        }
+
+        public Path getPreparedVideo() {
+            return finder.getPreparedVideoFile();
+        }
+
+        public void prepare(ProcRunner runner) throws IOException, InterruptedException {
+            prepareVideo(runner, finder);
+        }
+    }
+
+    public static Preparer prepareVideo(Path audio, OVideo options) throws IOException {
+        if (!options.useOriginalVideo())
+            return null;
+        VideoFinder finder = VideoFinder.maybeCreate(audio);
+        if (finder == null)
+            return null;
+        Path video = finder.getVideoFile();
+        if (!Files.exists(video))
+            return null;
+        return new Preparer(finder);
     }
 
     private static String escapeFilter(String path) {
@@ -89,7 +115,7 @@ public final class MakeVideo {
         VideoFinder finder = VideoFinder.maybeCreate(audio);
         if (finder == null)
             return null;
-        Path preparedVideo = finder.getVideoFile("prepared.");
+        Path preparedVideo = finder.getPreparedVideoFile();
         if (Files.exists(preparedVideo) && Files.size(preparedVideo) > 0)
             return preparedVideo;
         Path originalVideo = finder.getVideoFile();

@@ -61,4 +61,8 @@ public final class VideoFinder {
     public Path getVideoFile() {
         return getVideoFile("");
     }
+
+    public Path getPreparedVideoFile() {
+        return getVideoFile("prepared.");
+    }
 }

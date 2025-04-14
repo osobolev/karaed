@@ -173,6 +173,10 @@ public final class ProjectFrame extends JFrame {
                 karaokeSubs();
                 setState(PipeStep.KARAOKE, StepState.COMPLETE);
 
+                setState(PipeStep.PREPARE_VIDEO, StepState.RUNNING);
+                prepareVideo();
+                setState(PipeStep.PREPARE_VIDEO, StepState.COMPLETE);
+
                 setState(PipeStep.VIDEO, StepState.RUNNING);
                 karaokeVideo();
                 setState(PipeStep.VIDEO, StepState.COMPLETE);
@@ -270,9 +274,20 @@ public final class ProjectFrame extends JFrame {
         AssJoiner.join(subs, info, options, karaoke);
     }
 
+    private void prepareVideo() throws IOException, InterruptedException {
+        OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
+        MakeVideo.Preparer preparer = MakeVideo.prepareVideo(workDir.audio(), options);
+        if (preparer == null)
+            return;
+        Path preparedVideo = preparer.getPreparedVideo();
+        if (Files.exists(preparedVideo)) // todo: check original video
+            return;
+        preparer.prepare(runner);
+    }
+
     private void karaokeVideo() throws IOException, InterruptedException {
         Path karaokeVideo = workDir.file("karaoke.mp4");
-        if (Files.exists(karaokeVideo)) // todo: check no_vocals.wav + karaoke.ass + options/video.json
+        if (Files.exists(karaokeVideo)) // todo: check no_vocals.wav + karaoke.ass + video (chosen if needed) + options/video.json
             return;
         Path noVocals = workDir.demuxed("no_vocals.wav");
         Path karaoke = workDir.file("karaoke.ass");

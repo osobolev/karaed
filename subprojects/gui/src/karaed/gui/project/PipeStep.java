@@ -7,6 +7,7 @@ enum PipeStep {
     ALIGN("Aligning vocals with lyrics"),
     SUBS("Making editable subtitles"),
     KARAOKE("Making karaoke subtitles"),
+    PREPARE_VIDEO("Preparing video"),
     VIDEO("Making karaoke video");
 
     final String text;
