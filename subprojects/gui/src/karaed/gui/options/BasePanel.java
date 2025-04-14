@@ -47,13 +47,13 @@ abstract class BasePanel<T> {
         return main;
     }
 
-    abstract T newData();
+    abstract T newData() throws ValidationException;
 
     void writeData(Path file, T data) throws IOException {
         JsonUtil.writeFile(file, data);
     }
 
-    final void save() throws IOException {
+    final void save() throws IOException, ValidationException {
         T newData = newData();
         if (Objects.equals(newData, origData))
             return;

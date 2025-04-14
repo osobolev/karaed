@@ -73,6 +73,7 @@ public final class OptionsDialog extends JDialog {
         add(new CutPanel(ctx), false);
         add(new LyricsPanel(ctx), false);
         add(new DemucsPanel(ctx), true);
+        add(new KaraokePanel(ctx), true);
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Input", main);
@@ -122,6 +123,11 @@ public final class OptionsDialog extends JDialog {
                 panel.save();
             }
             dispose();
+        } catch (ValidationException ex) {
+            // todo: make tab visible:
+            // todo: needs invokeLater???
+            ex.component.requestFocusInWindow();
+            ShowMessage.error(this, ex.getMessage());
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
         }
