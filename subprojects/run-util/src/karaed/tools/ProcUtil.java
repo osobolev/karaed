@@ -2,8 +2,8 @@ package karaed.tools;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,10 +15,10 @@ public final class ProcUtil {
 
     private static final Set<Process> running = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public static void eatOutput(InputStream is) {
+    public static void eatOutput(Reader rdr) {
         Thread thread = new Thread(() -> {
             try {
-                is.transferTo(OutputStream.nullOutputStream());
+                rdr.transferTo(Writer.nullWriter());
             } catch (IOException ex) {
                 // ignore
             }
@@ -55,8 +55,8 @@ public final class ProcUtil {
             if (out != null) {
                 out.accept(p);
             } else {
-                eatOutput(p.getErrorStream());
-                eatOutput(p.getInputStream());
+                eatOutput(p.errorReader());
+                eatOutput(p.inputReader());
             }
             exitCode = p.waitFor();
         } finally {

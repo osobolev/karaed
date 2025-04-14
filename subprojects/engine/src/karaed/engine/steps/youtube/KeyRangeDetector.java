@@ -8,7 +8,6 @@ import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,8 +58,8 @@ final class KeyRangeDetector {
         return time;
     }
 
-    private CutRange parseFrameStream(double duration, InputStream in) throws IOException {
-        JsonReader tok = JsonUtil.GSON.newJsonReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+    private CutRange parseFrameStream(double duration, Reader rdr) throws IOException {
+        JsonReader tok = JsonUtil.GSON.newJsonReader(rdr);
         tok.beginObject();
         tok.nextName();
         tok.beginArray();
@@ -86,7 +85,7 @@ final class KeyRangeDetector {
                 // ignore
             }
         }
-        in.transferTo(OutputStream.nullOutputStream());
+        rdr.transferTo(Writer.nullWriter());
         runner.log(false, System.lineSeparator());
         Double realStart = getFrameTime(start, acc -> acc.lastBeforeStart, keyAcc, nonKeyAcc);
         Double realEnd = getFrameTime(end, acc -> acc.firstAfterEnd, keyAcc, nonKeyAcc);
@@ -101,7 +100,7 @@ final class KeyRangeDetector {
         }
         {
             AtomicReference<CutRange> realCut = new AtomicReference<>(original);
-            try (PipedInputStream sink = new PipedInputStream()) {
+            try (PipedReader sink = new PipedReader()) {
                 Thread sinkReader = new Thread(() -> {
                     try {
                         CutRange range = parseFrameStream(duration, sink);
@@ -121,7 +120,7 @@ final class KeyRangeDetector {
                         file.toString()
                     ),
                     stdout -> {
-                        try (PipedOutputStream out = new PipedOutputStream(sink)) {
+                        try (PipedWriter out = new PipedWriter(sink)) {
                             sinkReader.start();
                             stdout.transferTo(out);
                         } catch (IOException ex) {

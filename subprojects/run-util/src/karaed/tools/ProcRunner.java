@@ -1,11 +1,7 @@
 package karaed.tools;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,11 +39,9 @@ public final class ProcRunner {
         return dir == null ? Path.of(name) : dir.resolve(name);
     }
 
-    private void capture(InputStream is, boolean stderr) {
+    private void capture(Reader rdr, boolean stderr) {
         Thread thread = new Thread(() -> {
             try {
-                Charset charset = StandardCharsets.UTF_8; // todo: use console charset
-                InputStreamReader rdr = new InputStreamReader(is, charset);
                 char[] buf = new char[16_384];
                 while (true) {
                     int read = rdr.read(buf);
@@ -63,7 +57,7 @@ public final class ProcRunner {
         thread.start();
     }
 
-    private void runCommand(String what, Path exe, List<String> args, Consumer<InputStream> out) throws IOException, InterruptedException {
+    private void runCommand(String what, Path exe, List<String> args, Consumer<Reader> out) throws IOException, InterruptedException {
         List<Path> pathDirs;
         if (tools.ffmpegDir != null) {
             pathDirs = Collections.singletonList(tools.ffmpegDir);
@@ -72,11 +66,11 @@ public final class ProcRunner {
         }
         Consumer<Process> capture = p -> {
             if (out != null) {
-                ProcUtil.eatOutput(p.getErrorStream());
-                out.accept(p.getInputStream());
+                ProcUtil.eatOutput(p.errorReader());
+                out.accept(p.inputReader());
             } else {
-                capture(p.getErrorStream(), true);
-                capture(p.getInputStream(), false);
+                capture(p.errorReader(), true);
+                capture(p.inputReader(), false);
             }
         };
         ProcUtil.runCommand(what, exe, args, pathDirs, capture, null);
@@ -99,7 +93,7 @@ public final class ProcRunner {
         runCommand(exe, exe(tools.pythonExeDir, exe), List.of(args), null);
     }
 
-    private void runFF(String ff, List<String> args, Consumer<InputStream> out) throws IOException, InterruptedException {
+    private void runFF(String ff, List<String> args, Consumer<Reader> out) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
         list.addAll(List.of("-v", "quiet"));
         list.addAll(args);
@@ -110,7 +104,7 @@ public final class ProcRunner {
         runFF("ffmpeg", args, null);
     }
 
-    public void runFFProbeStreaming(List<String> args, Consumer<InputStream> out) throws IOException, InterruptedException {
+    public void runFFProbeStreaming(List<String> args, Consumer<Reader> out) throws IOException, InterruptedException {
         runFF("ffprobe", args, out);
     }
 
@@ -120,7 +114,7 @@ public final class ProcRunner {
         return capture.getParsed();
     }
 
-    private static final class ParseCapture<T> implements Consumer<InputStream> {
+    private static final class ParseCapture<T> implements Consumer<Reader> {
 
         private final Function<Reader, T> parser;
         private T parsed = null;
@@ -130,9 +124,9 @@ public final class ProcRunner {
         }
 
         @Override
-        public void accept(InputStream stdout) {
+        public void accept(Reader stdout) {
             if (parser != null) {
-                parsed = parser.apply(new InputStreamReader(stdout, StandardCharsets.UTF_8));
+                parsed = parser.apply(stdout);
             }
         }
 
