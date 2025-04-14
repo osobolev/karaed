@@ -21,13 +21,14 @@ public final class OptionsDialog extends JDialog {
 
     private final JTextField tfDir;
     private final JPanel main = new JPanel();
-    private final JPanel extra = new JPanel();
+    private final JPanel options = new JPanel();
+    private final JPanel advanced = new JPanel();
     private final List<BasePanel<?>> panels = new ArrayList<>();
 
     private final OptCtx ctx;
 
-    private void add(BasePanel<?> panel, boolean isExtra) {
-        (isExtra ? extra : main).add(panel.getVisual());
+    private void add(BasePanel<?> panel, JPanel to) {
+        to.add(panel.getVisual());
         panels.add(panel);
     }
 
@@ -37,7 +38,8 @@ public final class OptionsDialog extends JDialog {
         this.ctx = new OptCtx(workDir);
 
         main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
-        extra.setLayout(new BoxLayout(extra, BoxLayout.Y_AXIS));
+        options.setLayout(new BoxLayout(options, BoxLayout.Y_AXIS));
+        advanced.setLayout(new BoxLayout(advanced, BoxLayout.Y_AXIS));
 
         if (ctx.workDir == null) {
             tfDir = new JTextField(40);
@@ -69,15 +71,16 @@ public final class OptionsDialog extends JDialog {
             tfDir = null;
         }
 
-        add(new InputPanel(ctx), false);
-        add(new CutPanel(ctx), false);
-        add(new LyricsPanel(ctx), false);
-        add(new DemucsPanel(ctx), true);
-        add(new KaraokePanel(ctx), true);
+        add(new InputPanel(ctx), main);
+        add(new LyricsPanel(ctx), main);
+        add(new CutPanel(ctx), options);
+        add(new DemucsPanel(ctx), advanced);
+        add(new KaraokePanel(ctx), advanced);
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Input", main);
-        tabs.addTab("Advanced options", extra);
+        tabs.addTab("Options", options);
+        tabs.addTab("Advanced options", advanced);
 
         add(tabs, BorderLayout.CENTER);
 
