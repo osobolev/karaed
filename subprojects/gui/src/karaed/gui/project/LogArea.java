@@ -10,25 +10,37 @@ final class LogArea {
 
     private final JTextArea taLog = new JTextArea(10, 80);
 
+    private boolean lastCR = false;
+
     LogArea() {
         taLog.setEditable(false);
         taLog.setLineWrap(true);
     }
 
+    void clear() {
+        taLog.setText("");
+        lastCR = false;
+    }
+
     private void appendLine(String line) {
-        boolean cr = false;
-        while (true) {
-            int p = line.lastIndexOf('\r');
-            if (p < 0)
-                break;
-            if (p == line.length() - 1) {
-                line = line.substring(0, p);
-            } else {
-                line = line.substring(p + 1);
-                cr = true;
-                break;
-            }
+        if (line.isEmpty())
+            return;
+        boolean wasLastCR = lastCR;
+        boolean newLastCR = false;
+        while (line.endsWith("\r")) {
+            line = line.substring(0, line.length() - 1);
+            newLastCR = true;
         }
+        boolean cr;
+        int p1 = line.lastIndexOf('\r');
+        if (p1 >= 0) {
+            cr = true;
+            line = line.substring(p1 + 1);
+        } else {
+            cr = wasLastCR;
+        }
+        lastCR = newLastCR;
+
         line = ESC_SEQUENCE.matcher(line).replaceAll(""); // todo: change font???
         // todo: process stderr
         if (cr) {
@@ -53,6 +65,7 @@ final class LogArea {
                 appendLine(text.substring(start, i));
                 taLog.append("\n");
                 start = i + 1;
+                lastCR = false;
             }
         }
         if (start < text.length()) {

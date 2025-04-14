@@ -143,6 +143,7 @@ public final class ProjectFrame extends JFrame {
 
     private void runPipeline() {
         runAction.setEnabled(false);
+        taLog.clear();
         for (StepLabel label : labels.values()) {
             label.setState(StepState.INIT);
         }
