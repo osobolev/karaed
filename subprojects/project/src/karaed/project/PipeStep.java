@@ -1,6 +1,6 @@
-package karaed.gui.project;
+package karaed.project;
 
-enum PipeStep {
+public enum PipeStep {
     DOWNLOAD("Downloading audio/video"),
     DEMUCS("Separating vocals"),
     RANGES("Detecting ranges"),
@@ -10,7 +10,7 @@ enum PipeStep {
     PREPARE_VIDEO("Preparing video"),
     VIDEO("Making karaoke video");
 
-    final String text;
+    public final String text;
 
     PipeStep(String text) {
         this.text = text;

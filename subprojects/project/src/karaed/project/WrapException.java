@@ -1,4 +1,4 @@
-package karaed.gui.project;
+package karaed.project;
 
 final class WrapException extends RuntimeException{
 

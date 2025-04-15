@@ -2,13 +2,6 @@ package karaed.gui.project;
 
 import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
-import karaed.engine.opts.*;
-import karaed.engine.steps.align.Align;
-import karaed.engine.steps.demucs.Demucs;
-import karaed.engine.steps.karaoke.AssJoiner;
-import karaed.engine.steps.subs.MakeSubs;
-import karaed.engine.steps.video.MakeVideo;
-import karaed.engine.steps.youtube.Youtube;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
@@ -18,7 +11,10 @@ import karaed.gui.util.CloseUtil;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
-import karaed.json.JsonUtil;
+import karaed.project.PipeBuilder;
+import karaed.project.PipeStep;
+import karaed.project.StepRunner;
+import karaed.project.StepState;
 import karaed.tools.ProcRunner;
 import karaed.tools.Tools;
 import karaed.workdir.Workdir;
@@ -29,8 +25,6 @@ import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
@@ -107,7 +101,7 @@ public final class ProjectFrame extends JFrame {
         steps.setLayout(new BoxLayout(steps, BoxLayout.Y_AXIS));
         for (PipeStep step : PipeStep.values()) {
             StepLabel label = new StepLabel(step);
-            label.setState(StepState.INIT);
+            label.setState(new RunStepState.NotRan());
             labels.put(step, label);
             steps.add(label.getVisual());
         }
@@ -115,6 +109,13 @@ public final class ProjectFrame extends JFrame {
         main.add(steps, BorderLayout.CENTER);
 
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
+
+        try {
+            Map<PipeStep, StepState> pipe = PipeBuilder.create(workDir).buildPipe();
+            showStepStates(pipe);
+        } catch (Exception ex) {
+            logger.error(ex);
+        }
 
         CloseUtil.listen(this, () -> {
             // todo: do not close if running
@@ -134,58 +135,59 @@ public final class ProjectFrame extends JFrame {
         }
     }
 
-    private void setState(PipeStep step, StepState state) {
+    private void setState(PipeStep step, RunStepState state) {
         SwingUtilities.invokeLater(() -> {
             StepLabel label = labels.get(step);
             label.setState(state);
         });
     }
 
+    private void showStepStates(Map<PipeStep, StepState> pipe) {
+        for (Map.Entry<PipeStep, StepLabel> entry : labels.entrySet()) {
+            PipeStep step = entry.getKey();
+            StepLabel label = entry.getValue();
+            label.setState(RunStepState.initState(pipe.get(step)));
+        }
+    }
+
     private void runPipeline() {
+        Map<PipeStep, StepState> pipe;
+        try {
+            pipe = PipeBuilder.create(workDir).buildPipe();
+        } catch (Exception ex) {
+            ShowMessage.error(this, logger, ex);
+            return;
+        }
+
         runAction.setEnabled(false);
         taLog.clear();
-        for (StepLabel label : labels.values()) {
-            label.setState(StepState.INIT);
-        }
+        showStepStates(pipe);
+
         Thread thread = new Thread(() -> {
             try {
-                setState(PipeStep.DOWNLOAD, StepState.RUNNING);
-                downloadAudio();
-                setState(PipeStep.DOWNLOAD, StepState.COMPLETE);
-
-                setState(PipeStep.DEMUCS, StepState.RUNNING);
-                demucs();
-                setState(PipeStep.DEMUCS, StepState.COMPLETE);
-
-                setState(PipeStep.RANGES, StepState.RUNNING);
-                ranges();
-                setState(PipeStep.RANGES, StepState.COMPLETE);
-
-                setState(PipeStep.ALIGN, StepState.RUNNING);
-                align();
-                setState(PipeStep.ALIGN, StepState.COMPLETE);
-
-                setState(PipeStep.SUBS, StepState.RUNNING);
-                subs();
-                setState(PipeStep.SUBS, StepState.COMPLETE);
-
-                setState(PipeStep.KARAOKE, StepState.RUNNING);
-                karaokeSubs();
-                setState(PipeStep.KARAOKE, StepState.COMPLETE);
-
-                setState(PipeStep.PREPARE_VIDEO, StepState.RUNNING);
-                prepareVideo();
-                setState(PipeStep.PREPARE_VIDEO, StepState.COMPLETE);
-
-                setState(PipeStep.VIDEO, StepState.RUNNING);
-                karaokeVideo();
-                setState(PipeStep.VIDEO, StepState.COMPLETE);
-            } catch (Throwable ex) {
-                // todo: mark current pipe stage as bad!!!
-                if (ex instanceof KaraException) {
-                    SwingUtilities.invokeLater(() -> ShowMessage.error(this, ex.getMessage()));
-                } else if (!(ex instanceof CancelledException)) {
-                    SwingUtilities.invokeLater(() -> ShowMessage.error(this, logger, ex));
+                StepRunner stepRunner = new StepRunner(workDir, runner, this::showTitle, this::editRanges);
+                for (PipeStep step : PipeStep.values()) {
+                    StepState state = pipe.get(step);
+                    if (state instanceof StepState.Done)
+                        continue;
+                    setState(step, new RunStepState.Running());
+                    try {
+                        stepRunner.runStep(step);
+                    } catch (Throwable ex) {
+                        if (!(ex instanceof CancelledException)) {
+                            String message;
+                            if (ex instanceof KaraException) {
+                                message = ex.getMessage();
+                                SwingUtilities.invokeLater(() -> ShowMessage.error(this, ex.getMessage()));
+                            } else {
+                                message = ex.toString();
+                                SwingUtilities.invokeLater(() -> ShowMessage.error(this, logger, ex));
+                            }
+                            setState(step, new RunStepState.Error(message));
+                        }
+                        break;
+                    }
+                    setState(step, new RunStepState.Done());
                 }
             } finally {
                 SwingUtilities.invokeLater(() -> runAction.setEnabled(true));
@@ -194,102 +196,13 @@ public final class ProjectFrame extends JFrame {
         thread.start();
     }
 
-    private void downloadAudio() throws IOException, InterruptedException {
-        Path audio = workDir.audio();
-        if (Files.exists(audio)) // todo: check input.json + options/cut.json
-            return;
-        OInput input = JsonUtil.readFile(workDir.file("input.json"), OInput.class);
-        OCut cut = JsonUtil.readFile(workDir.option("cut.json"), OCut.class, OCut::new);
-        Youtube.download(runner, input, cut, audio);
-        SwingUtilities.invokeLater(this::showTitle);
-    }
-
-    private void demucs() throws IOException, InterruptedException {
-        Path vocals = workDir.demuxed("vocals.wav");
-        Path noVocals = workDir.demuxed("no_vocals.wav");
-        if (Files.exists(vocals) && Files.exists(noVocals)) // todo: check audio.mp3 + options/demucs.json
-            return;
-        Path configFile = workDir.option("demucs.json");
-        ODemucs options = JsonUtil.readFile(configFile, ODemucs.class, ODemucs::new);
-        Demucs.demucs(runner, workDir.audio(), options, workDir.dir());
-    }
-
-    private void ranges() throws Throwable {
+    private void editRanges() throws UnsupportedAudioFileException, IOException {
         Path ranges = workDir.file("ranges.json");
         Path vocals = workDir.vocals();
         Path text = workDir.file("text.txt");
-        Runnable editRanges = () -> {
-            ManualAlign ma;
-            try {
-                ma = ManualAlign.create(this, logger, vocals, text, ranges);
-            } catch (Exception ex) {
-                throw new WrapException(ex);
-            }
-            ma.setVisible(true);
-            if (!ma.isOK())
-                throw new CancelledException();
-        };
-        try {
-            if (SwingUtilities.isEventDispatchThread()) {
-                editRanges.run();
-            } else {
-                try {
-                    SwingUtilities.invokeAndWait(editRanges);
-                } catch (InvocationTargetException ex) {
-                    throw ex.getCause();
-                }
-            }
-        } catch (WrapException ex) {
-            throw ex.getCause();
-        }
-    }
-
-    private void align() throws UnsupportedAudioFileException, IOException, InterruptedException {
-        Path aligned = workDir.file("aligned.json");
-        if (Files.exists(aligned)) // todo: check audio.mp3 + ranges.json
-            return;
-        Path vocals = workDir.vocals();
-        Path ranges = workDir.file("ranges.json");
-        Align.align(runner, vocals, ranges, workDir.file("tmp"), aligned);
-    }
-
-    private void subs() throws IOException {
-        Path subs = workDir.file("subs.ass");
-        if (Files.exists(subs)) // todo: check text.txt + aligned.json + options/align.json
-            return;
-        Path text = workDir.file("text.txt");
-        Path aligned = workDir.file("aligned.json");
-        MakeSubs.makeSubs(text, aligned, subs);
-    }
-
-    private void karaokeSubs() throws IOException {
-        Path karaoke = workDir.file("karaoke.ass");
-        if (Files.exists(karaoke)) // todo: check subs.ass + info.json + options/karaoke.json
-            return;
-        Path subs = workDir.file("subs.ass");
-        Path info = workDir.info();
-        OKaraoke options = JsonUtil.readFile(workDir.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
-        AssJoiner.join(subs, info, options, karaoke);
-    }
-
-    private void prepareVideo() throws IOException, InterruptedException {
-        OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
-        MakeVideo.Preparer preparer = MakeVideo.prepareVideo(workDir.audio(), options);
-        if (preparer == null)
-            return;
-        Path preparedVideo = preparer.getPreparedVideo();
-        if (Files.exists(preparedVideo)) // todo: check original video
-            return;
-        preparer.prepare(runner);
-    }
-
-    private void karaokeVideo() throws IOException, InterruptedException {
-        Path karaokeVideo = workDir.file("karaoke.mp4");
-        if (Files.exists(karaokeVideo)) // todo: check no_vocals.wav + karaoke.ass + video (chosen if needed) + options/video.json
-            return;
-        Path noVocals = workDir.demuxed("no_vocals.wav");
-        Path karaoke = workDir.file("karaoke.ass");
-        OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
-        MakeVideo.karaokeVideo(runner, workDir.audio(), noVocals, karaoke, options, karaokeVideo);
+        ManualAlign ma = ManualAlign.create(this, logger, vocals, text, ranges);
+        ma.setVisible(true);
+        if (!ma.isOK())
+            throw new CancelledException();
     }
 }

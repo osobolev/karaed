@@ -36,7 +36,7 @@ public final class MakeVideo {
         runner.runFFMPEG(ffmpeg);
     }
 
-    private static void prepareVideo(ProcRunner runner, VideoFinder finder) throws IOException, InterruptedException {
+    public static void prepareVideo(ProcRunner runner, VideoFinder finder) throws IOException, InterruptedException {
         Path video = finder.getVideoFile();
         FFStreams streams = runner.runFFProbe(
             List.of(
@@ -61,28 +61,7 @@ public final class MakeVideo {
         }
     }
 
-    public static final class Preparer {
-
-        final VideoFinder finder;
-
-        Preparer(VideoFinder finder) {
-            this.finder = finder;
-        }
-
-        public Path getOriginalVideo() {
-            return finder.getVideoFile();
-        }
-
-        public Path getPreparedVideo() {
-            return finder.getPreparedVideoFile();
-        }
-
-        public void prepare(ProcRunner runner) throws IOException, InterruptedException {
-            prepareVideo(runner, finder);
-        }
-    }
-
-    public static Preparer prepareVideo(Path audio, OVideo options) throws IOException {
+    public static VideoFinder prepareVideo(Path audio, OVideo options) throws IOException {
         if (!options.useOriginalVideo())
             return null;
         VideoFinder finder = VideoFinder.maybeCreate(audio);
@@ -91,7 +70,7 @@ public final class MakeVideo {
         Path video = finder.getVideoFile();
         if (!Files.exists(video))
             return null;
-        return new Preparer(finder);
+        return finder;
     }
 
     private static String escapeFilter(String path) {

@@ -1,6 +1,7 @@
 package karaed.gui.project;
 
 import karaed.gui.util.InputUtil;
+import karaed.project.PipeStep;
 
 import javax.swing.*;
 import java.awt.Color;
@@ -9,8 +10,10 @@ final class StepLabel {
 
     private static final Icon RUNNING = InputUtil.getIcon("/running.png");
     private static final Icon COMPLETE = InputUtil.getIcon("/complete.png");
+    private static final Icon ERROR = InputUtil.getIcon("/error.png");
+    private static final Icon STALE = InputUtil.getIcon("/stale.png");
 
-    private static final Color INIT_COLOR = new Color(150, 150, 150);
+    private static final Color NOT_RAN_COLOR = new Color(150, 150, 150);
 
     private final JLabel label;
 
@@ -20,20 +23,25 @@ final class StepLabel {
         label.setHorizontalTextPosition(JLabel.LEFT);
     }
 
-    void setState(StepState state) {
-        switch (state) {
-        case INIT:
-            label.setForeground(INIT_COLOR);
-            label.setIcon(null);
-            break;
-        case RUNNING:
-            label.setForeground(Color.black);
-            label.setIcon(RUNNING);
-            break;
-        case COMPLETE:
+    void setState(RunStepState state) {
+        label.setToolTipText(null);
+        if (state instanceof RunStepState.Done) {
             label.setForeground(Color.black);
             label.setIcon(COMPLETE);
-            break;
+        } else if (state instanceof RunStepState.NotRan) {
+            label.setForeground(NOT_RAN_COLOR);
+            label.setIcon(null);
+        } else if (state instanceof RunStepState.MustRerun mr) {
+            label.setForeground(NOT_RAN_COLOR);
+            label.setIcon(STALE);
+            label.setToolTipText(mr.because());
+        } else if (state instanceof RunStepState.Running) {
+            label.setForeground(Color.black);
+            label.setIcon(RUNNING);
+        } else if (state instanceof RunStepState.Error e) {
+            label.setForeground(Color.red);
+            label.setIcon(ERROR);
+            label.setToolTipText(e.message());
         }
     }
 
