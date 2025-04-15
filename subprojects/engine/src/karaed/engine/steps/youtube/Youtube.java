@@ -27,6 +27,7 @@ public final class Youtube {
             if (range == null) {
                 runner.runPythonExe(
                     "yt-dlp",
+                    "--no-mtime",
                     "--write-info-json",
                     "--output", basePath + ".%(ext)s",
                     input.url()
@@ -36,6 +37,7 @@ public final class Youtube {
             } else {
                 runner.runPythonExe(
                     "yt-dlp",
+                    "--no-mtime",
                     "--write-info-json",
                     "--output", basePath + ".full.%(ext)s",
                     "--output", "infojson:" + basePath + ".%(ext)s",
