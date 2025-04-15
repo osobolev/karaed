@@ -4,6 +4,6 @@ plugins {
 
 dependencies {
     implementation(project(":json-util"))
-    implementation(project(":workdir"))
     implementation(project(":engine"))
+    implementation(project(":project"))
 }
