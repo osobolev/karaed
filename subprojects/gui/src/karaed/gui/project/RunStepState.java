@@ -10,9 +10,9 @@ interface RunStepState {
 
     record Error(String message) implements RunStepState {}
 
-    record NotRan() implements RunStepState {};
+    record NotRan() implements RunStepState {}
 
-    record MustRerun(String because) implements RunStepState {};
+    record MustRerun(String because) implements RunStepState {}
 
     static RunStepState initState(StepState state) {
         if (state instanceof StepState.Done)
