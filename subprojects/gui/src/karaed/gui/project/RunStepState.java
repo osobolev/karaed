@@ -19,8 +19,8 @@ interface RunStepState {
             return new Done();
         if (state instanceof StepState.NotRan)
             return new NotRan();
-        if (state instanceof StepState.MustRerun mr)
-            return new MustRerun(mr.because());
+        if (state instanceof StepState.MustRerun(String because))
+            return new MustRerun(because);
         throw new IllegalArgumentException("Unknown step state: " + state);
     }
 }

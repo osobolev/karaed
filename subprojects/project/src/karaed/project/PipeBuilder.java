@@ -128,19 +128,19 @@ public final class PipeBuilder {
         }
         for (ProjectFile file : files) {
             FileState state = getFileState(file);
-            if (state instanceof FileState.MustRebuild mr) {
+            if (state instanceof FileState.MustRebuild(List<Path> newer, List<Path> rebuilt)) {
                 Path path = fileStates.get(file).file;
                 String currFile = path == null ? file.toString() : path.getFileName().toString();
                 String because;
-                if (!mr.newer().isEmpty()) {
+                if (!newer.isEmpty()) {
                     because = String.format(
                         "%s is newer than %s",
-                        paths(mr.newer()), currFile
+                        paths(newer), currFile
                     );
                 } else {
                     because = String.format(
                         "%s must be rebuilt before %s",
-                        paths(mr.rebuilt()), currFile
+                        paths(rebuilt), currFile
                     );
                 }
                 return new StepState.MustRerun(because);

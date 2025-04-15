@@ -31,17 +31,17 @@ final class StepLabel {
         } else if (state instanceof RunStepState.NotRan) {
             label.setForeground(NOT_RAN_COLOR);
             label.setIcon(null);
-        } else if (state instanceof RunStepState.MustRerun mr) {
+        } else if (state instanceof RunStepState.MustRerun(String because)) {
             label.setForeground(NOT_RAN_COLOR);
             label.setIcon(STALE);
-            label.setToolTipText(mr.because());
+            label.setToolTipText(because);
         } else if (state instanceof RunStepState.Running) {
             label.setForeground(Color.black);
             label.setIcon(RUNNING);
-        } else if (state instanceof RunStepState.Error e) {
+        } else if (state instanceof RunStepState.Error(String message)) {
             label.setForeground(Color.red);
             label.setIcon(ERROR);
-            label.setToolTipText(e.message());
+            label.setToolTipText(message);
         }
     }
 
