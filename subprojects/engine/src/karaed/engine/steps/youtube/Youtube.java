@@ -13,6 +13,7 @@ import karaed.tools.ProcRunner;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public final class Youtube {
@@ -66,7 +67,7 @@ public final class Youtube {
         } else if (input.file() != null) {
             Path srcFile = Path.of(input.file());
             if (range == null) {
-                Files.copy(srcFile, audio);
+                Files.copy(srcFile, audio, StandardCopyOption.REPLACE_EXISTING);
             } else {
                 range.cutFile(runner, srcFile, audio);
             }
