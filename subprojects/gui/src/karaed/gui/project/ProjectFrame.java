@@ -69,7 +69,10 @@ public final class ProjectFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new OptionsDialog(logger, "Options", ProjectFrame.this, workDir);
+                    OptionsDialog dlg = new OptionsDialog(logger, "Options", ProjectFrame.this, workDir);
+                    if (dlg.isSaved()) {
+                        refreshStepStates();
+                    }
                 } catch (Exception ex) {
                     ShowMessage.error(ProjectFrame.this, logger, ex);
                 }
@@ -110,12 +113,7 @@ public final class ProjectFrame extends JFrame {
 
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
 
-        try {
-            Map<PipeStep, StepState> pipe = PipeBuilder.create(workDir).buildPipe();
-            showStepStates(pipe);
-        } catch (Exception ex) {
-            logger.error(ex);
-        }
+        refreshStepStates();
 
         CloseUtil.listen(this, () -> {
             // todo: do not close if running
@@ -140,6 +138,15 @@ public final class ProjectFrame extends JFrame {
             StepLabel label = labels.get(step);
             label.setState(state);
         });
+    }
+
+    private void refreshStepStates() {
+        try {
+            Map<PipeStep, StepState> pipe = PipeBuilder.create(workDir).buildPipe();
+            showStepStates(pipe);
+        } catch (Exception ex) {
+            logger.error(ex);
+        }
     }
 
     private void showStepStates(Map<PipeStep, StepState> pipe) {

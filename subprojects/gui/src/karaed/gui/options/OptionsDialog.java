@@ -27,6 +27,8 @@ public final class OptionsDialog extends JDialog {
 
     private final OptCtx ctx;
 
+    private boolean saved = false;
+
     private void add(BasePanel<?> panel, JPanel to) {
         to.add(panel.getVisual());
         panels.add(panel);
@@ -122,6 +124,7 @@ public final class OptionsDialog extends JDialog {
             }
             ctx.workDir = new Workdir(dir);
         }
+        saved = true;
         try {
             for (BasePanel<?> panel : panels) {
                 panel.save();
@@ -139,5 +142,9 @@ public final class OptionsDialog extends JDialog {
 
     public Workdir getWorkDir() {
         return ctx.workDir;
+    }
+
+    public boolean isSaved() {
+        return saved;
     }
 }
