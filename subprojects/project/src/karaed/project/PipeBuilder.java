@@ -104,27 +104,43 @@ public final class PipeBuilder {
         return state.state;
     }
 
+    private String paths(List<Path> paths) {
+        return paths
+            .stream()
+            .map(p -> {
+                Path dir = workDir.dir();
+                if (p.startsWith(dir)) {
+                    return dir.relativize(p).toString();
+                } else {
+                    return p.getFileName().toString();
+                }
+            })
+            .collect(Collectors.joining(", "));
+    }
+
     private StepState getStepState(PipeStep step) throws IOException {
         Set<ProjectFile> files = dependencies.stepFiles(step);
         for (ProjectFile file : files) {
             FileState state = getFileState(file);
             if (state instanceof FileState.Missing) {
                 return new StepState.NotRan();
-            } else if (state instanceof FileState.MustRebuild mr) {
+            }
+        }
+        for (ProjectFile file : files) {
+            FileState state = getFileState(file);
+            if (state instanceof FileState.MustRebuild mr) {
                 Path path = fileStates.get(file).file;
-                String because;
                 String currFile = path == null ? file.toString() : path.getFileName().toString();
+                String because;
                 if (!mr.newer().isEmpty()) {
                     because = String.format(
                         "%s is newer than %s",
-                        mr.newer().stream().map(p -> p.getFileName().toString()).collect(Collectors.joining(", ")),
-                        currFile
+                        paths(mr.newer()), currFile
                     );
                 } else {
                     because = String.format(
                         "%s must be rebuilt before %s",
-                        mr.rebuilt().stream().map(p -> p.getFileName().toString()).collect(Collectors.joining(", ")),
-                        currFile
+                        paths(mr.rebuilt()), currFile
                     );
                 }
                 return new StepState.MustRerun(because);
