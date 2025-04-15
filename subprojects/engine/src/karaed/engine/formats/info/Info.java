@@ -1,6 +1,5 @@
 package karaed.engine.formats.info;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public record Info(
