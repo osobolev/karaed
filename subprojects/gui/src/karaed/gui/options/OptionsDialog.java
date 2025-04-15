@@ -124,17 +124,24 @@ public final class OptionsDialog extends JDialog {
             }
             ctx.workDir = new Workdir(dir);
         }
-        saved = true;
+        List<BasePanel<?>.Saver> savers = new ArrayList<>();
         try {
             for (BasePanel<?> panel : panels) {
-                panel.save();
+                BasePanel<?>.Saver saver = panel.prepareToSave();
+                savers.add(saver);
             }
-            dispose();
         } catch (ValidationException ex) {
             // todo: make tab visible:
             // todo: needs invokeLater???
             ex.component.requestFocusInWindow();
             ShowMessage.error(this, ex.getMessage());
+        }
+        saved = true;
+        try {
+            for (BasePanel<?>.Saver saver : savers) {
+                saver.save();
+            }
+            dispose();
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
         }
