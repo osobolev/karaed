@@ -15,7 +15,6 @@ import karaed.json.JsonUtil;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -74,9 +73,7 @@ public final class ManualAlign extends JDialog {
 
         main.add(top, BorderLayout.NORTH);
 
-        JScrollPane spl = new JScrollPane(lyrics.getVisual());
-        spl.setPreferredSize(new Dimension(1000, 400));
-        main.add(spl, BorderLayout.CENTER);
+        main.add(lyrics.getVisual(), BorderLayout.CENTER);
 
         add(main, BorderLayout.CENTER);
 
@@ -98,6 +95,9 @@ public final class ManualAlign extends JDialog {
         }));
         add(butt, BorderLayout.SOUTH);
 
+        vocals.setData(maxSource, data.ranges());
+        lyrics.setLines(data.lines());
+
         vocals.addRangesChanged(() -> {
             changed = true;
             syncNumbers();
@@ -108,9 +108,6 @@ public final class ManualAlign extends JDialog {
             syncNumbers();
             vocals.recolor();
         });
-
-        vocals.setData(maxSource, data.ranges());
-        lyrics.setLines(data.lines());
 
         syncNumbers();
         vocals.recolor();
