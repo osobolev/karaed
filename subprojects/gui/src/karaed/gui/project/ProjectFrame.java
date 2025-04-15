@@ -2,6 +2,7 @@ package karaed.gui.project;
 
 import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
+import karaed.engine.formats.ranges.Range;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
@@ -173,6 +174,8 @@ public final class ProjectFrame extends JFrame {
         Thread thread = new Thread(() -> {
             try {
                 StepRunner stepRunner = new StepRunner(workDir, runner, this::showTitle, this::editRanges);
+                long t0 = System.currentTimeMillis();
+                boolean ok = true;
                 for (PipeStep step : PipeStep.values()) {
                     StepState state = pipe.get(step);
                     if (state instanceof StepState.Done)
@@ -181,6 +184,7 @@ public final class ProjectFrame extends JFrame {
                     try {
                         stepRunner.runStep(step);
                     } catch (Throwable ex) {
+                        ok = false;
                         if (!(ex instanceof CancelledException)) {
                             String message;
                             if (ex instanceof KaraException) {
@@ -191,10 +195,18 @@ public final class ProjectFrame extends JFrame {
                                 SwingUtilities.invokeLater(() -> ShowMessage.error(this, logger, ex));
                             }
                             setState(step, new RunStepState.Error(message));
+                            runner.println("ERROR: " + message);
+                        } else {
+                            setState(step, new RunStepState.NotRan());
+                            runner.println("CANCELLED");
                         }
                         break;
                     }
                     setState(step, new RunStepState.Done());
+                }
+                long t1 = System.currentTimeMillis();
+                if (ok) {
+                    runner.println(String.format("DONE in %s", Range.formatTime((t1 - t0) / 1000.0f)));
                 }
             } finally {
                 SwingUtilities.invokeLater(() -> runAction.setEnabled(true));
