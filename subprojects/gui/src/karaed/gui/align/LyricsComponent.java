@@ -23,6 +23,7 @@ final class LyricsComponent {
 
         taLines.setLineWrap(true);
         taLines.setWrapStyleWord(true);
+        InputUtil.undoable(taLines);
 
         AbstractDocument document = (AbstractDocument) taLines.getDocument();
         document.setDocumentFilter(new DocumentFilter() {

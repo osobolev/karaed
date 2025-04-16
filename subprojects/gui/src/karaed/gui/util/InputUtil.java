@@ -3,10 +3,13 @@ package karaed.gui.util;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
+import javax.swing.undo.UndoManager;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.net.URL;
 
@@ -54,5 +57,19 @@ public final class InputUtil {
         if (ans != JFileChooser.APPROVE_OPTION)
             return null;
         return chooser.getSelectedFile();
+    }
+
+    public static void undoable(JTextComponent tc) {
+        UndoManager undo = new UndoManager();
+        tc.getDocument().addUndoableEditListener(undo);
+        tc.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK), "undo");
+        tc.getActionMap().put("undo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (undo.canUndo()) {
+                    undo.undo();
+                }
+            }
+        });
     }
 }

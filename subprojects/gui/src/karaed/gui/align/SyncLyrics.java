@@ -6,6 +6,7 @@ import com.github.difflib.patch.Chunk;
 import com.github.difflib.patch.DeltaType;
 import com.github.difflib.patch.Patch;
 import karaed.engine.ass.AssUtil;
+import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -50,6 +51,7 @@ final class SyncLyrics {
         taRanges.setDocument(rangesDocument);
         taRanges.setEditable(false);
         taText.setText(text);
+        InputUtil.undoable(taText);
 
         DocumentListener listener = new DocumentListener() {
 

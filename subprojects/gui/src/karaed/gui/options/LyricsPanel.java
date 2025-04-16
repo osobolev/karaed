@@ -25,6 +25,7 @@ final class LyricsPanel extends BasePanel<String> {
 
         taLyrics.setLineWrap(true);
         taLyrics.setWrapStyleWord(true);
+        InputUtil.undoable(taLyrics);
 
         main.add(new JScrollPane(taLyrics), new GridBagConstraints(
             0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0
