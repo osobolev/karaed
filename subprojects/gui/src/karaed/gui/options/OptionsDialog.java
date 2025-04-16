@@ -134,6 +134,7 @@ public final class OptionsDialog extends JDialog {
             openTabContaining(ex.component);
             ex.component.requestFocusInWindow();
             ShowMessage.error(this, ex.getMessage());
+            return;
         }
         saved = true;
         try {
