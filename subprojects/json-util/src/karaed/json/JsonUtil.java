@@ -16,6 +16,7 @@ public final class JsonUtil {
     public static final Gson GSON = new GsonBuilder()
         .setPrettyPrinting()
         .serializeSpecialFloatingPointValues()
+        .disableHtmlEscaping()
         .create();
 
     public static <T> T parse(Reader rdr, Class<T> cls) {
