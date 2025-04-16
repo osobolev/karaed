@@ -61,11 +61,7 @@ final class LyricsComponent {
         recolor();
     }
 
-    void recolor() {
-        Highlighter hl = taLines.getHighlighter();
-        MyPainter.removeMyHighlights(hl);
-
-        int il = 0;
+    private int scanLines(Highlighter hl) {
         int count = 0;
         int lines = taLines.getLineCount();
         for (int i = 0; i < lines; i++) {
@@ -75,21 +71,32 @@ final class LyricsComponent {
                 String line = taLines.getText(lineStart, lineEnd - lineStart);
                 if (line.trim().isEmpty())
                     continue;
-                Color color = colors.getColor(il++);
-                if (color != null) {
-                    hl.addHighlight(lineStart, lineEnd, new MyPainter(color));
+                if (hl != null) {
+                    Color color = colors.getColor(count);
+                    if (color != null) {
+                        hl.addHighlight(lineStart, lineEnd, new MyPainter(color));
+                    }
                 }
             } catch (BadLocationException ex) {
                 // ignore
             }
             count++;
         }
+        return count;
+    }
+
+    void recolor() {
+        Highlighter hl = taLines.getHighlighter();
+        MyPainter.removeMyHighlights(hl);
+
+        int count = scanLines(null);
         if (count != lineCount) {
             lineCount = count;
             for (Runnable listener : linesChanged) {
                 listener.run();
             }
         }
+        scanLines(hl);
     }
 
     private void end() {
