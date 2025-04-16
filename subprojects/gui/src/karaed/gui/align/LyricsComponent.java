@@ -61,8 +61,8 @@ final class LyricsComponent {
     }
 
     void recolor() {
-        Highlighter highlighter = taLines.getHighlighter();
-        highlighter.removeAllHighlights();
+        Highlighter hl = taLines.getHighlighter();
+        MyPainter.removeMyHighlights(hl);
 
         int il = 0;
         int count = 0;
@@ -76,7 +76,7 @@ final class LyricsComponent {
                     continue;
                 Color color = colors.getColor(il++);
                 if (color != null) {
-                    highlighter.addHighlight(lineStart, lineEnd, new DefaultHighlighter.DefaultHighlightPainter(color));
+                    hl.addHighlight(lineStart, lineEnd, new MyPainter(color));
                 }
             } catch (BadLocationException ex) {
                 // ignore
