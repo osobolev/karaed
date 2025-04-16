@@ -35,9 +35,12 @@ final class LyricsPanel extends BasePanel<String> {
     }
 
     @Override
-    String newData() {
+    String newData() throws ValidationException {
         String text = taLyrics.getText();
-        // todo: check is not empty
+        boolean hasText = text.lines().anyMatch(line -> !line.trim().isEmpty());
+        if (!hasText) {
+            throw new ValidationException("Input lyrics", taLyrics);
+        }
         return text.lines().collect(Collectors.joining("\n"));
     }
 

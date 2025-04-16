@@ -44,11 +44,27 @@ final class CutPanel extends BasePanel<OCut> {
         return trimmed;
     }
 
+    private static boolean validateTime(String text) {
+        if (text == null)
+            return true;
+        try {
+            Double time = OCut.parseTime(text);
+            return time != null;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     @Override
-    OCut newData() {
+    OCut newData() throws ValidationException {
         String from = cleanup(tfFrom);
+        if (!validateTime(from)) {
+            throw new ValidationException("Wrong From time value", tfFrom);
+        }
         String to = cleanup(tfTo);
-        // todo: check format
+        if (!validateTime(to)) {
+            throw new ValidationException("Wrong To time value", tfTo);
+        }
         return new OCut(from, to);
     }
 }

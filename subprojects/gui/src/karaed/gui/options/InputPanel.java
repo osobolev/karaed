@@ -12,6 +12,8 @@ import java.awt.Insets;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 final class InputPanel extends BasePanel<OInput> {
 
@@ -87,12 +89,33 @@ final class InputPanel extends BasePanel<OInput> {
     }
 
     @Override
-    OInput newData() {
-        // todo: check input for validity
+    OInput newData() throws ValidationException {
         if (rbURL.isSelected()) {
-            return new OInput(tfURL.getText(), null);
+            String url = tfURL.getText();
+            if (url.trim().isEmpty()) {
+                throw new ValidationException("Input URL", tfURL);
+            }
+            boolean valid;
+            try {
+                String scheme = URI.create(url).getScheme();
+                valid = scheme != null;
+            } catch (Exception ex) {
+                valid = false;
+            }
+            if (!valid) {
+                throw new ValidationException("Input valid URL", tfURL);
+            }
+            return new OInput(url, null);
         } else {
-            return new OInput(null, tfFile.getText());
+            String file = tfFile.getText();
+            if (file.trim().isEmpty()) {
+                throw new ValidationException("Input file path", tfFile);
+            }
+            Path path = Path.of(file);
+            if (!Files.exists(path)) {
+                throw new ValidationException("File does not exist", tfFile);
+            }
+            return new OInput(null, file);
         }
     }
 }

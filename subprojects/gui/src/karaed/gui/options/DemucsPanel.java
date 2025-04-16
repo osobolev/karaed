@@ -25,8 +25,11 @@ final class DemucsPanel extends BasePanel<ODemucs> {
     }
 
     @Override
-    ODemucs newData() {
+    ODemucs newData() throws ValidationException {
         Number number = (Number) chShifts.getValue();
+        if (number == null) {
+            throw new ValidationException("Input number of shifts", chShifts);
+        }
         return new ODemucs(number.intValue());
     }
 }

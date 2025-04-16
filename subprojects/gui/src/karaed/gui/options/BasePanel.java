@@ -53,25 +53,22 @@ abstract class BasePanel<T> {
         JsonUtil.writeFile(file, data);
     }
 
-    final class Saver {
+    abstract static class Saver {
 
-        final T newData;
-
-        Saver(T newData) {
-            this.newData = newData;
-        }
-
-        void save() throws IOException {
-            if (Objects.equals(newData, origData))
-                return;
-            Path file = getFile.get();
-            Files.createDirectories(file.getParent());
-            writeData(file, newData);
-        }
+        abstract void save() throws IOException;
     }
 
     final Saver prepareToSave() throws ValidationException {
         T newData = newData();
-        return new Saver(newData);
+        return new Saver() {
+            @Override
+            void save() throws IOException {
+                if (Objects.equals(newData, origData))
+                    return;
+                Path file = getFile.get();
+                Files.createDirectories(file.getParent());
+                writeData(file, newData);
+            }
+        };
     }
 }

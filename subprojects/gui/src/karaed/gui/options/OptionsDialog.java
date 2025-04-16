@@ -124,10 +124,10 @@ public final class OptionsDialog extends JDialog {
             }
             ctx.workDir = new Workdir(dir);
         }
-        List<BasePanel<?>.Saver> savers = new ArrayList<>();
+        List<BasePanel.Saver> savers = new ArrayList<>();
         try {
             for (BasePanel<?> panel : panels) {
-                BasePanel<?>.Saver saver = panel.prepareToSave();
+                BasePanel.Saver saver = panel.prepareToSave();
                 savers.add(saver);
             }
         } catch (ValidationException ex) {
@@ -138,7 +138,7 @@ public final class OptionsDialog extends JDialog {
         }
         saved = true;
         try {
-            for (BasePanel<?>.Saver saver : savers) {
+            for (BasePanel.Saver saver : savers) {
                 saver.save();
             }
             dispose();
