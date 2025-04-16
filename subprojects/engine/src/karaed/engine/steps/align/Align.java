@@ -69,12 +69,33 @@ public final class Align {
             .orElse("en");
     }
 
-    public static void align(ProcRunner runner, Path vocals, Path rangesFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
-        Ranges data = JsonUtil.readFile(rangesFile, Ranges.class);
+    private record FilteredRanges(
+        List<Range> ranges,
+        List<String> lines
+    ) {}
+
+    private static FilteredRanges filterRanges(Ranges data) {
         List<Range> ranges = data.ranges();
-        List<String> lines = data.lines();
+        List<String> lines = data.lines().stream().filter(line -> !line.trim().isEmpty()).toList();
         if (ranges.size() != lines.size())
             throw new KaraException("Vocal ranges and lyrics lines must have one-to-one correspondence");
+        List<Range> filteredRanges = new ArrayList<>();
+        List<String> filteredLines = new ArrayList<>();
+        for (int i = 0; i < ranges.size(); i++) {
+            Range range = ranges.get(i);
+            String line = lines.get(i);
+            if ("#".equals(line.trim()))
+                continue;
+            filteredRanges.add(range);
+            filteredLines.add(line.trim());
+        }
+        return new FilteredRanges(filteredRanges, filteredLines);
+    }
+
+    public static void align(ProcRunner runner, Path vocals, Path rangesFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
+        FilteredRanges data = filterRanges(JsonUtil.readFile(rangesFile, Ranges.class));
+        List<Range> ranges = data.ranges();
+        List<String> lines = data.lines();
         AudioSource source = new FileAudioSource(vocals.toFile());
         Files.createDirectories(tmpDir);
         float frameRate = source.getFormat().getFrameRate();
