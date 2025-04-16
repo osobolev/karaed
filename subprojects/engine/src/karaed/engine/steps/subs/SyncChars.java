@@ -70,7 +70,7 @@ final class SyncChars {
             CSegment cl = lyrics.get(il);
             CharSegment ca = aligned.get(ia);
             if (!String.valueOf(ca.getChar()).equalsIgnoreCase(String.valueOf(cl.ch))) {
-                throw new IllegalStateException(String.format(
+                throw new KaraException(String.format(
                     "Unexpected misalignment between %s and %s",
                     textFile.getFileName(), alignedFile.getFileName()
                 ));

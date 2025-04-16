@@ -1,5 +1,7 @@
 package karaed.engine.audio;
 
+import karaed.engine.KaraException;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import java.io.IOException;
@@ -49,7 +51,7 @@ public final class WavReader {
         } else if (encoding == AudioFormat.Encoding.PCM_UNSIGNED) {
             return result - scale;
         }
-        throw new IllegalStateException("Unsupported encoding: " + encoding);
+        throw new KaraException("Unsupported WAV encoding: " + encoding);
     }
 
     private boolean fillBuffer() throws IOException {
