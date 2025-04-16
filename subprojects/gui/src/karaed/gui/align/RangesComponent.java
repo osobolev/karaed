@@ -66,6 +66,7 @@ final class RangesComponent extends JComponent implements Scrollable{
     void setSilenceThreshold(float threshold) throws UnsupportedAudioFileException, IOException {
         List<Range> ranges = VoiceRanges.detectVoice(source, threshold);
         setData(source, ranges);
+        fireRangesChanged();
     }
 
     private int totalSeconds() {
