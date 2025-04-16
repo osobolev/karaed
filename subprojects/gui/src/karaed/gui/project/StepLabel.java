@@ -18,7 +18,17 @@ final class StepLabel {
     private final JLabel label;
 
     StepLabel(PipeStep step) {
-        this.label = new JLabel(step.text);
+        String text = switch (step) {
+        case DOWNLOAD -> "Downloading audio/video";
+        case DEMUCS -> "Separating vocals";
+        case RANGES -> "Detecting ranges";
+        case ALIGN -> "Aligning vocals with lyrics";
+        case SUBS -> "Making editable subtitles";
+        case KARAOKE -> "Making karaoke subtitles";
+        case PREPARE_VIDEO -> "Preparing video";
+        case VIDEO -> "Making karaoke video";
+        };
+        this.label = new JLabel(text);
         label.setFont(label.getFont().deriveFont(20f));
         label.setHorizontalTextPosition(JLabel.LEFT);
     }
