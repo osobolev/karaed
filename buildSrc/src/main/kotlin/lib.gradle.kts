@@ -45,3 +45,9 @@ tasks {
         options.compilerArgs.add("-Xlint:deprecation")
     }
 }
+
+tasks.named("clean").configure {
+    doLast {
+        project.delete("$projectDir/out")
+    }
+}
