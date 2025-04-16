@@ -151,8 +151,6 @@ public final class ProjectFrame extends JFrame {
             } else {
                 ShowMessage.error(this, "File not found");
             }
-        } catch (CancelledException ex) {
-            // ignore
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
         }
@@ -247,12 +245,16 @@ public final class ProjectFrame extends JFrame {
     }
 
     private void editRanges() throws UnsupportedAudioFileException, IOException {
+        if (!editRanges(true))
+            throw new CancelledException();
+    }
+
+    private boolean editRanges(boolean canContinue) throws UnsupportedAudioFileException, IOException {
         Path ranges = workDir.file("ranges.json");
         Path vocals = workDir.vocals();
         Path text = workDir.file("text.txt");
-        ManualAlign ma = ManualAlign.create(this, logger, vocals, text, ranges);
+        ManualAlign ma = ManualAlign.create(this, logger, canContinue, vocals, text, ranges);
         ma.setVisible(true);
-        if (!ma.isContinue())
-            throw new CancelledException();
+        return ma.isContinue();
     }
 }

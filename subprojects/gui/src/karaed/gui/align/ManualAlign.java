@@ -35,7 +35,7 @@ public final class ManualAlign extends JDialog {
     private boolean changed = false;
     private boolean isContinue = false;
 
-    private ManualAlign(Window owner, ErrorLogger logger,
+    private ManualAlign(Window owner, ErrorLogger logger, boolean canContinue,
                         Path rangesFile, MaxAudioSource maxSource, Ranges data,
                         Path textFile, List<String> lines) {
         super(owner, "Align vocals & lyrics", ModalityType.APPLICATION_MODAL);
@@ -58,15 +58,17 @@ public final class ManualAlign extends JDialog {
                 save(false);
             }
         }));
-        butt.add(new JButton(new AbstractAction("Save & continue") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (save(true)) {
-                    isContinue = true;
-                    dispose();
+        if (canContinue) {
+            butt.add(new JButton(new AbstractAction("Save & continue") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (save(true)) {
+                        isContinue = true;
+                        dispose();
+                    }
                 }
-            }
-        }));
+            }));
+        }
         butt.add(new JButton(new AbstractAction("Cancel") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -91,8 +93,8 @@ public final class ManualAlign extends JDialog {
         return Files.readAllLines(textFile);
     }
 
-    public static ManualAlign create(Window owner, ErrorLogger logger, Path vocals,
-                                     Path textFile, Path rangesFile) throws IOException, UnsupportedAudioFileException {
+    public static ManualAlign create(Window owner, ErrorLogger logger, boolean canContinue,
+                                     Path vocals, Path textFile, Path rangesFile) throws IOException, UnsupportedAudioFileException {
         AudioSource source = new FileAudioSource(vocals.toFile());
         MaxAudioSource maxSource = MaxAudioSource.detectMaxValues(source);
 
@@ -109,7 +111,7 @@ public final class ManualAlign extends JDialog {
             data = new Ranges(silenceThreshold, ranges, lines);
         }
 
-        return new ManualAlign(owner, logger, rangesFile, maxSource, data, textFile, lines);
+        return new ManualAlign(owner, logger, canContinue, rangesFile, maxSource, data, textFile, lines);
     }
 
     private boolean save(boolean forceSync) {
