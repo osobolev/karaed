@@ -6,6 +6,7 @@ import com.github.difflib.patch.Chunk;
 import com.github.difflib.patch.DeltaType;
 import com.github.difflib.patch.Patch;
 import karaed.engine.ass.AssUtil;
+import karaed.engine.steps.align.Align;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
@@ -138,7 +139,7 @@ final class SyncLyrics {
 
             @Override
             public void accept(String line) {
-                if (!line.trim().isEmpty()) {
+                if (!(line.trim().isEmpty() || Align.isNonVocalLine(line))) {
                     if (!chars.isEmpty()) {
                         chars.add(new LinedChar(-1, -1, ' '));
                     }

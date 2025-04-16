@@ -74,6 +74,10 @@ public final class Align {
         List<String> lines
     ) {}
 
+    public static boolean isNonVocalLine(String line) {
+        return "#".equals(line.trim());
+    }
+
     private static FilteredRanges filterRanges(Ranges data) {
         List<Range> ranges = data.ranges();
         List<String> lines = data.lines().stream().filter(line -> !line.trim().isEmpty()).toList();
@@ -84,7 +88,7 @@ public final class Align {
         for (int i = 0; i < ranges.size(); i++) {
             Range range = ranges.get(i);
             String line = lines.get(i);
-            if ("#".equals(line.trim()))
+            if (isNonVocalLine(line))
                 continue;
             filteredRanges.add(range);
             filteredLines.add(line.trim());
