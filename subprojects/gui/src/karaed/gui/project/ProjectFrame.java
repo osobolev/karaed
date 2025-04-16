@@ -23,6 +23,7 @@ import karaed.workdir.Workdir;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -104,7 +105,7 @@ public final class ProjectFrame extends JFrame {
         JPanel steps = new JPanel();
         steps.setLayout(new BoxLayout(steps, BoxLayout.Y_AXIS));
         for (PipeStep step : PipeStep.values()) {
-            StepLabel label = new StepLabel(step);
+            StepLabel label = new StepLabel(step, this::fileClicked);
             label.setState(new RunStepState.NotRan());
             labels.put(step, label);
             steps.add(label.getVisual());
@@ -125,6 +126,29 @@ public final class ProjectFrame extends JFrame {
         });
         pack();
         setLocationRelativeTo(null);
+    }
+
+    private void fileClicked(LinkType link) {
+        try {
+            if (link == LinkType.RANGES) {
+                editRanges();
+                return;
+            }
+            Path file = switch (link) {
+                case AUDIO -> workDir.audio();
+                case VIDEO -> null; // todo!!!
+                case SUBS -> workDir.file("subs.ass");
+                case KARAOKE -> workDir.file("karaoke.mp4");
+                default -> null;
+            };
+            if (file != null) {
+                Desktop.getDesktop().open(file.toFile());
+            }
+        } catch (CancelledException ex) {
+            // ignore
+        } catch (Exception ex) {
+            ShowMessage.error(this, logger, ex);
+        }
     }
 
     private void showTitle() {
