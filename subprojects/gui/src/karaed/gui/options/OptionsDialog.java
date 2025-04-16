@@ -131,8 +131,7 @@ public final class OptionsDialog extends JDialog {
                 savers.add(saver);
             }
         } catch (ValidationException ex) {
-            // todo: make tab visible:
-            // todo: needs invokeLater???
+            openTabContaining(ex.component);
             ex.component.requestFocusInWindow();
             ShowMessage.error(this, ex.getMessage());
         }
@@ -144,6 +143,24 @@ public final class OptionsDialog extends JDialog {
             dispose();
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
+        }
+    }
+
+    private static void openTabContaining(JComponent comp) {
+        if (comp.isShowing())
+            return;
+        Component current = comp;
+        while (current != null) {
+            if (current instanceof JTabbedPane tabs) {
+                for (int i = 0; i < tabs.getTabCount(); i++) {
+                    Component tab = tabs.getComponentAt(i);
+                    if (SwingUtilities.isDescendingFrom(comp, tab)) {
+                        tabs.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+            current = current.getParent();
         }
     }
 
