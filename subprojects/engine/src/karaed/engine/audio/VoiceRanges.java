@@ -24,7 +24,7 @@ public final class VoiceRanges {
 
     public static List<Range> detectVoice(MaxAudioSource source, float silenceThreshold) throws IOException, UnsupportedAudioFileException {
         try (AudioInputStream as = source.source.getStream()) {
-            WavReader reader = new WavReader(as);
+            WavReader reader = new WavReader(as, 0);
             float frameRate = source.format.getFrameRate();
             // todo: constant can change:
             Ranger ranger = new Ranger((int) (0.5f * frameRate));
@@ -36,7 +36,7 @@ public final class VoiceRanges {
     public static List<Range> resplit(MaxAudioSource source, Range range,
                                       float silenceThreshold, float ignoreShortSilence) throws IOException, UnsupportedAudioFileException {
         try (AudioInputStream as = source.source.getStream()) {
-            WavReader reader = new WavReader(as);
+            WavReader reader = new WavReader(as, range.from());
             float frameRate = reader.format.getFrameRate();
             Ranger ranger = new Ranger((int) (ignoreShortSilence * frameRate));
             WavReader.WavConsumer wavConsumer = consumer(ranger, source.maxValues, silenceThreshold);

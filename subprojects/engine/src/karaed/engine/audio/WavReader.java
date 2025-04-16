@@ -18,10 +18,10 @@ public final class WavReader {
     private int bufLen = 0;
     private int bufRead = 0;
 
-    private int frame = 0;
+    private int frame;
     private final long[] values;
 
-    public WavReader(AudioInputStream as) {
+    public WavReader(AudioInputStream as, int startFrame) {
         this.as = as;
         this.format = as.getFormat();
         this.bytes = format.getSampleSizeInBits() / 8;
@@ -29,6 +29,7 @@ public final class WavReader {
         this.scale = 1L << (format.getSampleSizeInBits() - 1);
         int frameSize = format.getFrameSize();
         this.buf = new byte[frameSize * 1024];
+        this.frame = startFrame;
         this.values = new long[format.getChannels()];
     }
 
