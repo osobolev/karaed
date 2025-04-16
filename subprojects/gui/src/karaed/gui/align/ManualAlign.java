@@ -32,32 +32,35 @@ public final class ManualAlign extends JDialog {
     private final SyncLyrics syncComponent;
     private final JTabbedPane tabs = new JTabbedPane();
 
-    private boolean changed = false;
+    private final Action actionSave = new AbstractAction("Save") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            save(false);
+        }
+    };
+
     private boolean isContinue = false;
 
     private ManualAlign(Window owner, ErrorLogger logger, boolean canContinue,
-                        Path rangesFile, MaxAudioSource maxSource, Ranges data,
+                        Path rangesFile, MaxAudioSource maxSource, Ranges data, boolean fromFile,
                         Path textFile, List<String> lines) {
         super(owner, "Align vocals & lyrics", ModalityType.APPLICATION_MODAL);
         this.logger = logger;
         this.rangesFile = rangesFile;
         this.textFile = textFile;
 
-        Runnable onChange = () -> changed = true;
+        Runnable onChange = () -> actionSave.setEnabled(true);
         this.alignComponent = new AlignComponent(logger, maxSource, data, onChange);
         this.syncComponent = new SyncLyrics(alignComponent.getRangesDocument(), String.join("\n", lines), onChange);
+
+        actionSave.setEnabled(!fromFile);
 
         tabs.addTab("Align vocals & lyrics", alignComponent.getVisual());
         tabs.addTab("Sync changes with text", syncComponent.getVisual());
         add(tabs, BorderLayout.CENTER);
 
         JPanel butt = new JPanel();
-        butt.add(new JButton(new AbstractAction("Save") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                save(false);
-            }
-        }));
+        butt.add(new JButton(actionSave));
         if (canContinue) {
             butt.add(new JButton(new AbstractAction("Save & continue") {
                 @Override
@@ -111,7 +114,11 @@ public final class ManualAlign extends JDialog {
             data = new Ranges(silenceThreshold, ranges, lines);
         }
 
-        return new ManualAlign(owner, logger, canContinue, rangesFile, maxSource, data, textFile, lines);
+        return new ManualAlign(
+            owner, logger, canContinue,
+            rangesFile, maxSource, data, fileData != null,
+            textFile, lines
+        );
     }
 
     private boolean save(boolean forceSync) {
@@ -127,31 +134,33 @@ public final class ManualAlign extends JDialog {
                 }
             }
         }
-        Ranges newData = alignComponent.getData();
-        List<String> newText = syncComponent.getText();
         boolean ok = false;
-        try {
-            Ranges currData = loadData(rangesFile);
-            if (!Objects.equals(newData, currData)) {
-                JsonUtil.writeFile(rangesFile, newData);
+        if (actionSave.isEnabled()) {
+            Ranges newData = alignComponent.getData();
+            List<String> newText = syncComponent.getText();
+            try {
+                Ranges currData = loadData(rangesFile);
+                if (!Objects.equals(newData, currData)) {
+                    JsonUtil.writeFile(rangesFile, newData);
+                }
+                List<String> currText = loadText(textFile);
+                if (!Objects.equals(newText, currText)) {
+                    Files.write(textFile, newText);
+                }
+                actionSave.setEnabled(false);
+                ok = true;
+            } catch (Exception ex) {
+                ShowMessage.error(this, logger, ex);
             }
-            List<String> currText = loadText(textFile);
-            if (!Objects.equals(newText, currText)) {
-                Files.write(textFile, newText);
-            }
+        } else {
             ok = true;
-        } catch (Exception ex) {
-            ShowMessage.error(this, logger, ex);
-        }
-        if (ok) {
-            changed = false;
         }
         return ok;
     }
 
     private boolean onClosing() {
         alignComponent.close();
-        if (!changed)
+        if (!actionSave.isEnabled())
             return true;
         return ShowMessage.confirm2(this, "You have unsaved changes. Really close?");
     }
