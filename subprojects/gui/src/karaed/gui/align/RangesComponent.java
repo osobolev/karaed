@@ -8,11 +8,13 @@ import karaed.gui.util.ShowMessage;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +61,11 @@ final class RangesComponent extends JComponent implements Scrollable{
 
         revalidate();
         repaint();
+    }
+
+    void setSilenceThreshold(float threshold) throws UnsupportedAudioFileException, IOException {
+        List<Range> ranges = VoiceRanges.detectVoice(source, threshold);
+        setData(source, ranges);
     }
 
     private int totalSeconds() {
@@ -164,8 +171,9 @@ final class RangesComponent extends JComponent implements Scrollable{
         Range range = ranges.get(index);
         List<Range> newRanges;
         try {
+            float silenceThreshold = 0.01f; // todo
             float ignoreShortSilence = 0.25f; // todo: ask for new value
-            newRanges = VoiceRanges.resplit(source, range, ignoreShortSilence);
+            newRanges = VoiceRanges.resplit(source, range, silenceThreshold, ignoreShortSilence);
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
             return;

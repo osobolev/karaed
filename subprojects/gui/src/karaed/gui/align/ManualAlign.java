@@ -33,6 +33,7 @@ public final class ManualAlign extends JDialog {
 
     private final RangesComponent vocals;
     private final JSlider scaleSlider = new JSlider(2, 50, 30);
+    private final JSpinner chThreshold = new JSpinner(new SpinnerNumberModel(1, 0, 100, 1));
     private final JPanel main = new JPanel(new BorderLayout());
     private final LyricsComponent lyrics = new LyricsComponent(colors);
 
@@ -65,6 +66,8 @@ public final class ManualAlign extends JDialog {
         toolBar.addSeparator();
         toolBar.add(new JLabel("Scale:"));
         toolBar.add(scaleSlider);
+        toolBar.add(new JLabel("Silence threshold, %:"));
+        toolBar.add(chThreshold);
 
         JPanel top = new JPanel(new BorderLayout());
         top.add(toolBar, BorderLayout.NORTH);
@@ -95,6 +98,7 @@ public final class ManualAlign extends JDialog {
         }));
         add(butt, BorderLayout.SOUTH);
 
+        chThreshold.setValue(Math.round(data.silenceThreshold() * 100));
         vocals.setData(maxSource, data.ranges());
         lyrics.setLines(data.lines());
 
@@ -113,6 +117,14 @@ public final class ManualAlign extends JDialog {
         vocals.recolor();
         lyrics.recolor();
 
+        chThreshold.addChangeListener(e -> {
+            try {
+                vocals.setSilenceThreshold(getSilenceThreshold());
+            } catch (Exception ex) {
+                ShowMessage.error(this, logger, ex);
+            }
+        });
+
         CloseUtil.listen(this, this::onClosing);
         pack();
         setLocationRelativeTo(null);
@@ -126,9 +138,10 @@ public final class ManualAlign extends JDialog {
         if (Files.exists(rangesFile)) {
             data = JsonUtil.readFile(rangesFile, Ranges.class);
         } else {
-            List<Range> ranges = VoiceRanges.detectVoice(maxSource);
+            float silenceThreshold = 0.01f;
+            List<Range> ranges = VoiceRanges.detectVoice(maxSource, silenceThreshold);
             List<String> lines = Files.readAllLines(text);
-            data = new Ranges(ranges, lines);
+            data = new Ranges(silenceThreshold, ranges, lines);
         }
 
         return new ManualAlign(owner, logger, rangesFile, maxSource, data);
@@ -147,8 +160,13 @@ public final class ManualAlign extends JDialog {
         actionStop.setEnabled(vocals.isPlaying());
     }
 
+    private float getSilenceThreshold() {
+        Number threshold = (Number) chThreshold.getValue();
+        return threshold.floatValue() / 100f;
+    }
+
     private boolean save() {
-        Ranges data = new Ranges(vocals.getRanges(), lyrics.getLines());
+        Ranges data = new Ranges(getSilenceThreshold(), vocals.getRanges(), lyrics.getLines());
         try {
             JsonUtil.writeFile(rangesFile, data);
             changed = false;
