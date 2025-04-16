@@ -5,19 +5,15 @@ import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
-import karaed.json.JsonUtil;
 
 import javax.swing.*;
+import javax.swing.text.Document;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.nio.file.Path;
 
 final class AlignComponent {
 
     private static final Icon ICON_STOP = InputUtil.getIcon("/stop.png");
-
-    private final ErrorLogger logger;
-    private final Path rangesFile;
 
     private final ColorSequence colors = new ColorSequence();
 
@@ -29,10 +25,7 @@ final class AlignComponent {
 
     private final Action actionStop;
 
-    AlignComponent(ErrorLogger logger, Path rangesFile, MaxAudioSource maxSource, Ranges data, Runnable onChange) {
-        this.logger = logger;
-        this.rangesFile = rangesFile;
-
+    AlignComponent(ErrorLogger logger, MaxAudioSource maxSource, Ranges data, Runnable onChange) {
         this.vocals = new RangesComponent(logger, colors);
         this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override
@@ -110,19 +103,16 @@ final class AlignComponent {
         return threshold.floatValue() / 100f;
     }
 
+    Document getRangesDocument() {
+        return lyrics.getDocument();
+    }
+
     JComponent getVisual() {
         return main;
     }
 
-    boolean save() {
-        Ranges data = new Ranges(getSilenceThreshold(), vocals.getRanges(), lyrics.getLines());
-        try {
-            JsonUtil.writeFile(rangesFile, data);
-            return true;
-        } catch (Exception ex) {
-            ShowMessage.error(main, logger, ex);
-        }
-        return false;
+    Ranges getData() {
+        return new Ranges(getSilenceThreshold(), vocals.getRanges(), lyrics.getLines());
     }
 
     void close() {

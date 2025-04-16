@@ -106,6 +106,10 @@ final class LyricsComponent {
         InputUtil.setText(taLines, String.join("\n", text) + "\n");
     }
 
+    Document getDocument() {
+        return taLines.getDocument();
+    }
+
     JComponent getVisual() {
         return sp;
     }

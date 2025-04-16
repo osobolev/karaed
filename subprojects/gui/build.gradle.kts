@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.diff)
     implementation(project(":json-util"))
-    implementation(project(":engine"))
     implementation(project(":project"))
 }

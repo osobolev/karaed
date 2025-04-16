@@ -252,7 +252,7 @@ public final class ProjectFrame extends JFrame {
         Path text = workDir.file("text.txt");
         ManualAlign ma = ManualAlign.create(this, logger, vocals, text, ranges);
         ma.setVisible(true);
-        if (!ma.isOK())
+        if (!ma.isContinue())
             throw new CancelledException();
     }
 }
