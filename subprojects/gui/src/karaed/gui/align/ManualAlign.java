@@ -122,6 +122,19 @@ public final class ManualAlign extends JDialog {
     }
 
     private boolean save(boolean forceSync) {
+        Ranges newData = alignComponent.getData();
+        if (newData.rangeLines().size() != newData.ranges().size()) {
+            if (forceSync) {
+                tabs.setSelectedIndex(0);
+                ShowMessage.error(this, "Please align vocals and lyrics");
+                return false;
+            } else {
+                if (!ShowMessage.confirm2(this, "Vocals and lyrics are not aligned, really save?")) {
+                    tabs.setSelectedIndex(0);
+                    return false;
+                }
+            }
+        }
         if (!syncComponent.isAligned()) {
             if (forceSync) {
                 tabs.setSelectedIndex(1);
@@ -136,7 +149,6 @@ public final class ManualAlign extends JDialog {
         }
         boolean ok = false;
         if (actionSave.isEnabled()) {
-            Ranges newData = alignComponent.getData();
             List<String> newText = syncComponent.getText();
             try {
                 Ranges currData = loadData(rangesFile);

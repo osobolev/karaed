@@ -80,7 +80,7 @@ public final class Align {
 
     private static FilteredRanges filterRanges(Ranges data) {
         List<Range> ranges = data.ranges();
-        List<String> lines = data.lines().stream().filter(line -> !line.trim().isEmpty()).toList();
+        List<String> lines = data.rangeLines();
         if (ranges.size() != lines.size())
             throw new KaraException("Vocal ranges and lyrics lines must have one-to-one correspondence");
         List<Range> filteredRanges = new ArrayList<>();
