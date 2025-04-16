@@ -11,7 +11,7 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
@@ -41,7 +41,7 @@ dependencies {
 tasks {
     withType(JavaCompile::class) {
         options.encoding = "UTF-8"
-        options.release.set(17)
+        options.release.set(21)
         options.compilerArgs.add("-Xlint:deprecation")
     }
 }
