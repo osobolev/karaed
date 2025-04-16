@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.List;
 
 public final class Youtube {
@@ -68,6 +70,7 @@ public final class Youtube {
             Path srcFile = Path.of(input.file());
             if (range == null) {
                 Files.copy(srcFile, audio, StandardCopyOption.REPLACE_EXISTING);
+                Files.setLastModifiedTime(audio, FileTime.from(Instant.now()));
             } else {
                 range.cutFile(runner, srcFile, audio);
             }
