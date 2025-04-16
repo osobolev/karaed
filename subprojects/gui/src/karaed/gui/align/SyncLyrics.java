@@ -151,7 +151,7 @@ final class SyncLyrics {
                             if (!word && prevWordEnd >= 0) {
                                 chars.add(new LinedChar(i, prevWordEnd, ' '));
                             }
-                            chars.add(new LinedChar(i, j, ch));
+                            chars.add(new LinedChar(i, j, Character.toLowerCase(ch)));
                             word = true;
                         } else {
                             if (word) {
