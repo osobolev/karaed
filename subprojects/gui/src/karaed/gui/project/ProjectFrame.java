@@ -133,7 +133,7 @@ public final class ProjectFrame extends JFrame {
     private void fileClicked(LinkType link) {
         try {
             if (link == LinkType.RANGES) {
-                editRanges();
+                editRanges(false);
                 return;
             }
             Path file = switch (link) {
