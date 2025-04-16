@@ -2,6 +2,7 @@ package karaed.engine.steps.subs;
 
 import ass.model.DialogLine;
 import karaed.engine.ass.AssUtil;
+import karaed.engine.opts.OAlign;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -37,7 +38,7 @@ public final class MakeSubs {
         """;
 
     // todo: optionally word-by-word
-    public static void makeSubs(Path textFile, Path alignedFile, Path subsFile) throws IOException {
+    public static void makeSubs(Path textFile, Path alignedFile, OAlign options, Path subsFile) throws IOException {
         List<List<CSegment>> lines = new ArrayList<>();
         double lastEnd = SyncChars.sync(textFile, alignedFile, lines);
 

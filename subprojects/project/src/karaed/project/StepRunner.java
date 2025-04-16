@@ -98,7 +98,8 @@ public final class StepRunner {
         Path subs = workDir.file("subs.ass");
         Path text = workDir.file("text.txt");
         Path aligned = workDir.file("aligned.json");
-        MakeSubs.makeSubs(text, aligned, subs);
+        OAlign options = JsonUtil.readFile(workDir.option("align.json"), OAlign.class, OAlign::new);
+        MakeSubs.makeSubs(text, aligned, options, subs);
     }
 
     private void karaokeSubs() throws IOException {

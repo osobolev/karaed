@@ -33,8 +33,6 @@ import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
-// todo: options/ranges.json - auto/manual
-// todo: options/align.json - by words/chars
 public final class ProjectFrame extends JFrame {
 
     private final ErrorLogger logger;

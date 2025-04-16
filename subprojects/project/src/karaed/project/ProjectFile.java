@@ -13,7 +13,7 @@ enum ProjectFile {
     NO_VOCALS("demucs.json"),
     RANGES,
     ALIGNED,
-    SUBS(), // todo: options/align.json???
+    SUBS("align.json"),
     KARAOKE_SUBS("karaoke.json"),
     KARAOKE_VIDEO("video.json");
 

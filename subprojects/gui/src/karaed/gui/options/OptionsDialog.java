@@ -76,6 +76,7 @@ public final class OptionsDialog extends JDialog {
         add(new InputPanel(ctx), main);
         add(new LyricsPanel(ctx), main);
         add(new CutPanel(ctx), options);
+        add(new AlignPanel(ctx), options);
         add(new VideoPanel(ctx), options);
         add(new DemucsPanel(ctx), advanced);
         add(new KaraokePanel(ctx), advanced);
