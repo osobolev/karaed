@@ -3,6 +3,7 @@ package karaed.gui.project;
 import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
 import karaed.engine.formats.ranges.Range;
+import karaed.engine.video.VideoFinder;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
@@ -27,6 +28,7 @@ import java.awt.Desktop;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
@@ -136,13 +138,18 @@ public final class ProjectFrame extends JFrame {
             }
             Path file = switch (link) {
                 case AUDIO -> workDir.audio();
-                case VIDEO -> null; // todo!!!
+                case VIDEO -> {
+                    VideoFinder finder = VideoFinder.maybeCreate(workDir.audio());
+                    yield finder == null ? null : finder.getVideoFile();
+                }
                 case SUBS -> workDir.file("subs.ass");
                 case KARAOKE -> workDir.file("karaoke.mp4");
                 default -> null;
             };
-            if (file != null) {
+            if (file != null && Files.exists(file)) {
                 Desktop.getDesktop().open(file.toFile());
+            } else {
+                ShowMessage.error(this, "File not found");
             }
         } catch (CancelledException ex) {
             // ignore

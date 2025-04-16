@@ -20,7 +20,10 @@ final class StepLabel {
     private static final Icon ERROR = InputUtil.getIcon("/error.png");
     private static final Icon STALE = InputUtil.getIcon("/stale.png");
 
-    private static final Color NOT_RAN_COLOR = new Color(150, 150, 150);
+    private static final Color ACTIVE_COLOR = new Color(0, 0, 0);
+    private static final Color INACTIVE_COLOR = new Color(150, 150, 150);
+    private static final Color ACTIVE_LINK = new Color(0, 0, 150);
+    private static final Color INACTIVE_LINK = new Color(150, 150, 200);
 
     private final PipeStep step;
     private final JTextPane tpLabel = new JTextPane();
@@ -82,7 +85,7 @@ final class StepLabel {
     }
 
     // todo: for video link can be unavailable!!!
-    private String getText(Color color, boolean canLink) {
+    private String getText(boolean active, boolean canLink) {
         String text = switch (step) {
         case DOWNLOAD -> "Downloading [audio]#audio/[video]#video";
         case DEMUCS -> "Separating vocals";
@@ -96,14 +99,15 @@ final class StepLabel {
         StringBuilder buf = new StringBuilder();
         Pattern pattern = Pattern.compile("\\[([^]]+)]#([a-z]+)");
         Matcher matcher = pattern.matcher(text);
+        Color linkColor = active ? ACTIVE_LINK : INACTIVE_LINK;
         while (matcher.find()) {
             String linkText = matcher.group(1);
             String href = matcher.group(2);
             String replacement;
             if (canLink || step == PipeStep.RANGES) {
                 replacement = String.format(
-                    "<u><a href='#%s'>%s</a></u>",
-                    href, linkText
+                    "<font color='%s'><u><a href='#%s'>%s</a></u></font>",
+                    toHtml(linkColor), href, linkText
                 );
             } else {
                 replacement = linkText;
@@ -111,32 +115,32 @@ final class StepLabel {
             matcher.appendReplacement(buf, replacement);
         }
         matcher.appendTail(buf);
+        Color color = active ? ACTIVE_COLOR : INACTIVE_COLOR;
         return "<html><font color='" + toHtml(color) + "'><b>" + buf + "</b></font></html>";
     }
 
-    private void setText(Color color, boolean canLink) {
-        tpLabel.setText(getText(color, canLink));
+    private void setText(boolean active, boolean canLink, String tooltip) {
+        tpLabel.setText(getText(active, canLink));
+        iconLabel.setToolTipText(tooltip);
     }
 
     void setState(RunStepState state) {
         tpLabel.setToolTipText(null);
         if (state instanceof RunStepState.Done) {
-            setText(Color.black, true);
+            setText(true, true, null);
             iconLabel.setIcon(COMPLETE);
         } else if (state instanceof RunStepState.NotRan) {
-            setText(NOT_RAN_COLOR, false);
+            setText(false, false, null);
             iconLabel.setIcon(null);
         } else if (state instanceof RunStepState.MustRerun(String because)) {
-            setText(NOT_RAN_COLOR, true);
+            setText(false, true, because);
             iconLabel.setIcon(STALE);
-            tpLabel.setToolTipText(because);
         } else if (state instanceof RunStepState.Running) {
-            setText(Color.black, false);
+            setText(true, false, null);
             iconLabel.setIcon(RUNNING);
         } else if (state instanceof RunStepState.Error(String message)) {
-            setText(Color.red, false);
+            setText(false, false, message);
             iconLabel.setIcon(ERROR);
-            tpLabel.setToolTipText(message);
         }
     }
 
