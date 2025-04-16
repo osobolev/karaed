@@ -133,7 +133,7 @@ public final class ManualAlign extends JDialog {
         try {
             Ranges currData = loadData(rangesFile);
             if (!Objects.equals(newData, currData)) {
-                JsonUtil.writeFile(rangesFile, rangesFile);
+                JsonUtil.writeFile(rangesFile, newData);
             }
             List<String> currText = loadText(textFile);
             if (!Objects.equals(newText, currText)) {
