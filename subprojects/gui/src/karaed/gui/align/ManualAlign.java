@@ -69,7 +69,7 @@ public final class ManualAlign extends JDialog {
                 }
             }));
         }
-        butt.add(new JButton(new AbstractAction("Cancel") {
+        butt.add(new JButton(new AbstractAction(canContinue ? "Cancel" : "Close") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
