@@ -29,25 +29,31 @@ final class LyricsComponent {
 
             @Override
             public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                super.insertString(fb, offset, string, attr);
+                fb.insertString(offset, string, attr);
                 recolor();
             }
 
             @Override
             public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-                super.replace(fb, offset, length, text, attrs);
+                fb.replace(offset, length, text, attrs);
                 recolor();
             }
 
             @Override
             public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+                String insert = null;
                 if (length == 1) {
                     String text = fb.getDocument().getText(offset, length);
                     if ("\n".equals(text)) {
+                        insert = " ";
                         SwingUtilities.invokeLater(() -> end());
                     }
                 }
-                super.remove(fb, offset, length);
+                if (insert != null) {
+                    fb.replace(offset, length, insert, SimpleAttributeSet.EMPTY);
+                } else {
+                    fb.remove(offset, length);
+                }
                 recolor();
             }
         });
@@ -90,7 +96,7 @@ final class LyricsComponent {
             int caret = taLines.getCaretPosition();
             int line = taLines.getLineOfOffset(caret);
             int end = taLines.getLineEndOffset(line);
-            taLines.setCaretPosition(end);
+            taLines.setCaretPosition(end - 1);
         } catch (BadLocationException ex) {
             // ignore
         }
@@ -98,7 +104,6 @@ final class LyricsComponent {
 
     void setLines(List<String> text) {
         InputUtil.setText(taLines, String.join("\n", text) + "\n");
-        // todo: do not fire changes here!!!
     }
 
     JComponent getVisual() {
