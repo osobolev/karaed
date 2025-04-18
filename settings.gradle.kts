@@ -13,7 +13,6 @@ fun add(name: String) {
 add("java-ass")
 add("run-util")
 add("json-util")
-add("workdir")
 add("engine")
 add("project")
 add("gui")
