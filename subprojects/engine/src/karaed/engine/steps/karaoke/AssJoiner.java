@@ -34,7 +34,7 @@ public final class AssJoiner {
                     result.add(new ArrayList<>());
                 }
             }
-            result.get(result.size() - 1).add(line);
+            result.getLast().add(line);
             prev = line;
         }
         return result;

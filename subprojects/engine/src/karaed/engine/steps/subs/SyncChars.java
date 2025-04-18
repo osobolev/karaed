@@ -93,7 +93,7 @@ final class SyncChars {
                 lines.add(new ArrayList<>());
                 continue;
             }
-            List<CSegment> currentLine = lines.get(lines.size() - 1);
+            List<CSegment> currentLine = lines.getLast();
             currentLine.add(cs);
         }
     }
