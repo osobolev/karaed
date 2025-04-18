@@ -2,7 +2,7 @@ package karaed.gui.start;
 
 import karaed.gui.ErrorLogger;
 import karaed.json.JsonUtil;
-import karaed.workdir.Workdir;
+import karaed.project.Workdir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

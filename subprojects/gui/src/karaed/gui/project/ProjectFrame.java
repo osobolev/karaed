@@ -3,7 +3,6 @@ package karaed.gui.project;
 import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
 import karaed.engine.formats.ranges.Range;
-import karaed.engine.video.VideoFinder;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
@@ -13,13 +12,9 @@ import karaed.gui.util.CloseUtil;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
-import karaed.project.PipeBuilder;
-import karaed.project.PipeStep;
-import karaed.project.StepRunner;
-import karaed.project.StepState;
+import karaed.project.*;
 import karaed.tools.ProcRunner;
 import karaed.tools.Tools;
-import karaed.workdir.Workdir;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -136,10 +131,7 @@ public final class ProjectFrame extends JFrame {
             }
             Path file = switch (link) {
                 case AUDIO -> workDir.audio();
-                case VIDEO -> {
-                    VideoFinder finder = VideoFinder.maybeCreate(workDir.audio());
-                    yield finder == null ? null : finder.getVideoFile();
-                }
+                case VIDEO -> workDir.video().getVideo("", false);
                 case SUBS -> workDir.file("subs.ass");
                 case KARAOKE -> workDir.file("karaoke.mp4");
                 default -> null;

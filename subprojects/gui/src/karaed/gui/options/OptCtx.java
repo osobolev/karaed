@@ -1,6 +1,6 @@
 package karaed.gui.options;
 
-import karaed.workdir.Workdir;
+import karaed.project.Workdir;
 
 import java.nio.file.Path;
 

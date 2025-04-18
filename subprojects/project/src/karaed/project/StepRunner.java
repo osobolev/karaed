@@ -7,10 +7,8 @@ import karaed.engine.steps.karaoke.AssJoiner;
 import karaed.engine.steps.subs.MakeSubs;
 import karaed.engine.steps.video.MakeVideo;
 import karaed.engine.steps.youtube.Youtube;
-import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
-import karaed.workdir.Workdir;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -52,9 +50,10 @@ public final class StepRunner {
 
     private void downloadAudio() throws IOException, InterruptedException {
         Path audio = workDir.audio();
+        Path info = workDir.info();
         OInput input = JsonUtil.readFile(workDir.file("input.json"), OInput.class);
         OCut cut = JsonUtil.readFile(workDir.option("cut.json"), OCut.class, OCut::new);
-        Youtube.download(runner, input, cut, audio);
+        Youtube.download(runner, input, cut, audio, info, workDir.video());
         SwingUtilities.invokeLater(showTitle);
     }
 
@@ -112,10 +111,9 @@ public final class StepRunner {
 
     private void prepareVideo() throws IOException, InterruptedException {
         OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
-        VideoFinder finder = MakeVideo.prepareVideo(workDir.audio(), options);
-        if (finder == null)
-            return;
-        MakeVideo.prepareVideo(runner, finder);
+        if (options.useOriginalVideo()) {
+            MakeVideo.prepareVideo(runner, workDir.video());
+        }
     }
 
     private void karaokeVideo() throws IOException, InterruptedException {
@@ -123,6 +121,7 @@ public final class StepRunner {
         Path noVocals = workDir.demuxed("no_vocals.wav");
         Path karaoke = workDir.file("karaoke.ass");
         OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
-        MakeVideo.karaokeVideo(runner, workDir.audio(), noVocals, karaoke, options, karaokeVideo);
+        Path video = MakeVideo.getVideo(options, workDir.video());
+        MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
     }
 }

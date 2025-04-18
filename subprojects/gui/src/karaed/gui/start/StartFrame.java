@@ -9,7 +9,7 @@ import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
 import karaed.tools.Tools;
-import karaed.workdir.Workdir;
+import karaed.project.Workdir;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;

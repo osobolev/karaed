@@ -1,4 +1,6 @@
-package karaed.workdir;
+package karaed.project;
+
+import karaed.engine.video.VideoFinder;
 
 import java.nio.file.Path;
 
@@ -26,6 +28,10 @@ public final class Workdir {
 
     public Path audio() {
         return file(BASE_NAME + ".mp3");
+    }
+
+    public VideoFinder video() {
+        return new ProjectVideoFinder(this);
     }
 
     public Path demuxed(String name) {

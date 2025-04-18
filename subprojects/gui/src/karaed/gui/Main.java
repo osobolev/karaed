@@ -4,7 +4,7 @@ import karaed.gui.project.ProjectFrame;
 import karaed.gui.start.StartFrame;
 import karaed.tools.ProcUtil;
 import karaed.tools.Tools;
-import karaed.workdir.Workdir;
+import karaed.project.Workdir;
 
 import javax.swing.*;
 import java.nio.file.Files;

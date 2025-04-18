@@ -3,7 +3,7 @@ package karaed.gui.options;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
-import karaed.workdir.Workdir;
+import karaed.project.Workdir;
 
 import javax.swing.*;
 import java.awt.*;

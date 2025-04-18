@@ -10,6 +10,7 @@ import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,11 +21,12 @@ import java.util.List;
 
 public final class Youtube {
 
-    public static void download(ProcRunner runner, OInput input, OCut cut, Path audio) throws IOException, InterruptedException {
+    private static final String FULL = "full.";
+
+    public static void download(ProcRunner runner, OInput input, OCut cut, Path audio, Path infoFile, VideoFinder finder) throws IOException, InterruptedException {
         CutRange range = CutRange.create(cut);
-        String base = VideoFinder.nameWithoutExtension(audio);
         if (input.url() != null) {
-            String basePath = audio.getParent().resolve(base).toString();
+            String basePath = finder.getDir() + File.separator + finder.getBaseName();
             runner.println(String.format("Downloading from Youtube%s...", range == null ? "" : " (range " + range + ")"));
             Path video;
             if (range == null) {
@@ -33,25 +35,24 @@ public final class Youtube {
                     "--no-mtime",
                     "--write-info-json",
                     "--output", basePath + ".%(ext)s",
+                    "--output", "infojson:" + infoFile,
                     input.url()
                 );
-                VideoFinder finder = VideoFinder.create(audio);
-                video = finder.getVideoFile();
+                video = finder.getVideo("", true);
             } else {
                 runner.runPythonExe(
                     "yt-dlp",
                     "--no-mtime",
                     "--write-info-json",
-                    "--output", basePath + ".full.%(ext)s",
-                    "--output", "infojson:" + basePath + ".%(ext)s",
+                    "--output", basePath + "." + FULL + "%(ext)s",
+                    "--output", "infojson:" + infoFile,
                     input.url()
                 );
-                VideoFinder finder = VideoFinder.create(audio);
-                Path fullVideo = finder.getVideoFile("full.");
+                Path fullVideo = finder.getVideo(FULL, true);
 
                 runner.println("Cutting downloaded video...");
                 CutRange realCut = new KeyRangeDetector(runner, range).getRealCut(fullVideo);
-                Path cutVideo = finder.getVideoFile();
+                Path cutVideo = finder.getVideo("", true);
                 realCut.cutFile(runner, fullVideo, cutVideo);
                 Files.delete(fullVideo);
 
@@ -85,7 +86,7 @@ public final class Youtube {
             Info info = new Info(
                 artist, tags.title(), null, null, null
             );
-            JsonUtil.writeFile(VideoFinder.getInfoFile(audio, base), info);
+            JsonUtil.writeFile(infoFile, info);
         } else {
             throw new KaraException("Either URL or file must be specified");
         }

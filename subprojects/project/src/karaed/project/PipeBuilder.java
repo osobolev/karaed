@@ -2,9 +2,9 @@ package karaed.project;
 
 import karaed.engine.opts.OInput;
 import karaed.engine.opts.OVideo;
+import karaed.engine.steps.video.MakeVideo;
 import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
-import karaed.workdir.Workdir;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,17 +44,14 @@ public final class PipeBuilder {
     }
 
     private void fillFiles() throws IOException {
-        Path audio = workDir.audio();
-        VideoFinder finder = VideoFinder.maybeCreate(audio);
+        VideoFinder finder = workDir.video();
 
         setFile(ProjectFile.INPUT, workDir.file("input.json"));
         setFile(ProjectFile.TEXT, workDir.file("text.txt"));
-        setFile(ProjectFile.AUDIO, audio);
+        setFile(ProjectFile.AUDIO, workDir.audio());
         setFile(ProjectFile.INFO, workDir.info());
-        if (finder != null) {
-            setFile(ProjectFile.ORIGINAL_VIDEO, finder.getVideoFile());
-            setFile(ProjectFile.PREPARED_VIDEO, finder.getPreparedVideoFile());
-        }
+        setFile(ProjectFile.ORIGINAL_VIDEO, finder.getVideo("", false));
+        setFile(ProjectFile.PREPARED_VIDEO, finder.getVideo(MakeVideo.PREPARED, false));
         setFile(ProjectFile.VOCALS, workDir.demuxed("vocals.wav"));
         setFile(ProjectFile.NO_VOCALS, workDir.demuxed("no_vocals.wav"));
         setFile(ProjectFile.RANGES, workDir.file("ranges.json"));

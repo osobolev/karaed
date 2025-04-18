@@ -15,6 +15,8 @@ import java.util.List;
 
 public final class MakeVideo {
 
+    public static final String PREPARED = "prepared.";
+
     private static void addCodecs(List<String> args) {
         args.addAll(List.of(
             "-c:v", "libx264",
@@ -37,7 +39,9 @@ public final class MakeVideo {
     }
 
     public static void prepareVideo(ProcRunner runner, VideoFinder finder) throws IOException, InterruptedException {
-        Path video = finder.getVideoFile();
+        Path video = finder.getVideo("", false);
+        if (video == null || !Files.exists(video))
+            return;
         FFStreams streams = runner.runFFProbe(
             List.of(
                 "-print_format", "json",
@@ -47,8 +51,8 @@ public final class MakeVideo {
             ),
             stdout -> JsonUtil.parse(stdout, FFStreams.class)
         );
-        Path preparedVideo = finder.getPreparedVideoFile();
-        FFStream stream = streams.streams().get(0);
+        Path preparedVideo = finder.getVideo(PREPARED, true);
+        FFStream stream = streams.streams().getFirst();
         int width = stream.width();
         int height = stream.height();
         if (width < 1280) {
@@ -59,18 +63,6 @@ public final class MakeVideo {
         } else {
             Files.write(preparedVideo, new byte[0]);
         }
-    }
-
-    public static VideoFinder prepareVideo(Path audio, OVideo options) throws IOException {
-        if (!options.useOriginalVideo())
-            return null;
-        VideoFinder finder = VideoFinder.maybeCreate(audio);
-        if (finder == null)
-            return null;
-        Path video = finder.getVideoFile();
-        if (!Files.exists(video))
-            return null;
-        return finder;
     }
 
     private static String escapeFilter(String path) {
@@ -88,31 +80,27 @@ public final class MakeVideo {
         return buf.toString();
     }
 
-    private static Path chooseVideo(Path audio, OVideo options) throws IOException {
+    public static Path getVideo(OVideo options, VideoFinder finder) throws IOException {
         if (!options.useOriginalVideo())
             return null;
-        VideoFinder finder = VideoFinder.maybeCreate(audio);
-        if (finder == null)
-            return null;
-        Path preparedVideo = finder.getPreparedVideoFile();
-        if (Files.exists(preparedVideo) && Files.size(preparedVideo) > 0)
+        Path preparedVideo = finder.getVideo(PREPARED, false);
+        if (preparedVideo != null && Files.exists(preparedVideo) && Files.size(preparedVideo) > 0)
             return preparedVideo;
-        Path originalVideo = finder.getVideoFile();
-        if (Files.exists(originalVideo))
+        Path originalVideo = finder.getVideo("", false);
+        if (originalVideo != null && Files.exists(originalVideo))
             return originalVideo;
         return null;
     }
 
     public static void karaokeVideo(ProcRunner runner,
-                                    Path audio, Path noVocals, Path assFile,
-                                    OVideo options, Path outputVideo) throws IOException, InterruptedException {
+                                    Path video, Path noVocals, Path assFile,
+                                    Path outputVideo) throws IOException, InterruptedException {
         runner.println("Adding subtitles...");
 
-        Path useVideo = chooseVideo(audio, options);
         List<String> videoInput;
-        if (useVideo != null) {
+        if (video != null) {
             videoInput = List.of(
-                "-i", useVideo.toString()
+                "-i", video.toString()
             );
         } else {
             // Используем виртуальное видео длиной 1 час, оно обрезается с помощью опции -shortest до длины аудио:
