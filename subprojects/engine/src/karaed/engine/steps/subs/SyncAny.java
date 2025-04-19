@@ -62,14 +62,11 @@ class SyncAny {
                     break;
                 il++;
             }
-            // todo: both must end at the same time!!!
             if (il >= lyrics.size())
                 break;
-            if (ia >= aligned.size())
-                break;
             TargetSegment cl = lyrics.get(il);
-            SrcSegment ca = aligned.get(ia);
-            if (!ca.text().equalsIgnoreCase(cl.text)) {
+            SrcSegment ca = ia < aligned.size() ? aligned.get(ia) : null;
+            if (ca == null || !ca.text().equalsIgnoreCase(cl.text)) {
                 throw new KaraException(String.format(
                     "Unexpected misalignment between %s and %s",
                     textFile.getFileName(), alignedFile.getFileName()
