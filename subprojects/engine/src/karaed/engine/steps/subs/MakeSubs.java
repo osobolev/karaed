@@ -2,6 +2,7 @@ package karaed.engine.steps.subs;
 
 import ass.model.DialogLine;
 import karaed.engine.ass.AssUtil;
+import karaed.engine.formats.aligned.Aligned;
 import karaed.engine.opts.OAlign;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 public final class MakeSubs {
 
@@ -37,31 +39,40 @@ public final class MakeSubs {
         Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         """;
 
-    // todo: optionally word-by-word
     public static void makeSubs(Path textFile, Path alignedFile, OAlign options, Path subsFile) throws IOException {
-        List<List<CSegment>> lines = new ArrayList<>();
-        double lastEnd = SyncChars.sync(textFile, alignedFile, lines);
+        Function<Aligned, List<SrcSegment>> getSrcSegments;
+        Function<List<String>, List<TargetSegment>> getTargetSegments;
+        if (options.words()) {
+            getSrcSegments = SyncWords::srcWordSegments;
+            getTargetSegments = SyncWords::targetWordSegments;
+        } else {
+            getSrcSegments = SyncChars::srcCharSegments;
+            getTargetSegments = SyncChars::targetCharSegments;
+        }
+        List<List<TargetSegment>> lines = new ArrayList<>();
+        double lastEnd = SyncAny.sync(textFile, alignedFile, getSrcSegments, getTargetSegments, lines);
 
+        String tag = options.words() ? "K" : "k";
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
             long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
             String header = String.format(HEADER, VIDEO_FRAME_RATE, dummyFrames);
             header.lines().forEach(pw::println);
             lines
                 .stream()
-                .map(MakeSubs::assLine)
+                .map(line -> assLine(line, tag))
                 .filter(Objects::nonNull)
                 .forEach(pw::println);
         }
     }
 
-    private static void append(StringBuilder buf, double start, double end) {
-        AssUtil.appendK(buf, end - start);
+    private static void append(StringBuilder buf, String tag, double start, double end) {
+        AssUtil.appendK(buf, tag, end - start);
     }
 
-    private static String assLine(List<CSegment> line) {
+    private static String assLine(List<TargetSegment> line, String tag) {
         double minStart = Double.NaN;
         double maxEnd = Double.NaN;
-        for (CSegment ch : line) {
+        for (TargetSegment ch : line) {
             Timestamps ts = ch.timestamps;
             if (ts == null)
                 continue;
@@ -77,7 +88,7 @@ public final class MakeSubs {
         StringBuilder buf = new StringBuilder();
         int i = 0;
         while (i < line.size()) {
-            CSegment ch = line.get(i);
+            TargetSegment ch = line.get(i);
             Timestamps ts = ch.timestamps;
             if (ts == null) {
                 if (i > 0) {
@@ -85,23 +96,23 @@ public final class MakeSubs {
                     StringBuilder spaces = new StringBuilder();
                     double end = maxEnd;
                     while (i < line.size()) {
-                        CSegment chi = line.get(i);
+                        TargetSegment chi = line.get(i);
                         if (chi.timestamps != null) {
                             end = chi.timestamps.start();
                             break;
                         }
-                        spaces.append(chi.ch);
+                        spaces.append(chi.text);
                         i++;
                     }
-                    append(buf, prevEnd, end);
+                    append(buf, tag, prevEnd, end);
                     buf.append(spaces);
                 } else {
-                    buf.append(ch.ch);
+                    buf.append(ch.text);
                     i++;
                 }
             } else {
-                append(buf, ts.start(), ts.end());
-                buf.append(ch.ch);
+                append(buf, tag, ts.start(), ts.end());
+                buf.append(ch.text);
                 i++;
             }
         }
