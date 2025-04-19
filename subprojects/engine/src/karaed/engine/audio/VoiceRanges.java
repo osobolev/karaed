@@ -42,9 +42,7 @@ public final class VoiceRanges {
             WavReader.WavConsumer wavConsumer = consumer(ranger, source.maxValues, silenceThreshold);
             as.skip((long) range.from() * reader.format.getFrameSize());
             int frames = range.to() - range.from();
-            for (int i = 0; i < frames; i++) {
-                reader.read(wavConsumer);
-            }
+            reader.readN(wavConsumer, frames);
             return ranger.finish(range.to());
         }
     }

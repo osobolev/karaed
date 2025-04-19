@@ -70,25 +70,40 @@ public final class WavReader {
         void consume(int frame, long[] values);
     }
 
-    public boolean read(WavConsumer consumer) throws IOException {
+    private int read(WavConsumer consumer, int limit) throws IOException {
         if (!fillBuffer())
-            return false;
+            return -1;
+        int read = 0;
         while (bufRead < bufLen) {
+            if (limit >= 0 && read >= limit)
+                break;
             for (int i = 0; i < format.getChannels(); i++) {
                 values[i] = decode(buf, bufRead);
                 bufRead += bytes;
             }
             consumer.consume(frame, values);
             frame++;
+            read++;
         }
-        return true;
+        return read;
     }
 
     public int readAll(WavConsumer consumer) throws IOException {
         while (true) {
-            if (!read(consumer))
+            int read = read(consumer, -1);
+            if (read < 0)
                 break;
         }
         return frame;
+    }
+
+    public void readN(WavConsumer consumer, int n) throws IOException {
+        int remaining = n;
+        while (remaining > 0) {
+            int read = read(consumer, remaining);
+            if (read < 0)
+                break;
+            remaining -= read;
+        }
     }
 }
