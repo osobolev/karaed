@@ -20,13 +20,13 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class ProjectFrame extends JFrame {
 
@@ -45,14 +45,15 @@ public final class ProjectFrame extends JFrame {
         }
     };
 
-    public static ProjectFrame create(ErrorLogger logger, Window current, Tools tools, Path rootDir, Workdir workDir) {
+    public static ProjectFrame create(ErrorLogger logger, boolean reopenStart, Tools tools, Path rootDir, Workdir workDir,
+                                      Consumer<String> onError) {
         String error = RecentItems.isProjectDir(workDir);
         if (error != null) {
-            ShowMessage.error(current, error);
+            onError.accept(error);
             return null;
         }
         RecentItems.addRecentItem(logger, workDir.dir());
-        return new ProjectFrame(logger, tools, rootDir, workDir, current != null);
+        return new ProjectFrame(logger, tools, rootDir, workDir, reopenStart);
     }
 
     private ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir, boolean reopenStart) {

@@ -2,6 +2,7 @@ package karaed.gui;
 
 import karaed.gui.project.ProjectFrame;
 import karaed.gui.start.StartFrame;
+import karaed.gui.util.ShowMessage;
 import karaed.tools.ProcUtil;
 import karaed.tools.Tools;
 import karaed.project.Workdir;
@@ -32,7 +33,10 @@ public final class Main {
                 } else {
                     dir = path.getParent();
                 }
-                ProjectFrame pf = ProjectFrame.create(logger, null, tools, rootDir, new Workdir(dir));
+                ProjectFrame pf = ProjectFrame.create(
+                    logger, false, tools, rootDir, new Workdir(dir),
+                    error -> ShowMessage.error(null, error)
+                );
                 if (pf != null) {
                     pf.setVisible(true);
                 }

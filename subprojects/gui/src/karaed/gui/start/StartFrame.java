@@ -8,8 +8,8 @@ import karaed.gui.util.CloseUtil;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
-import karaed.tools.Tools;
 import karaed.project.Workdir;
+import karaed.tools.Tools;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -87,9 +87,9 @@ public final class StartFrame extends JFrame {
         rip.setLayout(new BoxLayout(rip, BoxLayout.Y_AXIS));
         Map<Path, RecentItem> ripMap = new LinkedHashMap<>();
         Consumer<Path> listener = dir -> {
-            if (!openProject(new Workdir(dir))) {
-                // todo: merge error dialog with confirm dialog
-                if (!ShowMessage.confirm2(this, "Remove this project from list?"))
+            Workdir workDir = new Workdir(dir);
+            openProject(workDir, error -> {
+                if (!ShowMessage.confirm2(this, error + ".\nRemove this project from list?"))
                     return;
                 RecentItems.removeRecentItem(logger, dir);
                 RecentItem recentItem = ripMap.remove(dir);
@@ -97,7 +97,7 @@ public final class StartFrame extends JFrame {
                     rip.remove(recentItem.getVisual());
                     rip.revalidate();
                 }
-            }
+            });
         };
         for (Path dir : recent) {
             RecentItem itemPanel = new RecentItem(dir, listener);
@@ -124,12 +124,15 @@ public final class StartFrame extends JFrame {
         setVisible(true);
     }
 
-    private boolean openProject(Workdir workDir) {
-        ProjectFrame pf = ProjectFrame.create(logger, this, tools, rootDir, workDir);
+    private void openProject(Workdir workDir, Consumer<String> onError) {
+        ProjectFrame pf = ProjectFrame.create(logger, true, tools, rootDir, workDir, onError);
         if (pf == null)
-            return false;
+            return;
         dispose();
         pf.setVisible(true);
-        return true;
+    }
+
+    private void openProject(Workdir workDir) {
+        openProject(workDir, error -> ShowMessage.error(this, error));
     }
 }
