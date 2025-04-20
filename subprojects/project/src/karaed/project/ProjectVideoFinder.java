@@ -31,9 +31,11 @@ final class ProjectVideoFinder implements VideoFinder {
 
     private String getExtension() throws IOException {
         if (!extInited) {
-            Info info = JsonUtil.readFile(workDir.info(), Info.class);
-            ext = info.ext();
-            extInited = true;
+            Info info = JsonUtil.readFile(workDir.info(), Info.class, () -> null);
+            if (info != null) {
+                ext = info.ext();
+                extInited = true;
+            }
         }
         return ext;
     }
