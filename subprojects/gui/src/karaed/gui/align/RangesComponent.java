@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-final class RangesComponent extends JComponent implements Scrollable{
+final class RangesComponent extends JComponent implements Scrollable {
 
     private static final int[] SECOND_TICKS = {1, 5, 10, 30, 60};
     private static final int LPAD = 10;
