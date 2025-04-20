@@ -38,10 +38,20 @@ public final class ProjectFrame extends JFrame {
     private final Map<PipeStep, StepLabel> labels = new EnumMap<>(PipeStep.class);
     private final LogArea taLog = new LogArea();
 
-    private final Action runAction = new AbstractAction("Run") {
+    private volatile Thread runThread = null;
+
+    private final Action runAction = new AbstractAction("Run") { // todo: add icon
         @Override
         public void actionPerformed(ActionEvent e) {
             runPipeline();
+        }
+    };
+    private final Action stopAction = new AbstractAction("Stop") { // todo: add icon
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (runThread != null) {
+                runThread.interrupt();
+            }
         }
     };
 
@@ -78,7 +88,7 @@ public final class ProjectFrame extends JFrame {
         });
         toolBar.addSeparator();
         toolBar.add(runAction);
-        // todo: stop button
+        toolBar.add(stopAction);
         add(toolBar, BorderLayout.NORTH);
 
         JPanel main = new JPanel(new BorderLayout());
@@ -111,10 +121,12 @@ public final class ProjectFrame extends JFrame {
 
         main.add(new JScrollPane(taLog.getVisual()), BorderLayout.SOUTH);
 
+        enableDisable(false);
         refreshStepStates();
 
         CloseUtil.listen(this, () -> {
-            // todo: do not close if running
+            if (!runAction.isEnabled())
+                return false;
             if (reopenStart) {
                 new StartFrame(logger, tools, rootDir);
             }
@@ -187,7 +199,7 @@ public final class ProjectFrame extends JFrame {
             return;
         }
 
-        runAction.setEnabled(false);
+        enableDisable(true);
         taLog.clear();
         showStepStates(pipe);
 
@@ -205,7 +217,7 @@ public final class ProjectFrame extends JFrame {
                         stepRunner.runStep(step);
                     } catch (Throwable ex) {
                         ok = false;
-                        if (!(ex instanceof CancelledException)) {
+                        if (!(ex instanceof CancelledException || ex instanceof InterruptedException)) {
                             String message;
                             if (ex instanceof KaraException) {
                                 message = ex.getMessage();
@@ -229,10 +241,17 @@ public final class ProjectFrame extends JFrame {
                     runner.println(String.format("DONE in %s", Range.formatTime((t1 - t0) / 1000.0f)));
                 }
             } finally {
-                SwingUtilities.invokeLater(() -> runAction.setEnabled(true));
+                runThread = null;
+                SwingUtilities.invokeLater(() -> enableDisable(false));
             }
         }, "KaraEd pipe");
+        runThread = thread;
         thread.start();
+    }
+
+    private void enableDisable(boolean running) {
+        runAction.setEnabled(!running);
+        stopAction.setEnabled(running);
     }
 
     private void editRanges() throws UnsupportedAudioFileException, IOException {
