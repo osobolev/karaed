@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 public final class ProcUtil {
@@ -27,7 +26,7 @@ public final class ProcUtil {
     }
 
     public static void runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
-                                  Consumer<Process> out, IntPredicate exitOk) throws IOException, InterruptedException {
+                                  Consumer<Reader> stdout, Consumer<Reader> stderr, Consumer<String> log) throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add(exe.toString());
         command.addAll(args);
@@ -52,22 +51,16 @@ public final class ProcUtil {
         running.add(p);
         int exitCode;
         try {
-            if (out != null) {
-                out.accept(p);
-            } else {
-                eatOutput(p.errorReader());
-                eatOutput(p.inputReader());
-            }
+            stderr.accept(p.errorReader());
+            stdout.accept(p.inputReader());
             exitCode = p.waitFor();
+        } catch (InterruptedException ex) {
+            kill(p, log);
+            throw ex;
         } finally {
             running.remove(p);
         }
-        boolean ok;
-        if (exitOk != null) {
-            ok = exitOk.test(exitCode);
-        } else {
-            ok = exitCode == 0;
-        }
+        boolean ok = exitCode == 0;
         if (!ok)
             throw new IOException("Error running " + what + ": " + exitCode);
     }
@@ -82,15 +75,17 @@ public final class ProcUtil {
         return command;
     }
 
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    private static void kill(ProcessHandle ph) {
-        System.out.printf("Killing %s%n", ph.info().command().map(ProcUtil::getSimpleName).orElse("-"));
+    private static void kill(Process p, Consumer<String> log) {
+        ProcessHandle ph = p.toHandle();
+        String procName = ph.info().command().map(ProcUtil::getSimpleName).orElse("-");
+        log.accept(String.format("Killing %s", procName));
         ph.descendants().forEach(ProcessHandle::destroy);
         ph.destroy();
     }
 
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void killRunning() {
-        running.forEach(p -> kill(p.toHandle()));
+        running.forEach(p -> kill(p, System.out::println));
     }
 
     public static void registerShutdown() {

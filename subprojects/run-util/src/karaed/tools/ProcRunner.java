@@ -64,16 +64,19 @@ public final class ProcRunner {
         } else {
             pathDirs = Collections.emptyList();
         }
-        Consumer<Process> capture = p -> {
-            if (out != null) {
-                ProcUtil.eatOutput(p.errorReader());
-                out.accept(p.inputReader());
-            } else {
-                capture(p.errorReader(), true);
-                capture(p.inputReader(), false);
-            }
-        };
-        ProcUtil.runCommand(what, exe, args, pathDirs, capture, null);
+        Consumer<Reader> stdout;
+        Consumer<Reader> stderr;
+        if (out != null) {
+            stderr = ProcUtil::eatOutput;
+            stdout = out;
+        } else {
+            stderr = rdr -> capture(rdr, true);
+            stdout = rdr -> capture(rdr, false);
+        }
+        ProcUtil.runCommand(
+            what, exe, args, pathDirs,
+            stdout, stderr, str -> output.output(true, "\n" + str + "\n")
+        );
     }
 
     public <T> T runPythonScript(String script, Function<Reader, T> parseStdout, String... args) throws IOException, InterruptedException {
