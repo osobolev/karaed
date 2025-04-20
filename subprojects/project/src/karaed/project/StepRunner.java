@@ -7,6 +7,7 @@ import karaed.engine.steps.karaoke.AssJoiner;
 import karaed.engine.steps.subs.MakeSubs;
 import karaed.engine.steps.video.MakeVideo;
 import karaed.engine.steps.youtube.Youtube;
+import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
 
@@ -14,6 +15,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class StepRunner {
@@ -53,14 +55,26 @@ public final class StepRunner {
         Path info = workDir.info();
         OInput input = JsonUtil.readFile(workDir.file("input.json"), OInput.class);
         OCut cut = JsonUtil.readFile(workDir.option("cut.json"), OCut.class, OCut::new);
-        Youtube.download(runner, input, cut, audio, info, workDir.video());
+        try {
+            Youtube.download(runner, input, cut, audio, info, workDir.video());
+        } catch (InterruptedException ex) {
+            Files.deleteIfExists(audio);
+            Files.deleteIfExists(info);
+            throw ex;
+        }
         SwingUtilities.invokeLater(showTitle);
     }
 
     private void demucs() throws IOException, InterruptedException {
         Path configFile = workDir.option("demucs.json");
         ODemucs options = JsonUtil.readFile(configFile, ODemucs.class, ODemucs::new);
-        Demucs.demucs(runner, workDir.audio(), options, workDir.dir());
+        try {
+            Demucs.demucs(runner, workDir.audio(), options, workDir.dir());
+        } catch (InterruptedException ex) {
+            Files.deleteIfExists(workDir.vocals());
+            Files.deleteIfExists(workDir.noVocals());
+            throw ex;
+        }
     }
 
     private void ranges() throws Throwable {
@@ -90,7 +104,12 @@ public final class StepRunner {
         Path aligned = workDir.file("aligned.json");
         Path vocals = workDir.vocals();
         Path ranges = workDir.file("ranges.json");
-        Align.align(runner, vocals, ranges, workDir.file("tmp"), aligned);
+        try {
+            Align.align(runner, vocals, ranges, workDir.file("tmp"), aligned);
+        } catch (InterruptedException ex) {
+            Files.deleteIfExists(aligned);
+            throw ex;
+        }
     }
 
     private void subs() throws IOException {
@@ -112,16 +131,30 @@ public final class StepRunner {
     private void prepareVideo() throws IOException, InterruptedException {
         OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
         if (options.useOriginalVideo()) {
-            MakeVideo.prepareVideo(runner, workDir.video());
+            VideoFinder finder = workDir.video();
+            try {
+                MakeVideo.prepareVideo(runner, finder);
+            } catch (InterruptedException ex) {
+                Path preparedVideo = finder.getVideo(MakeVideo.PREPARED, false);
+                if (preparedVideo != null) {
+                    Files.deleteIfExists(preparedVideo);
+                }
+                throw ex;
+            }
         }
     }
 
     private void karaokeVideo() throws IOException, InterruptedException {
         Path karaokeVideo = workDir.file("karaoke.mp4");
-        Path noVocals = workDir.demuxed("no_vocals.wav");
+        Path noVocals = workDir.noVocals();
         Path karaoke = workDir.file("karaoke.ass");
         OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
         Path video = options.useOriginalVideo() ? MakeVideo.getVideo(workDir.video()) : null;
-        MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
+        try {
+            MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
+        } catch (InterruptedException ex) {
+            Files.deleteIfExists(karaokeVideo);
+            throw ex;
+        }
     }
 }

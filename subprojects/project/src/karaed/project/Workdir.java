@@ -34,12 +34,16 @@ public final class Workdir {
         return new ProjectVideoFinder(this);
     }
 
-    public Path demuxed(String name) {
+    private Path demuxed(String name) {
         return file("htdemucs/" + BASE_NAME + "/" + name);
     }
 
     public Path vocals() {
         return demuxed("vocals.wav");
+    }
+
+    public Path noVocals() {
+        return demuxed("no_vocals.wav");
     }
 
     public Path info() {

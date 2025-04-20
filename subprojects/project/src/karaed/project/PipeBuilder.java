@@ -51,8 +51,8 @@ public final class PipeBuilder {
         setFile(ProjectFile.INFO, workDir.info());
         setFile(ProjectFile.ORIGINAL_VIDEO, finder.getVideo("", false));
         setFile(ProjectFile.PREPARED_VIDEO, finder.getVideo(MakeVideo.PREPARED, false));
-        setFile(ProjectFile.VOCALS, workDir.demuxed("vocals.wav"));
-        setFile(ProjectFile.NO_VOCALS, workDir.demuxed("no_vocals.wav"));
+        setFile(ProjectFile.VOCALS, workDir.vocals());
+        setFile(ProjectFile.NO_VOCALS, workDir.noVocals());
         setFile(ProjectFile.RANGES, workDir.file("ranges.json"));
         setFile(ProjectFile.ALIGNED, workDir.file("aligned.json"));
         setFile(ProjectFile.SUBS, workDir.file("subs.ass"));
