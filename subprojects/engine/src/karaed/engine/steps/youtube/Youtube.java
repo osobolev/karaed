@@ -21,34 +21,37 @@ import java.util.List;
 
 public final class Youtube {
 
-    private static final String FULL = "full.";
+    private static String getBaseName(Path file, String extension) {
+        String fileName = file.getFileName().toString();
+        if (!fileName.endsWith(extension))
+            throw new KaraException(String.format("Info file name should end with \"%s\"", extension));
+        return fileName.substring(0, fileName.length() - extension.length());
+    }
+
+    private static Path downloadTo(ProcRunner runner, OInput input, Path infoFile, VideoFinder finder,
+                                   String suffix) throws IOException, InterruptedException {
+        String basePath = finder.getDir() + File.separator + finder.getBaseName();
+        String infoBasePath = infoFile.getParent() + File.separator + getBaseName(infoFile, ".info.json");
+        runner.runPythonExe(
+            "yt-dlp",
+            "--no-mtime",
+            "--write-info-json",
+            "--output", basePath + "." + suffix + "%(ext)s",
+            "--output", "infojson:" + infoBasePath + ".%(ext)s",
+            input.url()
+        );
+        return finder.getVideo(suffix, true);
+    }
 
     public static void download(ProcRunner runner, OInput input, OCut cut, Path audio, Path infoFile, VideoFinder finder) throws IOException, InterruptedException {
         CutRange range = CutRange.create(cut);
         if (input.url() != null) {
-            String basePath = finder.getDir() + File.separator + finder.getBaseName();
             runner.println(String.format("Downloading from Youtube%s...", range == null ? "" : " (range " + range + ")"));
             Path video;
             if (range == null) {
-                runner.runPythonExe(
-                    "yt-dlp",
-                    "--no-mtime",
-                    "--write-info-json",
-                    "--output", basePath + ".%(ext)s",
-                    "--output", "infojson:" + infoFile,
-                    input.url()
-                );
-                video = finder.getVideo("", true);
+                video = downloadTo(runner, input, infoFile, finder, "");
             } else {
-                runner.runPythonExe(
-                    "yt-dlp",
-                    "--no-mtime",
-                    "--write-info-json",
-                    "--output", basePath + "." + FULL + "%(ext)s",
-                    "--output", "infojson:" + infoFile,
-                    input.url()
-                );
-                Path fullVideo = finder.getVideo(FULL, true);
+                Path fullVideo = downloadTo(runner, input, infoFile, finder, "full.");
 
                 runner.println("Cutting downloaded video...");
                 CutRange realCut = new KeyRangeDetector(runner, range).getRealCut(fullVideo);
