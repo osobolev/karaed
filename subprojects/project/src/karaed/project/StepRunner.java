@@ -121,7 +121,7 @@ public final class StepRunner {
         Path noVocals = workDir.demuxed("no_vocals.wav");
         Path karaoke = workDir.file("karaoke.ass");
         OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
-        Path video = MakeVideo.getVideo(options, workDir.video());
+        Path video = options.useOriginalVideo() ? MakeVideo.getVideo(workDir.video()) : null;
         MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
     }
 }

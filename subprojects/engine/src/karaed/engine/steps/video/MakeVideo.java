@@ -2,7 +2,6 @@ package karaed.engine.steps.video;
 
 import karaed.engine.formats.ffprobe.FFStream;
 import karaed.engine.formats.ffprobe.FFStreams;
-import karaed.engine.opts.OVideo;
 import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
@@ -80,9 +79,7 @@ public final class MakeVideo {
         return buf.toString();
     }
 
-    public static Path getVideo(OVideo options, VideoFinder finder) throws IOException {
-        if (!options.useOriginalVideo())
-            return null;
+    public static Path getVideo(VideoFinder finder) throws IOException {
         Path preparedVideo = finder.getVideo(PREPARED, false);
         if (preparedVideo != null && Files.exists(preparedVideo) && Files.size(preparedVideo) > 0)
             return preparedVideo;
