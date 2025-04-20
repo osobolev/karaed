@@ -9,56 +9,89 @@ import static karaed.project.ProjectFile.*;
 
 final class Dependencies {
 
-    private final Map<ProjectFile, Set<ProjectFile>> dependencies = new EnumMap<>(ProjectFile.class);
+    private final Map<ProjectFile, Map<ProjectFile, Boolean>> dependencies = new EnumMap<>(ProjectFile.class);
     private final Map<PipeStep, Set<ProjectFile>> forSteps = new EnumMap<>(PipeStep.class);
 
-    private void add(ProjectFile file, List<ProjectFile> deps) {
-        dependencies.computeIfAbsent(file, k -> EnumSet.noneOf(ProjectFile.class)).addAll(deps);
+    private void add(ProjectFile file, ProjectFile dep, boolean required) {
+        dependencies.computeIfAbsent(file, k -> new EnumMap<>(ProjectFile.class)).put(dep, required);
     }
 
-    private void step(PipeStep step, List<ProjectFile> files) {
-        forSteps.computeIfAbsent(step, k -> EnumSet.noneOf(ProjectFile.class)).addAll(files);
+    private void add(ProjectFile file, ProjectFile dep) {
+        add(file, dep, true);
+    }
+
+    private void fileDeps(OInput input, OVideo video) {
+        boolean hasVideo = input.url() != null;
+        if (hasVideo) {
+            add(ORIGINAL_VIDEO, INPUT);
+            add(PREPARED_VIDEO, ORIGINAL_VIDEO);
+            add(AUDIO, ORIGINAL_VIDEO);
+        } else if (input.file() != null) {
+            add(AUDIO, INPUT);
+        }
+
+        add(INFO, INPUT);
+
+        add(VOCALS, AUDIO);
+        add(NO_VOCALS, AUDIO);
+
+        add(RANGES, TEXT);
+        add(RANGES, VOCALS);
+
+        add(ALIGNED, VOCALS);
+        add(ALIGNED, RANGES);
+
+        add(SUBS, TEXT);
+        add(SUBS, ALIGNED);
+
+        add(KARAOKE_SUBS, INFO, false);
+        add(KARAOKE_SUBS, SUBS);
+
+        if (hasVideo && video.useOriginalVideo()) {
+            add(KARAOKE_VIDEO, PREPARED_VIDEO);
+        }
+        add(KARAOKE_VIDEO, NO_VOCALS);
+        add(KARAOKE_VIDEO, KARAOKE_SUBS);
+    }
+
+    private void step(PipeStep step, ProjectFile file) {
+        forSteps.computeIfAbsent(step, k -> EnumSet.noneOf(ProjectFile.class)).add(file);
+    }
+
+    private void stepDeps(OInput input, OVideo video) {
+        boolean hasVideo = input.url() != null;
+        if (hasVideo) {
+            step(PipeStep.DOWNLOAD, ORIGINAL_VIDEO);
+        }
+        step(PipeStep.DOWNLOAD, AUDIO);
+        step(PipeStep.DOWNLOAD, INFO);
+
+        step(PipeStep.DEMUCS, VOCALS);
+        step(PipeStep.DEMUCS, NO_VOCALS);
+
+        step(PipeStep.RANGES, RANGES);
+
+        step(PipeStep.ALIGN, ALIGNED);
+
+        step(PipeStep.SUBS, SUBS);
+
+        step(PipeStep.KARAOKE, KARAOKE_SUBS);
+
+        if (hasVideo && video.useOriginalVideo()) {
+            step(PipeStep.PREPARE_VIDEO, PREPARED_VIDEO);
+        }
+
+        step(PipeStep.VIDEO, KARAOKE_VIDEO);
     }
 
     Dependencies(OInput input, OVideo video) {
-        if (input.url() != null) {
-            add(ORIGINAL_VIDEO, List.of(INPUT));
-            add(PREPARED_VIDEO, List.of(ORIGINAL_VIDEO));
-            add(AUDIO, List.of(ORIGINAL_VIDEO));
-        } else if (input.file() != null) {
-            add(AUDIO, List.of(INPUT));
-        }
-        add(INFO, List.of(INPUT));
-        add(VOCALS, List.of(AUDIO));
-        add(NO_VOCALS, List.of(AUDIO));
-        add(RANGES, List.of(TEXT, VOCALS));
-        add(ALIGNED, List.of(VOCALS, RANGES));
-        add(SUBS, List.of(TEXT, ALIGNED));
-        add(KARAOKE_SUBS, List.of(INFO, SUBS));
-        if (video.useOriginalVideo()) {
-            add(KARAOKE_VIDEO, List.of(PREPARED_VIDEO, NO_VOCALS, KARAOKE_SUBS));
-        } else {
-            add(KARAOKE_VIDEO, List.of(NO_VOCALS, KARAOKE_SUBS));
-        }
+        fileDeps(input, video);
 
-        if (input.url() != null) {
-            step(PipeStep.DOWNLOAD, List.of(ORIGINAL_VIDEO, AUDIO, INFO));
-        } else if (input.file() != null) {
-            step(PipeStep.DOWNLOAD, List.of(AUDIO, INFO));
-        }
-        step(PipeStep.DEMUCS, List.of(VOCALS, NO_VOCALS));
-        step(PipeStep.RANGES, List.of(RANGES));
-        step(PipeStep.ALIGN, List.of(ALIGNED));
-        step(PipeStep.SUBS, List.of(SUBS));
-        step(PipeStep.KARAOKE, List.of(KARAOKE_SUBS));
-        if (video.useOriginalVideo()) {
-            step(PipeStep.PREPARE_VIDEO, List.of(PREPARED_VIDEO));
-        }
-        step(PipeStep.VIDEO, List.of(KARAOKE_VIDEO));
+        stepDeps(input, video);
     }
 
-    Set<ProjectFile> dependencies(ProjectFile file) {
-        return dependencies.getOrDefault(file, Collections.emptySet());
+    Map<ProjectFile, Boolean> dependencies(ProjectFile file) {
+        return dependencies.getOrDefault(file, Collections.emptyMap());
     }
 
     Set<ProjectFile> stepFiles(PipeStep step) {

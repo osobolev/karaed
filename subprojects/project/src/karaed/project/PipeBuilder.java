@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class PipeBuilder {
 
@@ -61,22 +60,47 @@ public final class PipeBuilder {
         setFile(ProjectFile.KARAOKE_VIDEO, workDir.file("karaoke.mp4"));
     }
 
+    private String pathString(Path depFile) {
+        Path dir = workDir.dir();
+        if (depFile.startsWith(dir)) {
+            return dir.relativize(depFile).toString();
+        } else {
+            return depFile.getFileName().toString();
+        }
+    }
+
+    private String depName(ProjectFile dep) {
+        Path depFile = fileStates.get(dep).file;
+        if (depFile == null)
+            return dep.toString();
+        Path dir = workDir.dir();
+        if (depFile.startsWith(dir)) {
+            return dir.relativize(depFile).toString();
+        } else {
+            return depFile.getFileName().toString();
+        }
+    }
+
     private FileState determineFileState(ProjectFile file, FileStateBuf state) throws IOException {
         if (state.file == null || !Files.exists(state.file))
             return new FileState.Missing();
         FileTime myTime = Files.getLastModifiedTime(state.file);
-        List<Path> newer = new ArrayList<>();
-        List<Path> rebuilt = new ArrayList<>();
-        for (ProjectFile dep : dependencies.dependencies(file)) {
+        List<String> newer = new ArrayList<>();
+        List<String> rebuilt = new ArrayList<>();
+        for (Map.Entry<ProjectFile, Boolean> entry : dependencies.dependencies(file).entrySet()) {
+            ProjectFile dep = entry.getKey();
+            boolean required = entry.getValue().booleanValue();
             Path depFile = fileStates.get(dep).file;
             FileState depState = getFileState(dep);
             if (depState instanceof FileState.Fresh) {
                 FileTime depTime = Files.getLastModifiedTime(depFile);
                 if (depTime.compareTo(myTime) > 0) {
-                    newer.add(depFile);
+                    newer.add(depName(dep));
                 }
             } else if (depState instanceof FileState.MustRebuild) {
-                rebuilt.add(depFile);
+                rebuilt.add(depName(dep));
+            } else if (depState instanceof FileState.Missing && required) {
+                rebuilt.add(depName(dep));
             }
         }
         for (String option : file.options) {
@@ -84,13 +108,25 @@ public final class PipeBuilder {
             if (Files.exists(optionFile)) {
                 FileTime optTime = Files.getLastModifiedTime(optionFile);
                 if (optTime.compareTo(myTime) > 0) {
-                    newer.add(optionFile);
+                    newer.add(pathString(optionFile));
                 }
             }
         }
-        if (newer.isEmpty() && rebuilt.isEmpty())
+        String because;
+        if (!newer.isEmpty()) {
+            because = String.format(
+                "%s is newer than %s",
+                String.join(", ", newer), depName(file)
+            );
+        } else if (!rebuilt.isEmpty()) {
+            because = String.format(
+                "%s must be rebuilt before %s",
+                String.join(", ", rebuilt), depName(file)
+            );
+        } else {
             return new FileState.Fresh();
-        return new FileState.MustRebuild(newer, rebuilt);
+        }
+        return new FileState.MustRebuild(because);
     }
 
     private FileState getFileState(ProjectFile file) throws IOException {
@@ -99,20 +135,6 @@ public final class PipeBuilder {
             state.state = determineFileState(file, state);
         }
         return state.state;
-    }
-
-    private String paths(List<Path> paths) {
-        return paths
-            .stream()
-            .map(p -> {
-                Path dir = workDir.dir();
-                if (p.startsWith(dir)) {
-                    return dir.relativize(p).toString();
-                } else {
-                    return p.getFileName().toString();
-                }
-            })
-            .collect(Collectors.joining(", "));
     }
 
     private StepState getStepState(PipeStep step) throws IOException {
@@ -125,21 +147,7 @@ public final class PipeBuilder {
         }
         for (ProjectFile file : files) {
             FileState state = getFileState(file);
-            if (state instanceof FileState.MustRebuild(List<Path> newer, List<Path> rebuilt)) {
-                Path path = fileStates.get(file).file;
-                String currFile = path == null ? file.toString() : path.getFileName().toString();
-                String because;
-                if (!newer.isEmpty()) {
-                    because = String.format(
-                        "%s is newer than %s",
-                        paths(newer), currFile
-                    );
-                } else {
-                    because = String.format(
-                        "%s must be rebuilt before %s",
-                        paths(rebuilt), currFile
-                    );
-                }
+            if (state instanceof FileState.MustRebuild(String because)) {
                 return new StepState.MustRerun(because);
             }
         }
