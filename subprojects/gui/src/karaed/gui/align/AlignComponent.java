@@ -1,6 +1,8 @@
 package karaed.gui.align;
 
 import karaed.engine.audio.MaxAudioSource;
+import karaed.engine.formats.ranges.Area;
+import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.InputUtil;
@@ -10,6 +12,8 @@ import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.List;
 
 final class AlignComponent {
 
@@ -20,6 +24,8 @@ final class AlignComponent {
     private final RangesComponent vocals;
     private final JSlider scaleSlider = new JSlider(2, 50, 30);
     private final JSpinner chThreshold = new JSpinner(new SpinnerNumberModel(1, 0, 100, 1));
+    private final float maxSilenceGap; // todo: editable
+    private final float minRangeDuration; // todo: editable
     private final JPanel main = new JPanel(new BorderLayout());
     private final LyricsComponent lyrics = new LyricsComponent(colors);
 
@@ -33,6 +39,8 @@ final class AlignComponent {
                 vocals.stop();
             }
         };
+        this.maxSilenceGap = data.params().maxSilenceGap();
+        this.minRangeDuration = data.params().minRangeDuration();
 
         setScale();
         scaleSlider.addChangeListener(e -> setScale());
@@ -57,8 +65,8 @@ final class AlignComponent {
 
         main.add(lyrics.getVisual(), BorderLayout.CENTER);
 
-        chThreshold.setValue(Math.round(data.silenceThreshold() * 100));
-        vocals.setData(maxSource, data.ranges());
+        chThreshold.setValue(Math.round(data.params().silenceThreshold() * 100));
+        vocals.setData(maxSource, data.ranges(), data.areas());
         lyrics.setLines(data.lines());
 
         vocals.addRangesChanged(() -> {
@@ -78,7 +86,7 @@ final class AlignComponent {
 
         chThreshold.addChangeListener(e -> {
             try {
-                vocals.setSilenceThreshold(getSilenceThreshold());
+                vocals.setParams(getParams());
             } catch (Exception ex) {
                 ShowMessage.error(main, logger, ex);
             }
@@ -103,6 +111,10 @@ final class AlignComponent {
         return threshold.floatValue() / 100f;
     }
 
+    private AreaParams getParams() {
+        return new AreaParams(getSilenceThreshold(), maxSilenceGap, minRangeDuration);
+    }
+
     Document getRangesDocument() {
         return lyrics.getDocument();
     }
@@ -112,7 +124,9 @@ final class AlignComponent {
     }
 
     Ranges getData() {
-        return new Ranges(getSilenceThreshold(), vocals.getRanges(), lyrics.getLines());
+        AreaParams params = getParams();
+        List<Area> areas = Collections.emptyList(); // todo!!!
+        return new Ranges(params, vocals.getRanges(), areas, lyrics.getLines());
     }
 
     void close() {

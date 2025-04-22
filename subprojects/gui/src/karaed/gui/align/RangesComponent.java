@@ -2,6 +2,8 @@ package karaed.gui.align;
 
 import karaed.engine.audio.MaxAudioSource;
 import karaed.engine.audio.VoiceRanges;
+import karaed.engine.formats.ranges.Area;
+import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.ShowMessage;
@@ -30,6 +32,7 @@ final class RangesComponent extends JComponent implements Scrollable {
     private MaxAudioSource source = null;
     private float frameRate = 0;
     private final List<Range> ranges = new ArrayList<>();
+    private final List<Area> areas = new ArrayList<>();
 
     private final List<Runnable> playChanged = new ArrayList<>();
     private final List<Runnable> rangesChanged = new ArrayList<>();
@@ -51,21 +54,25 @@ final class RangesComponent extends JComponent implements Scrollable {
         });
     }
 
-    void setData(MaxAudioSource source, List<Range> ranges) {
+    // todo: move initialization to constructor???
+    void setData(MaxAudioSource source, List<Range> ranges, List<Area> areas) {
         stop();
 
         this.source = source;
         this.frameRate = source.format.getFrameRate();
         this.ranges.clear();
         this.ranges.addAll(ranges);
+        this.areas.clear();
+        this.areas.addAll(areas);
 
         revalidate();
         repaint();
     }
 
-    void setSilenceThreshold(float threshold) throws UnsupportedAudioFileException, IOException {
-        List<Range> ranges = VoiceRanges.detectVoice(source, threshold);
-        setData(source, ranges);
+    void setParams(AreaParams params) throws UnsupportedAudioFileException, IOException {
+        // todo: do not apply to areas???
+        List<Range> ranges = VoiceRanges.detectVoice(source, params);
+        setData(source, ranges, areas); // todo: do not use setData???
         fireRangesChanged();
     }
 
@@ -172,9 +179,8 @@ final class RangesComponent extends JComponent implements Scrollable {
         Range range = ranges.get(index);
         List<Range> newRanges;
         try {
-            float silenceThreshold = 0.01f; // todo
-            float ignoreShortSilence = 0.25f; // todo: ask for new value
-            newRanges = VoiceRanges.resplit(source, range, silenceThreshold, ignoreShortSilence);
+            AreaParams params = new AreaParams(0.01f, 0.1f, 0.1f); // todo!!!
+            newRanges = VoiceRanges.resplit(source, range, params);
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
             return;

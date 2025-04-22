@@ -7,13 +7,15 @@ import java.util.List;
 
 final class Ranger {
 
-    private final int ignoreShortSilence;
+    private final int maxSilenceGap;
+    private final int minRangeDuration;
 
     private int voiceStarted = -1;
     private final List<Range> ranges = new ArrayList<>();
 
-    Ranger(int ignoreShortSilence) {
-        this.ignoreShortSilence = ignoreShortSilence;
+    Ranger(int maxSilenceGap, int minRangeDuration) {
+        this.maxSilenceGap = maxSilenceGap;
+        this.minRangeDuration = minRangeDuration;
     }
 
     private void finishRange(int frame) {
@@ -32,7 +34,7 @@ final class Ranger {
                     int lastIndex = ranges.size() - 1;
                     Range prev = ranges.get(lastIndex);
                     int silenceSize = frame - prev.to();
-                    if (silenceSize < ignoreShortSilence) {
+                    if (silenceSize < maxSilenceGap) {
                         ranges.remove(lastIndex);
                         voiceStarted = prev.from();
                         return;
@@ -47,7 +49,7 @@ final class Ranger {
         if (voiceStarted >= 0) {
             finishRange(frame);
         }
-        ranges.removeIf(range -> range.to() - range.from() < ignoreShortSilence);
+        ranges.removeIf(range -> range.to() - range.from() < minRangeDuration);
         return ranges;
     }
 }

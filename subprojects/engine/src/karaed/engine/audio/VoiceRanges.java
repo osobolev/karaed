@@ -1,5 +1,6 @@
 package karaed.engine.audio;
 
+import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 
 import javax.sound.sampled.AudioInputStream;
@@ -18,29 +19,33 @@ public final class VoiceRanges {
         return true;
     }
 
+    private static Ranger ranger(MaxAudioSource source, AreaParams params) {
+        float frameRate = source.format.getFrameRate();
+        return new Ranger(
+            (int) (params.maxSilenceGap() * frameRate),
+            (int) (params.minRangeDuration() * frameRate)
+        );
+    }
+
     private static WavReader.WavConsumer consumer(Ranger ranger, long[] maxValues, float threshold) {
         return (frame, values) -> ranger.add(frame, isSilence(values, maxValues, threshold));
     }
 
-    public static List<Range> detectVoice(MaxAudioSource source, float silenceThreshold) throws IOException, UnsupportedAudioFileException {
-        try (AudioInputStream as = source.source.getStream()) {
+    public static List<Range> detectVoice(MaxAudioSource source, AreaParams params) throws IOException, UnsupportedAudioFileException {
+        try (AudioInputStream as = source.source.getStream(0)) {
             WavReader reader = new WavReader(as, 0);
-            float frameRate = source.format.getFrameRate();
-            // todo: constant can change:
-            Ranger ranger = new Ranger((int) (0.5f * frameRate));
-            int frames = reader.readAll(consumer(ranger, source.maxValues, silenceThreshold));
+            Ranger ranger = ranger(source, params);
+            int frames = reader.readAll(consumer(ranger, source.maxValues, params.silenceThreshold()));
             return ranger.finish(frames);
         }
     }
 
     public static List<Range> resplit(MaxAudioSource source, Range range,
-                                      float silenceThreshold, float ignoreShortSilence) throws IOException, UnsupportedAudioFileException {
-        try (AudioInputStream as = source.source.getStream()) {
+                                      AreaParams params) throws IOException, UnsupportedAudioFileException {
+        try (AudioInputStream as = source.source.getStream(range.from())) {
             WavReader reader = new WavReader(as, range.from());
-            float frameRate = reader.format.getFrameRate();
-            Ranger ranger = new Ranger((int) (ignoreShortSilence * frameRate));
-            WavReader.WavConsumer wavConsumer = consumer(ranger, source.maxValues, silenceThreshold);
-            as.skip((long) range.from() * reader.format.getFrameSize());
+            Ranger ranger = ranger(source, params);
+            WavReader.WavConsumer wavConsumer = consumer(ranger, source.maxValues, params.silenceThreshold());
             int frames = range.to() - range.from();
             reader.readN(wavConsumer, frames);
             return ranger.finish(range.to());

@@ -4,6 +4,8 @@ import karaed.engine.audio.AudioSource;
 import karaed.engine.audio.MaxAudioSource;
 import karaed.engine.audio.MemAudioSource;
 import karaed.engine.audio.VoiceRanges;
+import karaed.engine.formats.ranges.Area;
+import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
@@ -19,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -109,9 +112,10 @@ public final class ManualAlign extends JDialog {
         if (fileData != null) {
             data = fileData;
         } else {
-            float silenceThreshold = 0.01f;
-            List<Range> ranges = VoiceRanges.detectVoice(maxSource, silenceThreshold);
-            data = new Ranges(silenceThreshold, ranges, lines);
+            AreaParams params = new AreaParams(0.01f, 0.5f, 0.5f); // todo!!!
+            List<Range> ranges = VoiceRanges.detectVoice(maxSource, params);
+            List<Area> areas = Collections.emptyList(); // todo!!!
+            data = new Ranges(params, ranges, areas, lines);
         }
 
         return new ManualAlign(
