@@ -8,7 +8,7 @@ import java.io.OutputStream;
 
 public final class FileAudioSource implements AudioSource {
 
-    public final File file;
+    private final File file;
 
     public FileAudioSource(File file) {
         this.file = file;
