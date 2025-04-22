@@ -31,25 +31,27 @@ public final class MemAudioSource implements AudioSource {
         return format.getFormat().getFrameSize();
     }
 
+    private int toBytes(int frame) {
+        return frame * getFrameSize();
+    }
+
     private AudioInputStream subStream(int from, int to) {
-        int frameSize = getFrameSize();
         return new AudioInputStream(
-            new ByteArrayInputStream(data, from * frameSize, (to - from) * frameSize),
+            new ByteArrayInputStream(data, toBytes(from), toBytes(to - from)),
             format.getFormat(), to - from
         );
     }
 
     @Override
-    public AudioInputStream getStream() {
+    public AudioInputStream getStream(int from) {
         int frames = data.length / getFrameSize();
-        return subStream(0, frames);
+        return subStream(from, frames - from);
     }
 
     @Override
     public Clip open(int from, int to) throws LineUnavailableException {
-        int frameSize = getFrameSize();
         Clip clip = AudioSystem.getClip();
-        clip.open(format.getFormat(), data, from * frameSize, (to - from) * frameSize);
+        clip.open(format.getFormat(), data, toBytes(from), toBytes(to - from));
         return clip;
     }
 

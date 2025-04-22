@@ -20,7 +20,7 @@ public final class MaxAudioSource {
     }
 
     public static MaxAudioSource detectMaxValues(AudioSource source) throws IOException, UnsupportedAudioFileException {
-        try (AudioInputStream as = source.getStream()) {
+        try (AudioInputStream as = source.getStream(0)) {
             WavReader reader = new WavReader(as, 0);
             AudioFormat format = reader.format;
             long[] maxValues = new long[format.getChannels()];

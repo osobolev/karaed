@@ -19,9 +19,21 @@ public final class FileAudioSource implements AudioSource {
         return AudioSystem.getAudioFileFormat(file).getFormat();
     }
 
+    private static int toBytes(AudioFormat format, int frame) {
+        return frame * format.getFrameSize();
+    }
+
     @Override
-    public AudioInputStream getStream() throws UnsupportedAudioFileException, IOException {
-        return AudioSystem.getAudioInputStream(file);
+    public AudioInputStream getStream(int from) throws UnsupportedAudioFileException, IOException {
+        AudioInputStream as = AudioSystem.getAudioInputStream(file);
+        if (from > 0) {
+            as.skip(toBytes(as.getFormat(), from));
+        }
+        return as;
+    }
+
+    private static byte[] pieceBuf(AudioFormat format, int from, int to) {
+        return new byte[toBytes(format, to - from)];
     }
 
     @Override
@@ -29,11 +41,9 @@ public final class FileAudioSource implements AudioSource {
         AudioFormat format;
         byte[] data;
         int read;
-        try (AudioInputStream as = AudioSystem.getAudioInputStream(file)) {
+        try (AudioInputStream as = getStream(from)) {
             format = as.getFormat();
-            int frameSize = format.getFrameSize();
-            as.skip((long) from * frameSize);
-            data = new byte[(to - from) * frameSize];
+            data = pieceBuf(format, from, to);
             read = as.readNBytes(data, 0, data.length);
         }
         Clip clip = AudioSystem.getClip();
@@ -46,11 +56,9 @@ public final class FileAudioSource implements AudioSource {
         AudioFormat format;
         byte[] data;
         int read;
-        try (AudioInputStream as = AudioSystem.getAudioInputStream(file)) {
+        try (AudioInputStream as = getStream(from)) {
             format = as.getFormat();
-            int frameSize = format.getFrameSize();
-            as.skip((long) from * frameSize);
-            data = new byte[(to - from) * frameSize];
+            data = pieceBuf(format, from, to);
             read = as.readNBytes(data, 0, data.length);
         }
         AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(file);
