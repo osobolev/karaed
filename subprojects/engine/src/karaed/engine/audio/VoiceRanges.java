@@ -12,7 +12,7 @@ public final class VoiceRanges {
     private static boolean isSilence(long[] values, long[] maxValues, float threshold) {
         for (int i = 0; i < values.length; i++) {
             float value = (float) values[i] / maxValues[i];
-            if (value > threshold) // todo: threshold
+            if (value > threshold)
                 return false;
         }
         return true;
