@@ -366,18 +366,22 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        Dimension size = getPreferredSize();
-        return new Dimension(1000, size.height);
+        Sizer s = newSizer();
+        return new Dimension(1000, s.prefHeight());
     }
 
     @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return 10; // todo
+        return 50;
     }
 
     @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return 10; // todo
+        if (orientation == SwingConstants.VERTICAL) {
+            return 50;
+        } else {
+            return Math.max(visibleRect.width - 50, 50);
+        }
     }
 
     @Override
