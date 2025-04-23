@@ -113,11 +113,10 @@ public final class EditableRanges {
         resplit(true);
     }
 
-    public void addArea(int from, int to, AreaParams params) throws UnsupportedAudioFileException, IOException {
-        EditableArea ea = new EditableArea(from, to, params);
-        if (intersects(ea))
+    public void addArea(EditableArea area) throws UnsupportedAudioFileException, IOException {
+        if (intersects(area))
             return;
-        areas.put(from, ea);
+        areas.put(area.from(), area);
         areasChanged();
     }
 
@@ -125,6 +124,31 @@ public final class EditableRanges {
         if (areas.entrySet().removeIf(e -> e.getValue() == area)) {
             areasChanged();
         }
+    }
+
+    public EditableArea newArea(int from, int to) {
+        return new EditableArea(from, to, params);
+    }
+
+    public EditableArea newAreaFromRange(Range range, int delta) {
+        int i = ranges.indexOf(range);
+        if (i < 0)
+            return null;
+        int from;
+        if (i > 0) {
+            int prev = ranges.get(i - 1).to();
+            from = Math.max(range.from() - delta, Range.mid(prev, range.from()));
+        } else {
+            from = Math.max(range.from() - delta, 0);
+        }
+        int to;
+        if (i + 1 < ranges.size()) {
+            int next = ranges.get(i + 1).from();
+            to = Math.min(range.to() + delta, Range.mid(range.to(), next));
+        } else {
+            to = Math.min(range.to() + delta, source.frames);
+        }
+        return new EditableArea(from, to, params);
     }
 
     public void addListener(RangeEditListener listener) {

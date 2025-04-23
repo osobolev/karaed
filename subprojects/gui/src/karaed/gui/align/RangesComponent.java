@@ -80,7 +80,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                         if (to > from) {
                             // todo: skip too small areas!!!
                             try {
-                                model.addArea(from, to, model.getParams());
+                                model.addArea(model.newArea(from, to));
                             } catch (Exception ex) {
                                 owner.error(ex);
                             }
@@ -227,7 +227,19 @@ final class RangesComponent extends JComponent implements Scrollable {
             menu.add(new AbstractAction("Add area & edit") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    // todo
+                    Measurer m = new Measurer(frameRate, pixPerSec);
+                    int delta = m.sec2frame(1);
+                    EditableArea area = model.newAreaFromRange(range, delta);
+                    if (area == null)
+                        return;
+                    try {
+                        model.addArea(area);
+                        editingArea = area;
+                        fireParamsChanged();
+                        repaint();
+                    } catch (Exception ex) {
+                        owner.error(ex);
+                    }
                 }
             });
             menu.show(this, me.getX() - 5, me.getY() - 5);
