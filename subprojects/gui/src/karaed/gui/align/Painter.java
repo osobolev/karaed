@@ -55,14 +55,16 @@ final class Painter extends Sizer {
         }
     }
 
-    void paint(ColorSequence colors, EditableRanges model, Range playingRange) {
+    void paint(ColorSequence colors, EditableRanges model, Range playingRange, Area editingArea) {
         int ya = areaEditY1();
         for (Area area : model.getAreas()) {
-            g.setColor(new Color(120, 120, 120, 120)); // todo
             int x1 = frame2x(area.from());
             int x2 = frame2x(area.to());
             int width = Math.max(x2 - x1, 1);
-            g.fillRect(x1, 0, width, height); // todo
+            if (area != editingArea) {
+                g.setColor(new Color(120, 120, 120, 120)); // todo
+                g.fillRect(x1, 0, width, height); // todo
+            }
             g.setColor(Color.red); // todo!!!
             g.fillRect(x1, ya, width, AREA_EDIT_H);
         }

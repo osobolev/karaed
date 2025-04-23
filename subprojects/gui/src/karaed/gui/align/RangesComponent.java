@@ -9,10 +9,7 @@ import karaed.gui.util.ShowMessage;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
 import javax.swing.*;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -20,17 +17,14 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-// todo: allow manual editing of areas (by mouse drag)
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
 // todo: when editing params (of all/area), show changes and allow to commit/rollback them
 // todo: allow to delete/edit areas
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
 // todo: show text inside ranges???
-// todo: better ticks display
 // todo: better "currently playing" display
 // todo: "go to": from lyrics to range, from range to lyrics
-// todo: when area is selected, grey out all the other data???
 final class RangesComponent extends JComponent implements Scrollable {
 
     private final ErrorLogger logger;
@@ -45,6 +39,8 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     private Range playingRange = null;
     private Clip playing = null;
+
+    private Area editingArea = null;
 
     private Integer dragStart = null;
     private Integer dragging = null;
@@ -77,7 +73,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                     int f2 = m.x2frame(dragging.intValue());
                     int from = Math.min(f1, f2);
                     int to = Math.max(f1, f2);
-                    if (to > from) {
+                    if (to > from && editingArea == null) {
                         // todo: skip too small areas!!!
                         model.addArea(new Area(from, to, model.getParams()));
                     }
@@ -88,8 +84,28 @@ final class RangesComponent extends JComponent implements Scrollable {
             }
         });
         addMouseMotionListener(new MouseMotionAdapter() {
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                Cursor c = Cursor.getDefaultCursor();
+                List<Area> areas = model.getAreas();
+                if (!areas.isEmpty()) {
+                    Sizer s = newSizer();
+                    int frame = s.x2frame(e.getX());
+                    int iarea = s.findArea(frame, e.getY(), areas);
+                    if (iarea >= 0) {
+                        c = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                    }
+                }
+                if (getCursor() != c) {
+                    setCursor(c);
+                }
+            }
+
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (editingArea != null)
+                    return;
                 if (dragStart == null) {
                     dragStart = e.getX();
                 }
@@ -99,8 +115,16 @@ final class RangesComponent extends JComponent implements Scrollable {
         });
     }
 
+    private Sizer newSizer() {
+        return new Sizer(getFontMetrics(getFont()), frameRate, pixPerSec);
+    }
+
     private int totalSeconds() {
         return (int) Math.ceil(model.source.frames / frameRate);
+    }
+
+    private void doPaint(Painter painter) {
+        painter.paint(colors, model, playingRange, editingArea);
     }
 
     @Override
@@ -108,16 +132,44 @@ final class RangesComponent extends JComponent implements Scrollable {
         super.paintComponent(g);
 
         FontMetrics fm = getFontMetrics(getFont());
-        Painter painter = new Painter(g, fm, frameRate, pixPerSec, getHeight());
+        int height = getHeight();
+        Painter painter = new Painter(g, fm, frameRate, pixPerSec, height);
         painter.paintScale(totalSeconds(), getWidth());
-        painter.paint(colors, model, playingRange);
+
+        if (editingArea != null) {
+            Graphics2D g2 = (Graphics2D) g;
+            Composite composite = g2.getComposite();
+            int x1 = painter.frame2x(editingArea.from());
+            int x2 = painter.frame2x(editingArea.to());
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
+            {
+                g.setClip(0, 0, x1, height);
+                doPaint(painter);
+            }
+            {
+                g.setClip(x2, 0, getWidth() - x2, height);
+                doPaint(painter);
+            }
+            g2.setComposite(composite);
+            {
+                g.setClip(x1, 0, x2 - x1, height);
+                doPaint(painter);
+            }
+            g.setClip(null);
+            g.setColor(Color.gray); // todo
+            g.drawLine(x1, 0, x1, height);
+            g.drawLine(x2, 0, x2, height);
+        } else {
+            doPaint(painter);
+        }
+
         if (dragStart != null && dragging != null) {
             painter.paintDrag(dragStart.intValue(), dragging.intValue());
         }
     }
 
     private void mouseClick(MouseEvent me) {
-        Sizer s = new Sizer(getFontMetrics(getFont()), frameRate, pixPerSec);
+        Sizer s = newSizer();
         int frame = s.x2frame(me.getX());
 
         List<Range> ranges = model.getRanges();
@@ -131,7 +183,8 @@ final class RangesComponent extends JComponent implements Scrollable {
         List<Area> areas = model.getAreas();
         int iarea = s.findArea(frame, me.getY(), areas);
         if (iarea >= 0) {
-            // todo
+            Area area = areas.get(iarea);
+            areaClicked(me, area);
         }
     }
 
@@ -154,20 +207,36 @@ final class RangesComponent extends JComponent implements Scrollable {
                 ShowMessage.error(this, logger, ex);
             }
         } else if (me.getButton() == MouseEvent.BUTTON3) {
-            // todo: make this shit work with areas???
             JPopupMenu menu = new JPopupMenu();
             menu.add(new AbstractAction("Add area & edit") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    // todo
                 }
             });
             menu.show(this, me.getX() - 5, me.getY() - 5);
         }
     }
 
+    private void areaClicked(MouseEvent me, Area area) {
+        if (me.getButton() == MouseEvent.BUTTON1) {
+            if (editingArea != null) {
+                if (editingArea == area) {
+                    editingArea = null;
+                    repaint();
+                }
+            } else {
+                editingArea = area;
+                repaint();
+            }
+        } else {
+            // todo: allow to delete/edit areas
+        }
+    }
+
     @Override
     public Dimension getPreferredSize() {
-        Sizer s = new Sizer(getFontMetrics(getFont()), frameRate, pixPerSec);
+        Sizer s = newSizer();
         return new Dimension(s.prefWidth(totalSeconds()), s.prefHeight());
     }
 
