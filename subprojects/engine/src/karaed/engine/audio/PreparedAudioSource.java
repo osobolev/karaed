@@ -45,7 +45,7 @@ public final class PreparedAudioSource {
                     float percent = (float) Math.abs(values[i]) / maxValues[i] * 100f;
                     sum += percent;
                 }
-                percents[frame] = (int) (sum / channels);
+                percents[frame] = Math.round(sum / channels);
             });
         }
         return new PreparedAudioSource(source, format, percents);
