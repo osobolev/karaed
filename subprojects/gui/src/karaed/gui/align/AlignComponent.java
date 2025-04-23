@@ -1,7 +1,7 @@
 package karaed.gui.align;
 
 import karaed.engine.formats.ranges.Area;
-import karaed.engine.formats.ranges.AreaParams;
+import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.model.EditableArea;
@@ -33,7 +33,6 @@ final class AlignComponent {
 
     private final Action actionStop;
 
-    private AreaParams savedData = null;
     private boolean splitModified = false;
 
     AlignComponent(ErrorLogger logger, EditableRanges model, List<String> lines, Runnable onChange) {
@@ -75,10 +74,10 @@ final class AlignComponent {
         lyrics.setLines(lines);
 
         model.addListener(rangesChanged -> {
-            if (savedData == null) {
-                onChange.run();
-            } else {
+            if (vocals.isSplitting()) {
                 splitModified = true;
+            } else {
+                onChange.run();
             }
             if (rangesChanged) {
                 syncNumbers();
@@ -108,12 +107,11 @@ final class AlignComponent {
     }
 
     private void startSplitting() {
-        if (savedData == null) {
-            savedData = vocals.getModelParams();
+        if (!vocals.isSplitting()) {
+            vocals.startSplitting();
             splitModified = false;
             btnCommit.setEnabled(true);
             btnRollback.setEnabled(true);
-            vocals.setSplitInProgress(true);
         }
     }
 
@@ -123,15 +121,11 @@ final class AlignComponent {
                 onChange.run();
             }
         } else {
-            if (savedData != null) {
-                paramsInput.setParams(savedData);
-                // todo: roll back ranges too!!!
-            }
+            vocals.rollbackChanges();
         }
-        vocals.setSplitInProgress(false);
+        vocals.finishSplitting();
         btnCommit.setEnabled(false);
         btnRollback.setEnabled(false);
-        savedData = null;
         splitModified = false;
     }
 
@@ -161,7 +155,8 @@ final class AlignComponent {
         for (EditableArea area : model.getAreas()) {
             areas.add(new Area(area.from(), area.to(), area.params()));
         }
-        return new Ranges(model.getParams(), model.getRanges(), areas, lyrics.getLines());
+        List<Range> ranges = model.getRanges().stream().toList();
+        return new Ranges(model.getParams(), ranges, areas, lyrics.getLines());
     }
 
     void close() {

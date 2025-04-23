@@ -44,7 +44,7 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     private EditableArea editingArea = null;
 
-    private boolean splitInProgress = false;
+    private SavedData beforeSplitting = null;
 
     private Integer dragStart = null;
     private Integer dragging = null;
@@ -98,7 +98,7 @@ final class RangesComponent extends JComponent implements Scrollable {
             @Override
             public void mouseMoved(MouseEvent e) {
                 Cursor c = Cursor.getDefaultCursor();
-                if (model.getAreaCount() > 0 && !splitInProgress) {
+                if (model.getAreaCount() > 0 && beforeSplitting == null) {
                     Sizer s = newSizer();
                     int frame = s.x2frame(e.getX());
                     EditableArea area = s.findArea(frame, e.getY(), model);
@@ -137,7 +137,7 @@ final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private boolean canEdit() {
-        return editingArea == null && !splitInProgress;
+        return editingArea == null && beforeSplitting == null;
     }
 
     @Override
@@ -191,10 +191,8 @@ final class RangesComponent extends JComponent implements Scrollable {
         Sizer s = newSizer();
         int frame = s.x2frame(me.getX());
 
-        List<Range> ranges = model.getRanges();
-        int irange = s.findRange(frame, me.getY(), ranges);
-        if (irange >= 0) {
-            Range range = ranges.get(irange);
+        Range range = s.findRange(frame, me.getY(), model);
+        if (range != null) {
             rangeClicked(me, range);
             return;
         }
@@ -239,7 +237,7 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     private void areaClicked(MouseEvent me, EditableArea area) {
         if (me.getButton() == MouseEvent.BUTTON1) {
-            if (splitInProgress)
+            if (beforeSplitting != null)
                 return;
             if (editingArea != null) {
                 if (editingArea == area) {
@@ -325,8 +323,18 @@ final class RangesComponent extends JComponent implements Scrollable {
         paramListeners.add(listener);
     }
 
-    void setSplitInProgress(boolean splitInProgress) {
-        this.splitInProgress = splitInProgress;
+    void startSplitting() {
+        this.beforeSplitting = new SavedData(
+            getModelParams(), model.getRanges().stream().toList()
+        );
+    }
+
+    void finishSplitting() {
+        this.beforeSplitting = null;
+    }
+
+    boolean isSplitting() {
+        return beforeSplitting != null;
     }
 
     void setParams(AreaParams params) {
@@ -335,6 +343,14 @@ final class RangesComponent extends JComponent implements Scrollable {
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
         }
+    }
+
+    void rollbackChanges() {
+        if (beforeSplitting == null)
+            return;
+        model.setRangesSilent(editingArea, beforeSplitting.params(), beforeSplitting.ranges());
+        repaint();
+        fireParamsChanged();
     }
 
     @Override

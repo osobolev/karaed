@@ -31,6 +31,16 @@ public final class EditableRanges {
         }
     }
 
+    public void setRangesSilent(EditableArea area, AreaParams params, List<Range> ranges) {
+        if (area == null) {
+            this.params = params;
+        } else {
+            area.params = params;
+        }
+        this.ranges.clear();
+        this.ranges.addAll(ranges);
+    }
+
     private void resplit(boolean fireNotChanged) throws UnsupportedAudioFileException, IOException {
         List<Range> ranges = VoiceRanges.detectVoice(source, getRangeParams());
         boolean changed = !this.ranges.equals(ranges);
@@ -135,8 +145,17 @@ public final class EditableRanges {
         return ranges.size();
     }
 
-    public List<Range> getRanges() {
+    public Collection<Range> getRanges() {
         return ranges;
+    }
+
+    public Range findRange(int frame) {
+        for (Range range : ranges) {
+            if (frame >= range.from() && frame < range.to()) {
+                return range;
+            }
+        }
+        return null;
     }
 
     public int getAreaCount() {
