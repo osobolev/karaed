@@ -19,8 +19,8 @@ public final class FileAudioSource implements AudioSource {
         return AudioSystem.getAudioFileFormat(file).getFormat();
     }
 
-    private static int toBytes(AudioFormat format, int frame) {
-        return frame * format.getFrameSize();
+    private static int toBytes(AudioFormat format, int frames) {
+        return frames * format.getFrameSize();
     }
 
     @Override
