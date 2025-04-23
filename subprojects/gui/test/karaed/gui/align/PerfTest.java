@@ -1,6 +1,5 @@
 package karaed.gui.align;
 
-import karaed.engine.audio.AudioSource;
 import karaed.engine.audio.PreparedAudioSource;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.gui.align.model.EditableRanges;
@@ -11,8 +10,7 @@ import java.util.Collections;
 public final class PerfTest {
 
     public static void main(String[] args) throws Exception {
-        AudioSource audioSource = AudioSource.create(new File("work\\align_test\\vocals.wav"));
-        PreparedAudioSource source = PreparedAudioSource.create(audioSource);
+        PreparedAudioSource source = PreparedAudioSource.create(new File("work\\align_test\\vocals.wav"));
         AreaParams params = new AreaParams(35, 0.5f, 0.5f);
         EditableRanges model = new EditableRanges(source, params, Collections.emptyList(), Collections.emptyList());
         long t0 = System.currentTimeMillis();

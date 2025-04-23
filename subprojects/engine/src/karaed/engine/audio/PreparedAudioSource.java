@@ -3,6 +3,7 @@ package karaed.engine.audio;
 import karaed.engine.formats.ranges.Range;
 
 import javax.sound.sampled.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -18,7 +19,8 @@ public final class PreparedAudioSource {
         this.percents = percents;
     }
 
-    public static PreparedAudioSource create(AudioSource source) throws IOException, UnsupportedAudioFileException {
+    public static PreparedAudioSource create(File file) throws IOException, UnsupportedAudioFileException {
+        AudioSource source = AudioSource.create(file);
         AudioFormat format;
         int channels;
         long[] maxValues;
