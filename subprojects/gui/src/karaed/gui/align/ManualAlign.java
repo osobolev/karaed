@@ -3,12 +3,10 @@ package karaed.gui.align;
 import karaed.engine.audio.AudioSource;
 import karaed.engine.audio.MaxAudioSource;
 import karaed.engine.audio.MemAudioSource;
-import karaed.engine.audio.VoiceRanges;
-import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.AreaParams;
-import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
+import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.CloseUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
@@ -45,16 +43,16 @@ public final class ManualAlign extends JDialog {
     private boolean isContinue = false;
 
     private ManualAlign(Window owner, ErrorLogger logger, boolean canContinue,
-                        Path rangesFile, MaxAudioSource maxSource, Ranges data, boolean fromFile,
-                        Path textFile, List<String> lines) {
+                        Path rangesFile, EditableRanges model, List<String> rangeLines, boolean fromFile,
+                        Path textFile, List<String> textLines) {
         super(owner, "Align vocals & lyrics", ModalityType.APPLICATION_MODAL);
         this.logger = logger;
         this.rangesFile = rangesFile;
         this.textFile = textFile;
 
         Runnable onChange = () -> actionSave.setEnabled(true);
-        this.alignComponent = new AlignComponent(logger, maxSource, data, onChange);
-        this.syncComponent = new SyncLyrics(alignComponent.getRangesDocument(), String.join("\n", lines), onChange);
+        this.alignComponent = new AlignComponent(logger, model, rangeLines, onChange);
+        this.syncComponent = new SyncLyrics(alignComponent.getRangesDocument(), String.join("\n", textLines), onChange);
 
         actionSave.setEnabled(!fromFile);
 
@@ -104,24 +102,26 @@ public final class ManualAlign extends JDialog {
         AudioSource source = MemAudioSource.create(vocals.toFile());
         MaxAudioSource maxSource = MaxAudioSource.detectMaxValues(source);
 
-        List<String> lines = loadText(textFile);
+        List<String> textLines = loadText(textFile);
 
         Ranges fileData = loadData(rangesFile);
 
-        Ranges data;
+        EditableRanges model;
+        List<String> rangeLines;
         if (fileData != null) {
-            data = fileData;
+            model = new EditableRanges(maxSource, fileData.params(), fileData.ranges(), fileData.areas());
+            rangeLines = fileData.lines();
         } else {
             AreaParams params = new AreaParams(0.01f, 0.5f, 0.5f); // todo!!!
-            List<Range> ranges = VoiceRanges.detectVoice(maxSource, params);
-            List<Area> areas = Collections.emptyList(); // todo!!!
-            data = new Ranges(params, ranges, areas, lines);
+            model = new EditableRanges(maxSource, params, Collections.emptyList(), Collections.emptyList());
+            model.splitByParams(params);
+            rangeLines = textLines;
         }
 
         return new ManualAlign(
             owner, logger, canContinue,
-            rangesFile, maxSource, data, fileData != null,
-            textFile, lines
+            rangesFile, model, rangeLines, fileData != null,
+            textFile, textLines
         );
     }
 

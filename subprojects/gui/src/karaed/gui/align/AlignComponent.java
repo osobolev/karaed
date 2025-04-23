@@ -1,10 +1,9 @@
 package karaed.gui.align;
 
-import karaed.engine.audio.MaxAudioSource;
-import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
+import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 
@@ -12,7 +11,6 @@ import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.util.Collections;
 import java.util.List;
 
 final class AlignComponent {
@@ -20,6 +18,7 @@ final class AlignComponent {
     private static final Icon ICON_STOP = InputUtil.getIcon("/stop.png");
 
     private final ColorSequence colors = new ColorSequence();
+    private final EditableRanges model;
 
     private final RangesComponent vocals;
     private final JSlider scaleSlider = new JSlider(2, 50, 30);
@@ -31,16 +30,15 @@ final class AlignComponent {
 
     private final Action actionStop;
 
-    AlignComponent(ErrorLogger logger, MaxAudioSource maxSource, Ranges data, Runnable onChange) {
-        this.vocals = new RangesComponent(logger, colors);
+    AlignComponent(ErrorLogger logger, EditableRanges model, List<String> lines, Runnable onChange) {
+        this.model = model;
+        this.vocals = new RangesComponent(logger, colors, model);
         this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 vocals.stop();
             }
         };
-        this.maxSilenceGap = data.params().maxSilenceGap();
-        this.minRangeDuration = data.params().minRangeDuration();
 
         setScale();
         scaleSlider.addChangeListener(e -> setScale());
@@ -65,14 +63,20 @@ final class AlignComponent {
 
         main.add(lyrics.getVisual(), BorderLayout.CENTER);
 
-        chThreshold.setValue(Math.round(data.params().silenceThreshold() * 100));
-        vocals.setData(maxSource, data.ranges(), data.areas());
-        lyrics.setLines(data.lines());
+        {
+            AreaParams params = model.getParams();
+            this.maxSilenceGap = params.maxSilenceGap();
+            this.minRangeDuration = params.minRangeDuration();
+            chThreshold.setValue(Math.round(params.silenceThreshold() * 100));
+        }
+        lyrics.setLines(lines);
 
-        vocals.addRangesChanged(() -> {
+        model.addListener(rangesChanged -> {
             onChange.run();
-            syncNumbers();
-            lyrics.recolor();
+            if (rangesChanged) {
+                syncNumbers();
+                lyrics.recolor();
+            }
         });
         lyrics.addLinesChanged(() -> {
             onChange.run();
@@ -85,8 +89,11 @@ final class AlignComponent {
         lyrics.recolor();
 
         chThreshold.addChangeListener(e -> {
+            // todo: start edit, if not started (save data before start)
+            // todo: disable area editing when editing params
             try {
-                vocals.setParams(getParams());
+                AreaParams params = getParams();
+                model.splitByParams(params);
             } catch (Exception ex) {
                 ShowMessage.error(main, logger, ex);
             }
@@ -94,7 +101,7 @@ final class AlignComponent {
     }
 
     private void syncNumbers() {
-        int n = Math.min(vocals.getRangeCount(), lyrics.getLineCount());
+        int n = Math.min(model.getRangeCount(), lyrics.getLineCount());
         colors.setNumber(n);
     }
 
@@ -124,9 +131,8 @@ final class AlignComponent {
     }
 
     Ranges getData() {
-        AreaParams params = getParams();
-        List<Area> areas = Collections.emptyList(); // todo!!!
-        return new Ranges(params, vocals.getRanges(), areas, lyrics.getLines());
+        AreaParams params = getParams(); // todo: get from model???
+        return new Ranges(params, model.getRanges(), model.getAreas(), lyrics.getLines());
     }
 
     void close() {

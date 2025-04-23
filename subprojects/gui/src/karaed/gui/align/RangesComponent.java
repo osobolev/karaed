@@ -1,154 +1,145 @@
 package karaed.gui.align;
 
-import karaed.engine.audio.MaxAudioSource;
-import karaed.engine.audio.VoiceRanges;
 import karaed.engine.formats.ranges.Area;
-import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.ErrorLogger;
+import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.ShowMessage;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+// todo: allow manual editing of areas (by mouse drag)
+// todo: allow selection of ranges => make area of selected ranges???
+// todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
+// todo: when editing params (of all/area), show changes and allow to commit/rollback them
+// todo: allow to delete/edit areas
+// todo: allow manual delete of ranges??? (or better mark area as empty?)
+// todo: show text inside ranges???
+// todo: better ticks display
+// todo: better "currently playing" display
+// todo: "go to": from lyrics to range, from range to lyrics
+// todo: when area is selected, grey out all the other data???
 final class RangesComponent extends JComponent implements Scrollable {
-
-    private static final int[] SECOND_TICKS = {1, 5, 10, 30, 60};
-    private static final int LPAD = 10;
-    private static final int RPAD = 10;
 
     private final ErrorLogger logger;
     private final ColorSequence colors;
 
-    private MaxAudioSource source = null;
-    private float frameRate = 0;
-    private final List<Range> ranges = new ArrayList<>();
-    private final List<Area> areas = new ArrayList<>();
+    private final EditableRanges model;
+    private final float frameRate;
 
     private final List<Runnable> playChanged = new ArrayList<>();
-    private final List<Runnable> rangesChanged = new ArrayList<>();
 
     private float pixPerSec = 30.0f;
 
     private Range playingRange = null;
     private Clip playing = null;
 
-    RangesComponent(ErrorLogger logger, ColorSequence colors) {
+    private Integer dragStart = null;
+    private Integer dragging = null;
+
+    RangesComponent(ErrorLogger logger, ColorSequence colors, EditableRanges model) {
         this.logger = logger;
         this.colors = colors;
+        this.model = model;
+        this.frameRate = model.source.format.getFrameRate();
+
+        model.addListener(rangesChanged -> {
+            if (rangesChanged) {
+                stop();
+            }
+            repaint();
+       });
 
         addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 mouseClick(e);
             }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (dragStart != null && dragging != null) {
+                    Measurer m = new Measurer(frameRate, pixPerSec);
+                    int f1 = m.x2frame(dragStart.intValue());
+                    int f2 = m.x2frame(dragging.intValue());
+                    int from = Math.min(f1, f2);
+                    int to = Math.max(f1, f2);
+                    if (to > from) {
+                        // todo: skip too small areas!!!
+                        model.addArea(new Area(from, to, model.getParams()));
+                    }
+                    dragStart = null;
+                    dragging = null;
+                    repaint();
+                }
+            }
+        });
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (dragStart == null) {
+                    dragStart = e.getX();
+                }
+                dragging = e.getX();
+                repaint();
+            }
         });
     }
 
-    // todo: move initialization to constructor???
-    void setData(MaxAudioSource source, List<Range> ranges, List<Area> areas) {
-        stop();
-
-        this.source = source;
-        this.frameRate = source.format.getFrameRate();
-        this.ranges.clear();
-        this.ranges.addAll(ranges);
-        this.areas.clear();
-        this.areas.addAll(areas);
-
-        revalidate();
-        repaint();
-    }
-
-    void setParams(AreaParams params) throws UnsupportedAudioFileException, IOException {
-        // todo: do not apply to areas???
-        List<Range> ranges = VoiceRanges.detectVoice(source, params);
-        setData(source, ranges, areas); // todo: do not use setData???
-        fireRangesChanged();
-    }
-
     private int totalSeconds() {
-        if (source == null)
-            return 0;
-        return (int) Math.ceil(source.frames / frameRate);
+        return (int) Math.ceil(model.source.frames / frameRate);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (ranges.isEmpty())
-            return;
 
         FontMetrics fm = getFontMetrics(getFont());
-        int minTickWidth = fm.stringWidth("00:00") * 4;
-        int tick = 0;
-        for (int tickSize : SECOND_TICKS) {
-            int pixels = Math.round(tickSize * pixPerSec);
-            if (pixels >= minTickWidth) {
-                tick = tickSize;
-                break;
-            }
-        }
-        int h = fm.getHeight();
-        if (tick > 0) {
-            int seconds = totalSeconds();
-            g.setColor(Color.red);
-            for (int s = 0; s <= seconds; s += tick) {
-                int x = LPAD + Math.round(s * pixPerSec);
-                String str = Range.formatTime(s); // todo: for non-minute ticks paint only seconds???
-                g.drawString(str, x - fm.stringWidth(str) / 2, fm.getAscent());
-                g.drawLine(x, h, x, h + 10);
-            }
-        }
-
-        for (int i = 0; i < ranges.size(); i++) {
-            Range range = ranges.get(i);
-            Color color = colors.getColor(i);
-            g.setColor(color == null ? Color.black : color);
-            float secFrom = range.from() / frameRate;
-            float secTo = range.to() / frameRate;
-            int from = Math.round(secFrom * pixPerSec);
-            int to = Math.round(secTo * pixPerSec);
-            int x = LPAD + from;
-            int y = h + 20;
-            int width = Math.max(to - from, 1);
-            int height = 20;
-            g.fillRect(x, y, width, height);
-            if (range == playingRange) {
-                g.setColor(Color.red);
-                g.drawRect(x - 1, y - 1, width + 1, height + 1);
-            }
+        Painter painter = new Painter(g, fm, frameRate, pixPerSec, getHeight());
+        painter.paintScale(totalSeconds(), getWidth());
+        painter.paint(colors, model, playingRange);
+        if (dragStart != null && dragging != null) {
+            painter.paintDrag(dragStart.intValue(), dragging.intValue());
         }
     }
 
     private void mouseClick(MouseEvent me) {
-        int x = me.getX() - LPAD;
-        float second = x / pixPerSec;
-        int frame = Math.round(second * frameRate);
-        int irange = -1;
-        for (int i = 0; i < ranges.size(); i++) {
-            Range range = ranges.get(i);
-            if (frame >= range.from() && frame < range.to()) {
-                irange = i;
-                break;
-            }
-        }
-        if (irange < 0)
+        Sizer s = new Sizer(getFontMetrics(getFont()), frameRate, pixPerSec);
+        int frame = s.x2frame(me.getX());
+
+        List<Range> ranges = model.getRanges();
+        int irange = s.findRange(frame, me.getY(), ranges);
+        if (irange >= 0) {
+            Range range = ranges.get(irange);
+            rangeClicked(me, range);
             return;
-        Range range = ranges.get(irange);
+        }
+
+        List<Area> areas = model.getAreas();
+        int iarea = s.findArea(frame, me.getY(), areas);
+        if (iarea >= 0) {
+            // todo
+        }
+    }
+
+    private void rangeClicked(MouseEvent me, Range range) {
         if (me.getButton() == MouseEvent.BUTTON1) {
             stop();
             try {
-                Clip clip = source.source.open(range.from(), range.to());
+                Clip clip = model.source.source.open(range.from(), range.to());
                 playingRange = range;
                 playing = clip;
                 clip.addLineListener(le -> {
@@ -163,40 +154,21 @@ final class RangesComponent extends JComponent implements Scrollable {
                 ShowMessage.error(this, logger, ex);
             }
         } else if (me.getButton() == MouseEvent.BUTTON3) {
+            // todo: make this shit work with areas???
             JPopupMenu menu = new JPopupMenu();
-            int index = irange;
-            menu.add(new AbstractAction("Resplit") {
+            menu.add(new AbstractAction("Add area & edit") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    resplit(index);
                 }
             });
             menu.show(this, me.getX() - 5, me.getY() - 5);
         }
     }
 
-    private void resplit(int index) {
-        Range range = ranges.get(index);
-        List<Range> newRanges;
-        try {
-            AreaParams params = new AreaParams(0.01f, 0.1f, 0.1f); // todo!!!
-            newRanges = VoiceRanges.resplit(source, range, params);
-        } catch (Exception ex) {
-            ShowMessage.error(this, logger, ex);
-            return;
-        }
-        ranges.remove(index);
-        ranges.addAll(index, newRanges);
-        revalidate();
-        repaint();
-        fireRangesChanged();
-    }
-
     @Override
     public Dimension getPreferredSize() {
-        int seconds = totalSeconds();
-        int pixels = (int) Math.ceil(seconds * pixPerSec);
-        return new Dimension(LPAD + pixels + RPAD, 100); // todo: height
+        Sizer s = new Sizer(getFontMetrics(getFont()), frameRate, pixPerSec);
+        return new Dimension(s.prefWidth(totalSeconds()), s.prefHeight());
     }
 
     private void firePlayChanged() {
@@ -225,20 +197,6 @@ final class RangesComponent extends JComponent implements Scrollable {
         repaint();
     }
 
-    private void fireRangesChanged() {
-        for (Runnable runnable : rangesChanged) {
-            runnable.run();
-        }
-    }
-
-    int getRangeCount() {
-        return ranges.size();
-    }
-
-    List<Range> getRanges() {
-        return ranges;
-    }
-
     void recolor() {
         repaint();
     }
@@ -247,13 +205,10 @@ final class RangesComponent extends JComponent implements Scrollable {
         playChanged.add(listener);
     }
 
-    void addRangesChanged(Runnable listener) {
-        rangesChanged.add(listener);
-    }
-
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        return new Dimension(1000, 100); // todo
+        Dimension size = getPreferredSize();
+        return new Dimension(1000, size.height);
     }
 
     @Override
