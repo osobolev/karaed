@@ -23,23 +23,11 @@ public final class VoiceRanges {
     }
 
     public static List<Range> detectVoice(MaxAudioSource source, RangeParams params) throws IOException, UnsupportedAudioFileException {
-        try (AudioInputStream as = source.source.getStream(0)) {
-            WavReader reader = new WavReader(as, 0);
+        try (AudioInputStream as = source.source.getStream()) {
+            WavReader reader = new WavReader(as);
             Ranger ranger = new Ranger(params);
             int frames = reader.readAll(consumer(ranger, source.maxValues, params));
             return ranger.finish(frames);
         }
     }
-
-//    public static List<Range> resplit(MaxAudioSource source, Range range,
-//                                      RangeParams params) throws IOException, UnsupportedAudioFileException {
-//        try (AudioInputStream as = source.source.getStream(range.from())) {
-//            WavReader reader = new WavReader(as, range.from());
-//            Ranger ranger = ranger(params);
-//            WavReader.WavConsumer wavConsumer = consumer(ranger, source.maxValues, params.silenceThreshold());
-//            int frames = range.to() - range.from();
-//            reader.readN(wavConsumer, frames);
-//            return ranger.finish(range.to());
-//        }
-//    }
 }

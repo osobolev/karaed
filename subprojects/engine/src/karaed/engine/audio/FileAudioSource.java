@@ -24,8 +24,12 @@ public final class FileAudioSource implements AudioSource {
     }
 
     @Override
-    public AudioInputStream getStream(int from) throws UnsupportedAudioFileException, IOException {
-        AudioInputStream as = AudioSystem.getAudioInputStream(file);
+    public AudioInputStream getStream() throws UnsupportedAudioFileException, IOException {
+        return AudioSystem.getAudioInputStream(file);
+    }
+
+    private AudioInputStream subStream(int from) throws UnsupportedAudioFileException, IOException {
+        AudioInputStream as = getStream();
         if (from > 0) {
             as.skip(toBytes(as.getFormat(), from));
         }
@@ -41,7 +45,7 @@ public final class FileAudioSource implements AudioSource {
         AudioFormat format;
         byte[] data;
         int read;
-        try (AudioInputStream as = getStream(from)) {
+        try (AudioInputStream as = subStream(from)) {
             format = as.getFormat();
             data = pieceBuf(format, from, to);
             read = as.readNBytes(data, 0, data.length);
@@ -56,7 +60,7 @@ public final class FileAudioSource implements AudioSource {
         AudioFormat format;
         byte[] data;
         int read;
-        try (AudioInputStream as = getStream(from)) {
+        try (AudioInputStream as = subStream(from)) {
             format = as.getFormat();
             data = pieceBuf(format, from, to);
             read = as.readNBytes(data, 0, data.length);

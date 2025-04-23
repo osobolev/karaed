@@ -8,7 +8,7 @@ public interface AudioSource {
 
     AudioFormat getFormat() throws UnsupportedAudioFileException, IOException;
 
-    AudioInputStream getStream(int from) throws UnsupportedAudioFileException, IOException;
+    AudioInputStream getStream() throws UnsupportedAudioFileException, IOException;
 
     Clip open(int from, int to) throws UnsupportedAudioFileException, IOException, LineUnavailableException;
 

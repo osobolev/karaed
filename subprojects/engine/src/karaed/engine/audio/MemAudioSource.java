@@ -43,9 +43,9 @@ public final class MemAudioSource implements AudioSource {
     }
 
     @Override
-    public AudioInputStream getStream(int from) {
+    public AudioInputStream getStream() {
         int frames = data.length / getFrameSize();
-        return subStream(from, frames - from);
+        return subStream(0, frames);
     }
 
     @Override
