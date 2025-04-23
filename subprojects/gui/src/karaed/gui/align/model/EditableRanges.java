@@ -31,19 +31,25 @@ public final class EditableRanges {
         }
     }
 
+    private void resplit(boolean fireNotChanged) throws UnsupportedAudioFileException, IOException {
+        List<Range> ranges = VoiceRanges.detectVoice(source, getRangeParams());
+        boolean changed = !this.ranges.equals(ranges);
+        if (changed) {
+            this.ranges.clear();
+            this.ranges.addAll(ranges);
+            fireChanged(true);
+        } else if (fireNotChanged) {
+            fireChanged(false);
+        }
+    }
+
     public void splitByParams(EditableArea area, AreaParams params) throws UnsupportedAudioFileException, IOException {
         if (area == null) {
             this.params = params;
         } else {
             area.params = params;
         }
-        // todo: rollback params assignment on error???
-        List<Range> ranges = VoiceRanges.detectVoice(source, getRangeParams());
-        if (!this.ranges.equals(ranges)) {
-            this.ranges.clear();
-            this.ranges.addAll(ranges);
-            fireChanged(true);
-        }
+        resplit(false);
     }
 
     private RangeParams getRangeParams() {
@@ -76,18 +82,38 @@ public final class EditableRanges {
         };
     }
 
-    public void addArea(int from, int to, AreaParams params) {
-        // todo: make sure areas do not intersect
-        // todo: sort areas!!!
-        areas.put(from, new EditableArea(from, to, params));
-        // todo: re-split according to area params???
-        fireChanged(false); // todo: can be true if ranges changes after resplit!!!
+    private boolean intersects(EditableArea newArea) {
+        NavigableSet<Integer> keySet = areas.navigableKeySet();
+        Integer before = keySet.floor(newArea.from()); // <= from
+        if (before != null) {
+            EditableArea areaBefore = areas.get(before);
+            if (areaBefore.contains(newArea.from()))
+                return true;
+        }
+        Integer after = keySet.higher(newArea.from()); // > from
+        if (after != null) {
+            EditableArea areaAfter = areas.get(after);
+            if (newArea.contains(areaAfter.from()))
+                return true;
+        }
+        return false;
     }
 
-    public void removeArea(EditableArea area) {
+    private void areasChanged() throws UnsupportedAudioFileException, IOException {
+        resplit(true);
+    }
+
+    public void addArea(int from, int to, AreaParams params) throws UnsupportedAudioFileException, IOException {
+        EditableArea ea = new EditableArea(from, to, params);
+        if (intersects(ea))
+            return;
+        areas.put(from, ea);
+        areasChanged();
+    }
+
+    public void removeArea(EditableArea area) throws UnsupportedAudioFileException, IOException {
         if (areas.entrySet().removeIf(e -> e.getValue() == area)) {
-            // todo: re-split according to global params???
-            fireChanged(false); // todo: can be true if ranges changes after resplit!!!
+            areasChanged();
         }
     }
 

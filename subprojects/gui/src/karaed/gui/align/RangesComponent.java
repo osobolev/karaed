@@ -21,7 +21,6 @@ import java.util.function.Consumer;
 
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
-// todo: when editing params (of all/area), show changes and allow to commit/rollback them
 // todo: allow to edit areas
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
 // todo: show text inside ranges???
@@ -81,7 +80,11 @@ final class RangesComponent extends JComponent implements Scrollable {
                         int to = Math.max(f1, f2);
                         if (to > from) {
                             // todo: skip too small areas!!!
-                            model.addArea(from, to, model.getParams());
+                            try {
+                                model.addArea(from, to, model.getParams());
+                            } catch (Exception ex) {
+                                ShowMessage.error(RangesComponent.this, logger, ex);
+                            }
                         }
                     }
                     dragStart = null;
@@ -256,7 +259,11 @@ final class RangesComponent extends JComponent implements Scrollable {
             menu.add(new AbstractAction("Remove area") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    model.removeArea(area);
+                    try {
+                        model.removeArea(area);
+                    } catch (Exception ex) {
+                        ShowMessage.error(RangesComponent.this, logger, ex);
+                    }
                 }
             });
             menu.show(this, me.getX() - 5, me.getY() - 5);
