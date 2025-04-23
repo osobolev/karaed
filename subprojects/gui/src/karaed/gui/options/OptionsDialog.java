@@ -1,6 +1,7 @@
 package karaed.gui.options;
 
 import karaed.gui.ErrorLogger;
+import karaed.gui.util.BaseDialog;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.project.Workdir;
@@ -15,9 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class OptionsDialog extends JDialog {
-
-    private final ErrorLogger logger;
+public final class OptionsDialog extends BaseDialog {
 
     private final JTextField tfDir;
     private final JPanel main = new JPanel();
@@ -35,8 +34,7 @@ public final class OptionsDialog extends JDialog {
     }
 
     public OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir) throws IOException {
-        super(owner, title, ModalityType.APPLICATION_MODAL);
-        this.logger = logger;
+        super(owner, logger, title);
         this.ctx = new OptCtx(workDir);
 
         main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
@@ -144,7 +142,7 @@ public final class OptionsDialog extends JDialog {
             }
             dispose();
         } catch (Exception ex) {
-            ShowMessage.error(this, logger, ex);
+            error(ex);
         }
     }
 

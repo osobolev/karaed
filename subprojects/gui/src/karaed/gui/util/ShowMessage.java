@@ -1,16 +1,9 @@
 package karaed.gui.util;
 
-import karaed.gui.ErrorLogger;
-
 import javax.swing.*;
 import java.awt.Component;
 
 public final class ShowMessage {
-
-    public static void error(Component comp, ErrorLogger logger, Throwable ex) {
-        logger.error(ex);
-        error(comp, ex.toString());
-    }
 
     public static void error(Component comp, String message) {
         JOptionPane.showMessageDialog(comp, message, "Error", JOptionPane.ERROR_MESSAGE);

@@ -3,9 +3,9 @@ package karaed.gui.align;
 import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
-import karaed.gui.ErrorLogger;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
+import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
@@ -35,11 +35,11 @@ final class AlignComponent {
 
     private boolean splitModified = false;
 
-    AlignComponent(ErrorLogger logger, EditableRanges model, List<String> lines, Runnable onChange) {
+    AlignComponent(BaseWindow owner, EditableRanges model, List<String> lines, Runnable onChange) {
         this.model = model;
         this.onChange = onChange;
 
-        this.vocals = new RangesComponent(logger, colors, model);
+        this.vocals = new RangesComponent(owner, colors, model);
         this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override
             public void actionPerformed(ActionEvent e) {

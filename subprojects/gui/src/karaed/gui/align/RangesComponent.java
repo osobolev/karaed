@@ -2,10 +2,9 @@ package karaed.gui.align;
 
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
-import karaed.gui.ErrorLogger;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
-import karaed.gui.util.ShowMessage;
+import karaed.gui.util.BaseWindow;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
@@ -28,7 +27,7 @@ import java.util.function.Consumer;
 // todo: "go to": from lyrics to range, from range to lyrics
 final class RangesComponent extends JComponent implements Scrollable {
 
-    private final ErrorLogger logger;
+    private final BaseWindow owner;
     private final ColorSequence colors;
 
     private final EditableRanges model;
@@ -49,8 +48,8 @@ final class RangesComponent extends JComponent implements Scrollable {
     private Integer dragStart = null;
     private Integer dragging = null;
 
-    RangesComponent(ErrorLogger logger, ColorSequence colors, EditableRanges model) {
-        this.logger = logger;
+    RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model) {
+        this.owner = owner;
         this.colors = colors;
         this.model = model;
         this.frameRate = model.source.format.getFrameRate();
@@ -83,7 +82,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                             try {
                                 model.addArea(from, to, model.getParams());
                             } catch (Exception ex) {
-                                ShowMessage.error(RangesComponent.this, logger, ex);
+                                owner.error(ex);
                             }
                         }
                     }
@@ -219,7 +218,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                 clip.start();
                 repaint();
             } catch (Exception ex) {
-                ShowMessage.error(this, logger, ex);
+                owner.error(ex);
             }
         } else if (me.getButton() == MouseEvent.BUTTON3) {
             if (!canEdit())
@@ -260,7 +259,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                     try {
                         model.removeArea(area);
                     } catch (Exception ex) {
-                        ShowMessage.error(RangesComponent.this, logger, ex);
+                        owner.error(ex);
                     }
                 }
             });
@@ -341,7 +340,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         try {
             model.splitByParams(editingArea, params);
         } catch (Exception ex) {
-            ShowMessage.error(this, logger, ex);
+            owner.error(ex);
         }
     }
 

@@ -8,7 +8,7 @@ import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
-import karaed.gui.util.CloseUtil;
+import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
@@ -28,11 +28,11 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public final class ProjectFrame extends JFrame {
+public final class ProjectFrame extends BaseFrame {
 
-    private final ErrorLogger logger;
     private final Workdir workDir;
     private final ProcRunner runner;
+    private final Runnable afterClose;
 
     private final JTextField tfTitle = new JTextField(40);
     private final Map<PipeStep, StepLabel> labels = new EnumMap<>(PipeStep.class);
@@ -67,10 +67,14 @@ public final class ProjectFrame extends JFrame {
     }
 
     private ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir, boolean reopenStart) {
-        super("KaraEd");
-        this.logger = logger;
+        super(logger, "KaraEd");
         this.workDir = workDir;
         this.runner = new ProcRunner(tools, rootDir, taLog::append);
+        this.afterClose = () -> {
+            if (reopenStart) {
+                new StartFrame(logger, tools, rootDir);
+            }
+        };
 
         JToolBar toolBar = new JToolBar();
         toolBar.add(new AbstractAction("Options") {
@@ -82,7 +86,7 @@ public final class ProjectFrame extends JFrame {
                         refreshStepStates();
                     }
                 } catch (Exception ex) {
-                    ShowMessage.error(ProjectFrame.this, logger, ex);
+                    error(ex);
                 }
             }
         });
@@ -124,14 +128,6 @@ public final class ProjectFrame extends JFrame {
         enableDisable(false);
         refreshStepStates();
 
-        CloseUtil.listen(this, () -> {
-            if (!runAction.isEnabled())
-                return false;
-            if (reopenStart) {
-                new StartFrame(logger, tools, rootDir);
-            }
-            return true;
-        });
         pack();
         setLocationRelativeTo(null);
     }
@@ -155,7 +151,7 @@ public final class ProjectFrame extends JFrame {
                 ShowMessage.error(this, "File not found");
             }
         } catch (Exception ex) {
-            ShowMessage.error(this, logger, ex);
+            error(ex);
         }
     }
 
@@ -178,7 +174,7 @@ public final class ProjectFrame extends JFrame {
             Map<PipeStep, StepState> pipe = PipeBuilder.create(workDir).buildPipe();
             showStepStates(pipe);
         } catch (Exception ex) {
-            logger.error(ex);
+            getLogger().error(ex);
         }
     }
 
@@ -195,7 +191,7 @@ public final class ProjectFrame extends JFrame {
         try {
             pipe = PipeBuilder.create(workDir).buildPipe();
         } catch (Exception ex) {
-            ShowMessage.error(this, logger, ex);
+            error(ex);
             return;
         }
 
@@ -224,7 +220,7 @@ public final class ProjectFrame extends JFrame {
                                 SwingUtilities.invokeLater(() -> ShowMessage.error(this, ex.getMessage()));
                             } else {
                                 message = ex.toString();
-                                SwingUtilities.invokeLater(() -> ShowMessage.error(this, logger, ex));
+                                SwingUtilities.invokeLater(() -> error(ex));
                             }
                             setState(step, new RunStepState.Error(message));
                             runner.println("ERROR: " + message);
@@ -263,8 +259,16 @@ public final class ProjectFrame extends JFrame {
         Path ranges = workDir.file("ranges.json");
         Path vocals = workDir.vocals();
         Path text = workDir.file("text.txt");
-        ManualAlign ma = ManualAlign.create(this, logger, canContinue, vocals, text, ranges);
+        ManualAlign ma = ManualAlign.create(this, getLogger(), canContinue, vocals, text, ranges);
         ma.setVisible(true);
         return ma.isContinue();
+    }
+
+    @Override
+    public boolean onClosing() {
+        if (!runAction.isEnabled())
+            return false;
+        afterClose.run();
+        return true;
     }
 }

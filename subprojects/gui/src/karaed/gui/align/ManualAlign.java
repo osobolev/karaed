@@ -7,7 +7,7 @@ import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.model.EditableRanges;
-import karaed.gui.util.CloseUtil;
+import karaed.gui.util.BaseDialog;
 import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
 
@@ -23,9 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public final class ManualAlign extends JDialog {
+public final class ManualAlign extends BaseDialog {
 
-    private final ErrorLogger logger;
     private final Path rangesFile;
     private final Path textFile;
 
@@ -45,13 +44,12 @@ public final class ManualAlign extends JDialog {
     private ManualAlign(Window owner, ErrorLogger logger, boolean canContinue,
                         Path rangesFile, EditableRanges model, List<String> rangeLines, boolean fromFile,
                         Path textFile, List<String> textLines) {
-        super(owner, "Align vocals & lyrics", ModalityType.APPLICATION_MODAL);
-        this.logger = logger;
+        super(owner, logger, "Align vocals & lyrics");
         this.rangesFile = rangesFile;
         this.textFile = textFile;
 
         Runnable onChange = () -> actionSave.setEnabled(true);
-        this.alignComponent = new AlignComponent(logger, model, rangeLines, onChange);
+        this.alignComponent = new AlignComponent(this, model, rangeLines, onChange);
         this.syncComponent = new SyncLyrics(alignComponent.getRangesDocument(), String.join("\n", textLines), onChange);
 
         actionSave.setEnabled(!fromFile);
@@ -81,7 +79,6 @@ public final class ManualAlign extends JDialog {
         }));
         add(butt, BorderLayout.SOUTH);
 
-        CloseUtil.listen(this, this::onClosing);
         pack();
         setLocationRelativeTo(null);
     }
@@ -166,7 +163,7 @@ public final class ManualAlign extends JDialog {
                 actionSave.setEnabled(false);
                 ok = true;
             } catch (Exception ex) {
-                ShowMessage.error(this, logger, ex);
+                error(ex);
             }
         } else {
             ok = true;
@@ -174,7 +171,8 @@ public final class ManualAlign extends JDialog {
         return ok;
     }
 
-    private boolean onClosing() {
+    @Override
+    public boolean onClosing() {
         alignComponent.close();
         if (!actionSave.isEnabled())
             return true;

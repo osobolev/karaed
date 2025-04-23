@@ -4,7 +4,7 @@ import karaed.engine.formats.info.Info;
 import karaed.gui.ErrorLogger;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
-import karaed.gui.util.CloseUtil;
+import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
@@ -24,15 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public final class StartFrame extends JFrame {
+public final class StartFrame extends BaseFrame {
 
-    private final ErrorLogger logger;
     private final Tools tools;
     private final Path rootDir;
 
     public StartFrame(ErrorLogger logger, Tools tools, Path rootDir) {
-        super("KaraEd");
-        this.logger = logger;
+        super(logger, "KaraEd");
         this.tools = tools;
         this.rootDir = rootDir;
 
@@ -46,7 +44,7 @@ public final class StartFrame extends JFrame {
                         return;
                     openProject(workDir);
                 } catch (Exception ex) {
-                    ShowMessage.error(StartFrame.this, logger, ex);
+                    error(ex);
                 }
             }
         });
@@ -118,14 +116,13 @@ public final class StartFrame extends JFrame {
             }
         }).start();
 
-        CloseUtil.listen(this, () -> true);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     private void openProject(Workdir workDir, Consumer<String> onError) {
-        ProjectFrame pf = ProjectFrame.create(logger, true, tools, rootDir, workDir, onError);
+        ProjectFrame pf = ProjectFrame.create(getLogger(), true, tools, rootDir, workDir, onError);
         if (pf == null)
             return;
         dispose();
