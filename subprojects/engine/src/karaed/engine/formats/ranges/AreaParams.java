@@ -1,7 +1,7 @@
 package karaed.engine.formats.ranges;
 
 public record AreaParams(
-    float silenceThreshold,
+    int silenceThreshold,
     float maxSilenceGap,
     float minRangeDuration
 ) {}

@@ -11,7 +11,6 @@ import java.util.function.Consumer;
 
 final class ParamsComponent {
 
-    private static final float PERCENT_SCALE = 100f;
     private static final float MILLIS_SCALE = 1000f;
 
     private final JSpinner chThreshold = new JSpinner(new SpinnerNumberModel(1, 0, 100, 1));
@@ -55,7 +54,7 @@ final class ParamsComponent {
     void setParams(AreaParams params) {
         ignoreChanges = true;
         try {
-            chThreshold.setValue(Math.round(params.silenceThreshold() * PERCENT_SCALE));
+            chThreshold.setValue(params.silenceThreshold());
             chSilenceGap.setValue(Math.round(params.maxSilenceGap() * MILLIS_SCALE));
             chRangeDuration.setValue(Math.round(params.minRangeDuration() * MILLIS_SCALE));
         } finally {
@@ -63,13 +62,17 @@ final class ParamsComponent {
         }
     }
 
+    private static Number getNumberValue(JSpinner spinner) {
+        return (Number) spinner.getValue();
+    }
+
     private static float getValue(JSpinner spinner, float scale) {
-        Number threshold = (Number) spinner.getValue();
+        Number threshold = getNumberValue(spinner);
         return threshold.floatValue() / scale;
     }
 
     AreaParams getParams() {
-        float silenceThreshold = getValue(chThreshold, PERCENT_SCALE);
+        int silenceThreshold = getNumberValue(chThreshold).intValue();
         float maxSilenceGap = getValue(chSilenceGap, MILLIS_SCALE);
         float minRangeDuration = getValue(chRangeDuration, MILLIS_SCALE);
         return new AreaParams(silenceThreshold, maxSilenceGap, minRangeDuration);

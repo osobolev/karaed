@@ -1,8 +1,7 @@
 package karaed.gui.align;
 
 import karaed.engine.audio.AudioSource;
-import karaed.engine.audio.MaxAudioSource;
-import karaed.engine.audio.MemAudioSource;
+import karaed.engine.audio.PreparedAudioSource;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
@@ -96,8 +95,8 @@ public final class ManualAlign extends BaseDialog {
 
     public static ManualAlign create(Window owner, ErrorLogger logger, boolean canContinue,
                                      Path vocals, Path textFile, Path rangesFile) throws IOException, UnsupportedAudioFileException {
-        AudioSource source = MemAudioSource.create(vocals.toFile());
-        MaxAudioSource maxSource = MaxAudioSource.detectMaxValues(source);
+        AudioSource source = AudioSource.create(vocals.toFile());
+        PreparedAudioSource maxSource = PreparedAudioSource.create(source);
 
         List<String> textLines = loadText(textFile);
 
@@ -109,7 +108,7 @@ public final class ManualAlign extends BaseDialog {
             model = new EditableRanges(maxSource, fileData.params(), fileData.ranges(), fileData.areas());
             rangeLines = fileData.lines();
         } else {
-            AreaParams params = new AreaParams(0.01f, 0.5f, 0.5f);
+            AreaParams params = new AreaParams(1, 0.5f, 0.5f);
             model = new EditableRanges(maxSource, params, Collections.emptyList(), Collections.emptyList());
             model.splitByParams(null, params);
             rangeLines = textLines;

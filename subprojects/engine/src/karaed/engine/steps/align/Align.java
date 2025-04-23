@@ -2,7 +2,6 @@ package karaed.engine.steps.align;
 
 import karaed.engine.KaraException;
 import karaed.engine.audio.AudioSource;
-import karaed.engine.audio.FileAudioSource;
 import karaed.engine.formats.aligned.AlignSegment;
 import karaed.engine.formats.aligned.Aligned;
 import karaed.engine.formats.aligned.WordSegment;
@@ -100,7 +99,7 @@ public final class Align {
         FilteredRanges data = filterRanges(JsonUtil.readFile(rangesFile, Ranges.class));
         List<Range> ranges = data.ranges();
         List<String> lines = data.lines();
-        AudioSource source = new FileAudioSource(vocals.toFile());
+        AudioSource source = AudioSource.create(vocals.toFile());
         Files.createDirectories(tmpDir);
         float frameRate = source.getFormat().getFrameRate();
         for (int i = 0; i < ranges.size(); i++) {

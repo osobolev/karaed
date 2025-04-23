@@ -52,7 +52,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         this.owner = owner;
         this.colors = colors;
         this.model = model;
-        this.frameRate = model.source.format.getFrameRate();
+        this.frameRate = model.source.frameRate();
 
         model.addListener(rangesChanged -> {
             if (rangesChanged) {
@@ -128,7 +128,7 @@ final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private int totalSeconds() {
-        return (int) Math.ceil(model.source.frames / frameRate);
+        return (int) Math.ceil(model.source.frames() / frameRate);
     }
 
     private void doPaint(Painter painter) {
@@ -206,7 +206,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         if (me.getButton() == MouseEvent.BUTTON1) {
             stop();
             try {
-                Clip clip = model.source.source.open(range.from(), range.to());
+                Clip clip = model.source.open(range.from(), range.to());
                 playingRange = range;
                 playing = clip;
                 clip.addLineListener(le -> {

@@ -1,8 +1,7 @@
 package karaed.gui.align.model;
 
-import karaed.engine.audio.MaxAudioSource;
+import karaed.engine.audio.PreparedAudioSource;
 import karaed.engine.audio.RangeParams;
-import karaed.engine.audio.VoiceRanges;
 import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
@@ -13,7 +12,7 @@ import java.util.*;
 
 public final class EditableRanges {
 
-    public final MaxAudioSource source;
+    public final PreparedAudioSource source;
 
     private AreaParams params;
     private final List<Range> ranges;
@@ -21,7 +20,7 @@ public final class EditableRanges {
 
     private final List<RangeEditListener> listeners = new ArrayList<>();
 
-    public EditableRanges(MaxAudioSource source,
+    public EditableRanges(PreparedAudioSource source,
                           AreaParams params, List<Range> ranges, List<Area> areas) {
         this.source = source;
         this.params = params;
@@ -42,7 +41,7 @@ public final class EditableRanges {
     }
 
     private void resplit(boolean fireNotChanged) throws UnsupportedAudioFileException, IOException {
-        List<Range> ranges = VoiceRanges.detectVoice(source, getRangeParams());
+        List<Range> ranges = source.detectVoice(getRangeParams());
         boolean changed = !this.ranges.equals(ranges);
         if (changed) {
             this.ranges.clear();
@@ -63,8 +62,8 @@ public final class EditableRanges {
     }
 
     private RangeParams getRangeParams() {
-        float frameRate = source.format.getFrameRate();
-        float[] silenceThresholds = new float[source.frames];
+        float frameRate = source.frameRate();
+        int[] silenceThresholds = new int[source.frames()];
         Arrays.fill(silenceThresholds, params.silenceThreshold());
         for (EditableArea area : getAreas()) {
             Arrays.fill(silenceThresholds, area.from(), area.to(), area.params().silenceThreshold());
@@ -72,7 +71,7 @@ public final class EditableRanges {
         return new RangeParams() {
 
             @Override
-            public float silenceThreshold(int frame) {
+            public int silenceThreshold(int frame) {
                 return silenceThresholds[frame];
             }
 
@@ -146,7 +145,7 @@ public final class EditableRanges {
             int next = ranges.get(i + 1).from();
             to = Math.min(range.to() + delta, Range.mid(range.to(), next));
         } else {
-            to = Math.min(range.to() + delta, source.frames);
+            to = Math.min(range.to() + delta, source.frames());
         }
         return new EditableArea(from, to, params);
     }
