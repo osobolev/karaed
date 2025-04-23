@@ -112,7 +112,7 @@ public final class ManualAlign extends JDialog {
             model = new EditableRanges(maxSource, fileData.params(), fileData.ranges(), fileData.areas());
             rangeLines = fileData.lines();
         } else {
-            AreaParams params = new AreaParams(0.01f, 0.5f, 0.5f); // todo!!!
+            AreaParams params = new AreaParams(0.01f, 0.5f, 0.5f);
             model = new EditableRanges(maxSource, params, Collections.emptyList(), Collections.emptyList());
             model.splitByParams(null, params);
             rangeLines = textLines;
