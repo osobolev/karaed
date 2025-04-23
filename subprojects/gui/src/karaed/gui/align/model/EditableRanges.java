@@ -33,9 +33,11 @@ public final class EditableRanges {
     public void splitByParams(AreaParams params) throws UnsupportedAudioFileException, IOException {
         List<Range> ranges = VoiceRanges.detectVoice(source, getRangeParams(params));
         this.params = params;
-        this.ranges.clear();
-        this.ranges.addAll(ranges);
-        fireChanged(true); // todo: fire only if really changed!!!
+        if (!this.ranges.equals(ranges)) {
+            this.ranges.clear();
+            this.ranges.addAll(ranges);
+            fireChanged(true);
+        }
     }
 
     private RangeParams getRangeParams(AreaParams params) {
@@ -66,7 +68,15 @@ public final class EditableRanges {
         // todo: make sure areas do not intersect
         // todo: sort areas!!!
         areas.add(area);
-        fireChanged(false);
+        // todo: re-split according to area params???
+        fireChanged(false); // todo: can be true if ranges changes after resplit!!!
+    }
+
+    public void removeArea(Area area) {
+        if (areas.remove(area)) {
+            // todo: re-split according to global params???
+            fireChanged(false); // todo: can be true if ranges changes after resplit!!!
+        }
     }
 
     public void addListener(RangeEditListener listener) {
@@ -89,6 +99,10 @@ public final class EditableRanges {
 
     public List<Range> getRanges() {
         return ranges;
+    }
+
+    public int getAreaCount() {
+        return areas.size();
     }
 
     public List<Area> getAreas() {

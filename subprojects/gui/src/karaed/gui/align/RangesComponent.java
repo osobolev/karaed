@@ -1,6 +1,7 @@
 package karaed.gui.align;
 
 import karaed.engine.formats.ranges.Area;
+import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.model.EditableRanges;
@@ -16,11 +17,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
 // todo: when editing params (of all/area), show changes and allow to commit/rollback them
-// todo: allow to delete/edit areas
+// todo: allow to edit areas
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
 // todo: show text inside ranges???
 // todo: better "currently playing" display
@@ -33,7 +35,8 @@ final class RangesComponent extends JComponent implements Scrollable {
     private final EditableRanges model;
     private final float frameRate;
 
-    private final List<Runnable> playChanged = new ArrayList<>();
+    private final List<Runnable> playChangeListeners = new ArrayList<>();
+    private final List<Consumer<AreaParams>> paramListeners = new ArrayList<>();
 
     private float pixPerSec = 30.0f;
 
@@ -41,6 +44,8 @@ final class RangesComponent extends JComponent implements Scrollable {
     private Clip playing = null;
 
     private Area editingArea = null;
+
+    private boolean splitInProgress = false;
 
     private Integer dragStart = null;
     private Integer dragging = null;
@@ -68,14 +73,16 @@ final class RangesComponent extends JComponent implements Scrollable {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (dragStart != null && dragging != null) {
-                    Measurer m = new Measurer(frameRate, pixPerSec);
-                    int f1 = m.x2frame(dragStart.intValue());
-                    int f2 = m.x2frame(dragging.intValue());
-                    int from = Math.min(f1, f2);
-                    int to = Math.max(f1, f2);
-                    if (to > from && editingArea == null) {
-                        // todo: skip too small areas!!!
-                        model.addArea(new Area(from, to, model.getParams()));
+                    if (canEdit()) {
+                        Measurer m = new Measurer(frameRate, pixPerSec);
+                        int f1 = m.x2frame(dragStart.intValue());
+                        int f2 = m.x2frame(dragging.intValue());
+                        int from = Math.min(f1, f2);
+                        int to = Math.max(f1, f2);
+                        if (to > from) {
+                            // todo: skip too small areas!!!
+                            model.addArea(new Area(from, to, model.getParams()));
+                        }
                     }
                     dragStart = null;
                     dragging = null;
@@ -88,11 +95,10 @@ final class RangesComponent extends JComponent implements Scrollable {
             @Override
             public void mouseMoved(MouseEvent e) {
                 Cursor c = Cursor.getDefaultCursor();
-                List<Area> areas = model.getAreas();
-                if (!areas.isEmpty()) {
+                if (model.getAreaCount() > 0 && !splitInProgress) {
                     Sizer s = newSizer();
                     int frame = s.x2frame(e.getX());
-                    int iarea = s.findArea(frame, e.getY(), areas);
+                    int iarea = s.findArea(frame, e.getY(), model.getAreas());
                     if (iarea >= 0) {
                         c = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
                     }
@@ -104,7 +110,7 @@ final class RangesComponent extends JComponent implements Scrollable {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (editingArea != null)
+                if (!canEdit())
                     return;
                 if (dragStart == null) {
                     dragStart = e.getX();
@@ -127,27 +133,40 @@ final class RangesComponent extends JComponent implements Scrollable {
         painter.paint(colors, model, playingRange, editingArea);
     }
 
+    private boolean canEdit() {
+        return editingArea == null && !splitInProgress;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         FontMetrics fm = getFontMetrics(getFont());
+        int width = getWidth();
         int height = getHeight();
         Painter painter = new Painter(g, fm, frameRate, pixPerSec, height);
-        painter.paintScale(totalSeconds(), getWidth());
+        painter.paintScale(totalSeconds(), width);
 
         if (editingArea != null) {
-            Graphics2D g2 = (Graphics2D) g;
-            Composite composite = g2.getComposite();
             int x1 = painter.frame2x(editingArea.from());
             int x2 = painter.frame2x(editingArea.to());
+
+            g.setColor(new Color(120, 120, 120, 120)); // todo
+            g.fillRect(0, 0, x1, height);
+            g.fillRect(x2, 0, width - x2, height);
+            g.setColor(Color.gray); // todo
+            g.drawLine(x1, 0, x1, height);
+            g.drawLine(x2, 0, x2, height);
+
+            Graphics2D g2 = (Graphics2D) g;
+            Composite composite = g2.getComposite();
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
             {
                 g.setClip(0, 0, x1, height);
                 doPaint(painter);
             }
             {
-                g.setClip(x2, 0, getWidth() - x2, height);
+                g.setClip(x2, 0, width - x2, height);
                 doPaint(painter);
             }
             g2.setComposite(composite);
@@ -156,9 +175,6 @@ final class RangesComponent extends JComponent implements Scrollable {
                 doPaint(painter);
             }
             g.setClip(null);
-            g.setColor(Color.gray); // todo
-            g.drawLine(x1, 0, x1, height);
-            g.drawLine(x2, 0, x2, height);
         } else {
             doPaint(painter);
         }
@@ -207,6 +223,8 @@ final class RangesComponent extends JComponent implements Scrollable {
                 ShowMessage.error(this, logger, ex);
             }
         } else if (me.getButton() == MouseEvent.BUTTON3) {
+            if (!canEdit())
+                return;
             JPopupMenu menu = new JPopupMenu();
             menu.add(new AbstractAction("Add area & edit") {
                 @Override
@@ -220,17 +238,30 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     private void areaClicked(MouseEvent me, Area area) {
         if (me.getButton() == MouseEvent.BUTTON1) {
+            if (splitInProgress)
+                return;
             if (editingArea != null) {
                 if (editingArea == area) {
                     editingArea = null;
+                    fireParamsChanged();
                     repaint();
                 }
             } else {
                 editingArea = area;
+                fireParamsChanged();
                 repaint();
             }
         } else {
-            // todo: allow to delete/edit areas
+            if (!canEdit())
+                return;
+            JPopupMenu menu = new JPopupMenu();
+            menu.add(new AbstractAction("Remove area") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    model.removeArea(area);
+                }
+            });
+            menu.show(this, me.getX() - 5, me.getY() - 5);
         }
     }
 
@@ -241,9 +272,13 @@ final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private void firePlayChanged() {
-        for (Runnable runnable : playChanged) {
-            runnable.run();
+        for (Runnable listener : playChangeListeners) {
+            listener.run();
         }
+    }
+
+    void addPlayChangeListener(Runnable listener) {
+        playChangeListeners.add(listener);
     }
 
     boolean isPlaying() {
@@ -270,8 +305,31 @@ final class RangesComponent extends JComponent implements Scrollable {
         repaint();
     }
 
-    void addPlayChanged(Runnable listener) {
-        playChanged.add(listener);
+    void fireParamsChanged() {
+        AreaParams params = editingArea == null ? model.getParams() : editingArea.params();
+        for (Consumer<AreaParams> listener : paramListeners) {
+            listener.accept(params);
+        }
+    }
+
+    void addParamListener(Consumer<AreaParams> listener) {
+        paramListeners.add(listener);
+    }
+
+    void setSplitInProgress(boolean splitInProgress) {
+        this.splitInProgress = splitInProgress;
+    }
+
+    void setParams(AreaParams params) {
+        try {
+            if (editingArea == null) {
+                model.splitByParams(params);
+            } else {
+                // todo: change area params
+            }
+        } catch (Exception ex) {
+            ShowMessage.error(this, logger, ex);
+        }
     }
 
     @Override
