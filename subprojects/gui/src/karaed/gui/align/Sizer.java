@@ -1,7 +1,8 @@
 package karaed.gui.align;
 
-import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.Range;
+import karaed.gui.align.model.EditableArea;
+import karaed.gui.align.model.EditableRanges;
 
 import java.awt.FontMetrics;
 import java.util.List;
@@ -53,15 +54,10 @@ class Sizer extends Measurer {
         return delta >= 0 && delta < AREA_EDIT_H;
     }
 
-    final int findArea(int frame, int y, List<Area> areas) {
+    final EditableArea findArea(int frame, int y, EditableRanges model) {
         if (isAreaEditY(y)) {
-            for (int i = 0; i < areas.size(); i++) {
-                Area area = areas.get(i);
-                if (frame >= area.from() && frame < area.to()) {
-                    return i;
-                }
-            }
+            return model.findArea(frame);
         }
-        return -1;
+        return null;
     }
 }

@@ -114,7 +114,7 @@ public final class ManualAlign extends JDialog {
         } else {
             AreaParams params = new AreaParams(0.01f, 0.5f, 0.5f); // todo!!!
             model = new EditableRanges(maxSource, params, Collections.emptyList(), Collections.emptyList());
-            model.splitByParams(params);
+            model.splitByParams(null, params);
             rangeLines = textLines;
         }
 

@@ -9,8 +9,7 @@ import karaed.engine.formats.ranges.Range;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public final class EditableRanges {
 
@@ -18,7 +17,7 @@ public final class EditableRanges {
 
     private AreaParams params;
     private final List<Range> ranges;
-    private final List<Area> areas;
+    private final TreeMap<Integer, EditableArea> areas = new TreeMap<>();
 
     private final List<RangeEditListener> listeners = new ArrayList<>();
 
@@ -27,12 +26,19 @@ public final class EditableRanges {
         this.source = source;
         this.params = params;
         this.ranges = new ArrayList<>(ranges);
-        this.areas = new ArrayList<>(areas);
+        for (Area area : areas) {
+            this.areas.put(area.from(), new EditableArea(area.from(), area.to(), area.params()));
+        }
     }
 
-    public void splitByParams(AreaParams params) throws UnsupportedAudioFileException, IOException {
-        List<Range> ranges = VoiceRanges.detectVoice(source, getRangeParams(params));
-        this.params = params;
+    public void splitByParams(EditableArea area, AreaParams params) throws UnsupportedAudioFileException, IOException {
+        if (area == null) {
+            this.params = params;
+        } else {
+            area.params = params;
+        }
+        // todo: rollback params assignment on error???
+        List<Range> ranges = VoiceRanges.detectVoice(source, getRangeParams());
         if (!this.ranges.equals(ranges)) {
             this.ranges.clear();
             this.ranges.addAll(ranges);
@@ -40,40 +46,46 @@ public final class EditableRanges {
         }
     }
 
-    private RangeParams getRangeParams(AreaParams params) {
+    private RangeParams getRangeParams() {
         float frameRate = source.format.getFrameRate();
-        int maxSilenceGap = (int) (params.maxSilenceGap() * frameRate);
-        int minRangeDuration = (int) (params.minRangeDuration() * frameRate);
-        // todo: do not apply params to areas???
+        float[] silenceThresholds = new float[source.frames];
+        Arrays.fill(silenceThresholds, params.silenceThreshold());
+        for (EditableArea area : getAreas()) {
+            Arrays.fill(silenceThresholds, area.from(), area.to(), area.params().silenceThreshold());
+        }
         return new RangeParams() {
 
             @Override
             public float silenceThreshold(int frame) {
-                return params.silenceThreshold();
+                return silenceThresholds[frame];
             }
 
             @Override
             public int maxSilenceGap(int frame) {
-                return maxSilenceGap; // todo
+                EditableArea area = findArea(frame);
+                AreaParams frameParams = area == null ? params : area.params();
+                return (int) (frameParams.maxSilenceGap() * frameRate);
             }
 
             @Override
             public int minRangeDuration(int frame) {
-                return minRangeDuration; // todo
+                EditableArea area = findArea(frame);
+                AreaParams frameParams = area == null ? params : area.params();
+                return (int) (frameParams.minRangeDuration() * frameRate);
             }
         };
     }
 
-    public void addArea(Area area) {
+    public void addArea(int from, int to, AreaParams params) {
         // todo: make sure areas do not intersect
         // todo: sort areas!!!
-        areas.add(area);
+        areas.put(from, new EditableArea(from, to, params));
         // todo: re-split according to area params???
         fireChanged(false); // todo: can be true if ranges changes after resplit!!!
     }
 
-    public void removeArea(Area area) {
-        if (areas.remove(area)) {
+    public void removeArea(EditableArea area) {
+        if (areas.entrySet().removeIf(e -> e.getValue() == area)) {
             // todo: re-split according to global params???
             fireChanged(false); // todo: can be true if ranges changes after resplit!!!
         }
@@ -105,7 +117,17 @@ public final class EditableRanges {
         return areas.size();
     }
 
-    public List<Area> getAreas() {
-        return areas;
+    public Collection<EditableArea> getAreas() {
+        return areas.values();
+    }
+
+    public EditableArea findArea(int frame) {
+        Integer floor = areas.navigableKeySet().floor(frame);
+        if (floor == null)
+            return null;
+        EditableArea area = areas.get(floor);
+        if (area.contains(frame))
+            return area;
+        return null;
     }
 }

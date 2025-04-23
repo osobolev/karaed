@@ -1,7 +1,7 @@
 package karaed.gui.align;
 
-import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.Range;
+import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
 
 import java.awt.Color;
@@ -55,9 +55,9 @@ final class Painter extends Sizer {
         }
     }
 
-    void paint(ColorSequence colors, EditableRanges model, Range playingRange, Area editingArea) {
+    void paint(ColorSequence colors, EditableRanges model, Range playingRange, EditableArea editingArea) {
         int ya = areaEditY1();
-        for (Area area : model.getAreas()) {
+        for (EditableArea area : model.getAreas()) {
             int x1 = frame2x(area.from());
             int x2 = frame2x(area.to());
             int width = Math.max(x2 - x1, 1);

@@ -1,7 +1,10 @@
 package karaed.gui.align;
 
+import karaed.engine.formats.ranges.Area;
+import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
+import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.InputUtil;
 
@@ -9,6 +12,7 @@ import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 final class AlignComponent {
@@ -17,6 +21,7 @@ final class AlignComponent {
 
     private final ColorSequence colors = new ColorSequence();
     private final EditableRanges model;
+    private final Runnable onChange;
 
     private final RangesComponent vocals;
     private final JSlider scaleSlider = new JSlider(2, 50, 30);
@@ -28,10 +33,13 @@ final class AlignComponent {
 
     private final Action actionStop;
 
-    private Object savedData = null;
+    private AreaParams savedData = null;
+    private boolean splitModified = false;
 
     AlignComponent(ErrorLogger logger, EditableRanges model, List<String> lines, Runnable onChange) {
         this.model = model;
+        this.onChange = onChange;
+
         this.vocals = new RangesComponent(logger, colors, model);
         this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override
@@ -67,7 +75,11 @@ final class AlignComponent {
         lyrics.setLines(lines);
 
         model.addListener(rangesChanged -> {
-            onChange.run();
+            if (savedData == null) {
+                onChange.run();
+            } else {
+                splitModified = true;
+            }
             if (rangesChanged) {
                 syncNumbers();
                 lyrics.recolor();
@@ -97,7 +109,8 @@ final class AlignComponent {
 
     private void startSplitting() {
         if (savedData == null) {
-            savedData = ""; // todo: save rollback value for first call
+            savedData = vocals.getModelParams();
+            splitModified = false;
             btnCommit.setEnabled(true);
             btnRollback.setEnabled(true);
             vocals.setSplitInProgress(true);
@@ -105,13 +118,21 @@ final class AlignComponent {
     }
 
     private void endSplitting(boolean commit) {
-        if (!commit && savedData != null) {
-            // todo: roll back data
+        if (commit) {
+            if (splitModified) {
+                onChange.run();
+            }
+        } else {
+            if (savedData != null) {
+                paramsInput.setParams(savedData);
+                // todo: roll back ranges too!!!
+            }
         }
         vocals.setSplitInProgress(false);
         btnCommit.setEnabled(false);
         btnRollback.setEnabled(false);
         savedData = null;
+        splitModified = false;
     }
 
     private void syncNumbers() {
@@ -136,7 +157,11 @@ final class AlignComponent {
     }
 
     Ranges getData() {
-        return new Ranges(model.getParams(), model.getRanges(), model.getAreas(), lyrics.getLines());
+        List<Area> areas = new ArrayList<>();
+        for (EditableArea area : model.getAreas()) {
+            areas.add(new Area(area.from(), area.to(), area.params()));
+        }
+        return new Ranges(model.getParams(), model.getRanges(), areas, lyrics.getLines());
     }
 
     void close() {

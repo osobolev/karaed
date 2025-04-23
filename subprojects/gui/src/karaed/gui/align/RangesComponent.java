@@ -1,9 +1,9 @@
 package karaed.gui.align;
 
-import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.ErrorLogger;
+import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.ShowMessage;
 
@@ -43,7 +43,7 @@ final class RangesComponent extends JComponent implements Scrollable {
     private Range playingRange = null;
     private Clip playing = null;
 
-    private Area editingArea = null;
+    private EditableArea editingArea = null;
 
     private boolean splitInProgress = false;
 
@@ -81,7 +81,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                         int to = Math.max(f1, f2);
                         if (to > from) {
                             // todo: skip too small areas!!!
-                            model.addArea(new Area(from, to, model.getParams()));
+                            model.addArea(from, to, model.getParams());
                         }
                     }
                     dragStart = null;
@@ -98,8 +98,8 @@ final class RangesComponent extends JComponent implements Scrollable {
                 if (model.getAreaCount() > 0 && !splitInProgress) {
                     Sizer s = newSizer();
                     int frame = s.x2frame(e.getX());
-                    int iarea = s.findArea(frame, e.getY(), model.getAreas());
-                    if (iarea >= 0) {
+                    EditableArea area = s.findArea(frame, e.getY(), model);
+                    if (area != null) {
                         c = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
                     }
                 }
@@ -196,10 +196,8 @@ final class RangesComponent extends JComponent implements Scrollable {
             return;
         }
 
-        List<Area> areas = model.getAreas();
-        int iarea = s.findArea(frame, me.getY(), areas);
-        if (iarea >= 0) {
-            Area area = areas.get(iarea);
+        EditableArea area = s.findArea(frame, me.getY(), model);
+        if (area != null) {
             areaClicked(me, area);
         }
     }
@@ -236,7 +234,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         }
     }
 
-    private void areaClicked(MouseEvent me, Area area) {
+    private void areaClicked(MouseEvent me, EditableArea area) {
         if (me.getButton() == MouseEvent.BUTTON1) {
             if (splitInProgress)
                 return;
@@ -305,8 +303,12 @@ final class RangesComponent extends JComponent implements Scrollable {
         repaint();
     }
 
+    AreaParams getModelParams() {
+        return editingArea == null ? model.getParams() : editingArea.params();
+    }
+
     void fireParamsChanged() {
-        AreaParams params = editingArea == null ? model.getParams() : editingArea.params();
+        AreaParams params = getModelParams();
         for (Consumer<AreaParams> listener : paramListeners) {
             listener.accept(params);
         }
@@ -322,11 +324,7 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     void setParams(AreaParams params) {
         try {
-            if (editingArea == null) {
-                model.splitByParams(params);
-            } else {
-                // todo: change area params
-            }
+            model.splitByParams(editingArea, params);
         } catch (Exception ex) {
             ShowMessage.error(this, logger, ex);
         }
