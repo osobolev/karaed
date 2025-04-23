@@ -43,16 +43,12 @@ final class Ranger {
         }
     }
 
-    private static int mid(int a, int b) {
-        return a + (b - a) / 2;
-    }
-
     List<Range> finish(int frame) {
         if (voiceStarted >= 0) {
             finishRange(frame);
         }
         ranges.removeIf(
-            range -> range.to() - range.from() < params.minRangeDuration(mid(range.from(), range.to()))
+            range -> range.to() - range.from() < params.minRangeDuration(Range.mid(range.from(), range.to()))
         );
         return ranges;
     }

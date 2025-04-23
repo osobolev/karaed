@@ -21,6 +21,10 @@ public record Range(int from, int to) {
         return formatTime(totalSeconds);
     }
 
+    public static int mid(int a, int b) {
+        return a + (b - a) / 2;
+    }
+
     @Override
     public String toString() {
         return String.format("%d - %d (%s - %s)", from, to, formatFrame(from), formatFrame(to));
