@@ -9,6 +9,7 @@ import static karaed.project.ProjectFile.*;
 
 final class Dependencies {
 
+    final boolean hasVideo;
     private final Map<ProjectFile, Map<ProjectFile, Boolean>> dependencies = new EnumMap<>(ProjectFile.class);
     private final Map<PipeStep, Set<ProjectFile>> forSteps = new EnumMap<>(PipeStep.class);
 
@@ -20,13 +21,12 @@ final class Dependencies {
         add(file, dep, true);
     }
 
-    private void fileDeps(OInput input, OVideo video) {
-        boolean hasVideo = input.url() != null;
+    private void fileDeps(OVideo video) {
         if (hasVideo) {
             add(ORIGINAL_VIDEO, INPUT);
             add(PREPARED_VIDEO, ORIGINAL_VIDEO);
             add(AUDIO, ORIGINAL_VIDEO);
-        } else if (input.file() != null) {
+        } else {
             add(AUDIO, INPUT);
         }
 
@@ -58,8 +58,7 @@ final class Dependencies {
         forSteps.computeIfAbsent(step, k -> EnumSet.noneOf(ProjectFile.class)).add(file);
     }
 
-    private void stepDeps(OInput input, OVideo video) {
-        boolean hasVideo = input.url() != null;
+    private void stepDeps(OVideo video) {
         if (hasVideo) {
             step(PipeStep.DOWNLOAD, ORIGINAL_VIDEO);
         }
@@ -85,9 +84,11 @@ final class Dependencies {
     }
 
     Dependencies(OInput input, OVideo video) {
-        fileDeps(input, video);
+        this.hasVideo = input.url() != null;
 
-        stepDeps(input, video);
+        fileDeps(video);
+
+        stepDeps(video);
     }
 
     Map<ProjectFile, Boolean> dependencies(ProjectFile file) {

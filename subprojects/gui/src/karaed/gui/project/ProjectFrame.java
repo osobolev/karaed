@@ -171,23 +171,25 @@ public final class ProjectFrame extends BaseFrame {
 
     private void refreshStepStates() {
         try {
-            Map<PipeStep, StepState> pipe = PipeBuilder.create(workDir).buildPipe();
+            PipeInfo pipe = PipeBuilder.create(workDir).buildPipe();
             showStepStates(pipe);
         } catch (Exception ex) {
             getLogger().error(ex);
         }
     }
 
-    private void showStepStates(Map<PipeStep, StepState> pipe) {
+    private void showStepStates(PipeInfo pipe) {
         for (Map.Entry<PipeStep, StepLabel> entry : labels.entrySet()) {
             PipeStep step = entry.getKey();
             StepLabel label = entry.getValue();
-            label.setState(RunStepState.initState(pipe.get(step)));
+            RunStepState state = RunStepState.initState(pipe.stepStates().get(step));
+            label.setHasVideo(pipe.hasVideo());
+            label.setState(state);
         }
     }
 
     private void runPipeline() {
-        Map<PipeStep, StepState> pipe;
+        PipeInfo pipe;
         try {
             pipe = PipeBuilder.create(workDir).buildPipe();
         } catch (Exception ex) {
@@ -205,7 +207,7 @@ public final class ProjectFrame extends BaseFrame {
                 long t0 = System.currentTimeMillis();
                 boolean ok = true;
                 for (PipeStep step : PipeStep.values()) {
-                    StepState state = pipe.get(step);
+                    StepState state = pipe.stepStates().get(step);
                     if (state instanceof StepState.Done)
                         continue;
                     setState(step, new RunStepState.Running());

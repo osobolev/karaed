@@ -29,6 +29,7 @@ final class StepLabel {
     private final JTextPane tpLabel = new JTextPane();
     private final JLabel iconLabel = new JLabel();
     private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+    private boolean hasVideo = true;
 
     private static String toHex(int x) {
         String str = Integer.toString(x, 16);
@@ -84,10 +85,9 @@ final class StepLabel {
         panel.add(iconLabel);
     }
 
-    // todo: for video link can be unavailable!!!
     private String getText(boolean active, boolean canLink) {
         String text = switch (step) {
-        case DOWNLOAD -> "Downloading [audio]#audio/[video]#video";
+        case DOWNLOAD -> hasVideo ? "Downloading [audio]#audio/[video]#video" : "Copying [audio]#audio";
         case DEMUCS -> "Separating vocals";
         case RANGES -> "Detecting [ranges]#ranges";
         case ALIGN -> "Aligning vocals with lyrics";
@@ -142,6 +142,10 @@ final class StepLabel {
             setText(false, false, message);
             iconLabel.setIcon(ERROR);
         }
+    }
+
+    void setHasVideo(boolean hasVideo) {
+        this.hasVideo = hasVideo;
     }
 
     JComponent getVisual() {

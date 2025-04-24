@@ -154,7 +154,7 @@ public final class PipeBuilder {
         return new StepState.Done();
     }
 
-    public Map<PipeStep, StepState> buildPipe() throws IOException {
+    public PipeInfo buildPipe() throws IOException {
         fillFiles();
         for (ProjectFile file : fileStates.keySet()) {
             getFileState(file);
@@ -164,6 +164,6 @@ public final class PipeBuilder {
             StepState stepState = getStepState(step);
             stepStates.put(step, stepState);
         }
-        return stepStates;
+        return new PipeInfo(stepStates, dependencies.hasVideo);
     }
 }
