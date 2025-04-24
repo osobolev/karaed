@@ -25,6 +25,7 @@ public final class Main {
         Path rootDir = Path.of("C:\\home\\projects\\my\\kara2");
 
         SwingUtilities.invokeLater(() -> {
+            Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
             if (args.length > 0) {
                 Path path = Path.of(args[0]);
                 Path dir;
