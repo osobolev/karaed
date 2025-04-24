@@ -159,7 +159,10 @@ public final class EditableRanges {
         } else {
             to = Math.min(range.to() + delta, source.frames());
         }
-        EditableArea area = new EditableArea(from, to, params);
+        int leftInset = range.from() - from;
+        int rightInset = to - range.to();
+        int inset = Math.min(leftInset, rightInset);
+        EditableArea area = new EditableArea(range.from() - inset, range.to() + inset, params);
         if (areas.intersects(area))
             return null;
         return area;
