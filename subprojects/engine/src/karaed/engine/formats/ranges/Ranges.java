@@ -4,7 +4,7 @@ import java.util.List;
 
 public record Ranges(
     AreaParams params,
-    List<Range> ranges, // todo: no need to store ranges, auto-detect them from areas???
+    List<Range> ranges,
     List<Area> areas,
     List<String> lines
 ) {
