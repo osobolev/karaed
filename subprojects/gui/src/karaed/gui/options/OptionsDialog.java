@@ -3,7 +3,6 @@ package karaed.gui.options;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.InputUtil;
-import karaed.gui.util.ShowMessage;
 import karaed.project.Workdir;
 
 import javax.swing.*;
@@ -111,14 +110,14 @@ public final class OptionsDialog extends BaseDialog {
             String dirStr = tfDir.getText();
             if (dirStr.isEmpty()) {
                 tfDir.requestFocusInWindow();
-                ShowMessage.error(this, "Enter a directory");
+                error("Enter a directory");
                 return;
             }
             Path dir = Path.of(dirStr);
             try {
                 Files.createDirectories(dir);
             } catch (Exception ex) {
-                ShowMessage.error(this, "Cannot create directory");
+                error("Cannot create directory");
                 return;
             }
             ctx.workDir = new Workdir(dir);
@@ -132,7 +131,7 @@ public final class OptionsDialog extends BaseDialog {
         } catch (ValidationException ex) {
             openTabContaining(ex.component);
             ex.component.requestFocusInWindow();
-            ShowMessage.error(this, ex.getMessage());
+            error(ex.getMessage());
             return;
         }
         saved = true;

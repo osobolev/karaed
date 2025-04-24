@@ -6,7 +6,6 @@ import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.BaseDialog;
-import karaed.gui.util.ShowMessage;
 import karaed.json.JsonUtil;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -124,10 +123,10 @@ public final class ManualAlign extends BaseDialog {
         if (newData.rangeLines().size() != newData.ranges().size()) {
             if (forceSync) {
                 tabs.setSelectedIndex(0);
-                ShowMessage.error(this, "Please align vocals and lyrics");
+                error("Please align vocals and lyrics");
                 return false;
             } else {
-                if (!ShowMessage.confirm2(this, "Vocals and lyrics are not aligned, really save?")) {
+                if (!confirm2("Vocals and lyrics are not aligned, really save?")) {
                     tabs.setSelectedIndex(0);
                     return false;
                 }
@@ -136,10 +135,10 @@ public final class ManualAlign extends BaseDialog {
         if (!syncComponent.isAligned()) {
             if (forceSync) {
                 tabs.setSelectedIndex(1);
-                ShowMessage.error(this, "Please match edited and original text");
+                error("Please match edited and original text");
                 return false;
             } else {
-                if (!ShowMessage.confirm2(this, "Edited and original texts are mismatched, really save?")) {
+                if (!confirm2("Edited and original texts are mismatched, really save?")) {
                     tabs.setSelectedIndex(1);
                     return false;
                 }
@@ -173,7 +172,7 @@ public final class ManualAlign extends BaseDialog {
         alignComponent.close();
         if (!actionSave.isEnabled())
             return true;
-        return ShowMessage.confirm2(this, "You have unsaved changes. Really close?");
+        return confirm2("You have unsaved changes. Really close?");
     }
 
     public boolean isContinue() {

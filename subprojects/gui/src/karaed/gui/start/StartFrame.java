@@ -6,7 +6,6 @@ import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
 import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
-import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
 import karaed.project.Workdir;
 import karaed.tools.Tools;
@@ -91,7 +90,7 @@ public final class StartFrame extends BaseFrame {
         Consumer<RecentItem> onClick = item -> {
             Workdir workDir = new Workdir(item.dir);
             openProject(workDir, error -> {
-                if (!ShowMessage.confirm2(this, error + ".\nRemove this project from list?"))
+                if (!confirm2(error + ".\nRemove this project from list?"))
                     return;
                 onDelete.accept(item);
             });
@@ -130,6 +129,6 @@ public final class StartFrame extends BaseFrame {
     }
 
     private void openProject(Workdir workDir) {
-        openProject(workDir, error -> ShowMessage.error(this, error));
+        openProject(workDir, this::error);
     }
 }

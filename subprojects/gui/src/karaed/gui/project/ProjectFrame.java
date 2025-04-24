@@ -10,7 +10,6 @@ import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
 import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
-import karaed.gui.util.ShowMessage;
 import karaed.gui.util.TitleUtil;
 import karaed.project.*;
 import karaed.tools.ProcRunner;
@@ -148,7 +147,7 @@ public final class ProjectFrame extends BaseFrame {
             if (file != null && Files.exists(file)) {
                 Desktop.getDesktop().open(file.toFile());
             } else {
-                ShowMessage.error(this, "File not found");
+                error("File not found");
             }
         } catch (Exception ex) {
             error(ex);
@@ -219,7 +218,7 @@ public final class ProjectFrame extends BaseFrame {
                             String message;
                             if (ex instanceof KaraException) {
                                 message = ex.getMessage();
-                                SwingUtilities.invokeLater(() -> ShowMessage.error(this, ex.getMessage()));
+                                SwingUtilities.invokeLater(() -> error(ex.getMessage()));
                             } else {
                                 message = ex.toString();
                                 SwingUtilities.invokeLater(() -> error(ex));

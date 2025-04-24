@@ -15,6 +15,14 @@ public interface BaseWindow {
         ShowMessage.error(toWindow(), ex.toString());
     }
 
+    default void error(String message) {
+        ShowMessage.error(toWindow(), message);
+    }
+
+    default boolean confirm2(String message) {
+        return ShowMessage.confirm2(toWindow(), message);
+    }
+
     default boolean onClosing() {
         return true;
     }
