@@ -123,6 +123,17 @@ public final class EditableRanges {
         }
     }
 
+    public void resizeArea(EditableArea area, int from, int to) {
+        if (areas.remove(area.from()) != area)
+            return;
+        EditableArea newArea = new EditableArea(from, to, area.params());
+        if (intersects(newArea)) {
+            areas.put(area.from(), area);
+            return;
+        }
+        addArea(newArea);
+    }
+
     public EditableArea newArea(int from, int to) {
         EditableArea area = new EditableArea(from, to, params);
         if (intersects(area))
@@ -200,6 +211,56 @@ public final class EditableRanges {
         EditableArea area = areas.get(floor);
         if (area.contains(frame))
             return area;
+        return null;
+    }
+
+    public AreaSide isOnAreaBorder(int frame, int delta, EditableArea[] area) {
+        NavigableSet<Integer> keySet = areas.navigableKeySet();
+        EditableArea areaBefore;
+        int dx1;
+        int dx2;
+        Integer before = keySet.floor(frame); // <= frame
+        if (before != null) {
+            areaBefore = areas.get(before);
+            dx1 = Math.abs(before.intValue() - frame);
+            dx2 = Math.abs(areaBefore.to() - frame);
+        } else {
+            areaBefore = null;
+            dx1 = Integer.MAX_VALUE;
+            dx2 = Integer.MAX_VALUE;
+        }
+        EditableArea areaAfter;
+        int dx3;
+        Integer after = keySet.higher(frame); // > frame
+        if (after != null) {
+            areaAfter = areas.get(after);
+            dx3 = Math.abs(after.intValue() - frame);
+        } else {
+            areaAfter = null;
+            dx3 = Integer.MAX_VALUE;
+        }
+        if (dx1 <= dx2 && dx1 <= dx3) {
+            if (dx1 < delta) {
+                if (area != null) {
+                    area[0] = areaBefore;
+                }
+                return AreaSide.LEFT;
+            }
+        } else if (dx2 <= dx1 && dx2 <= dx3) {
+            if (dx2 < delta) {
+                if (area != null) {
+                    area[0] = areaBefore;
+                }
+                return AreaSide.RIGHT;
+            }
+        } else {
+            if (dx3 < delta) {
+                if (area != null) {
+                    area[0] = areaAfter;
+                }
+                return AreaSide.LEFT;
+            }
+        }
         return null;
     }
 }

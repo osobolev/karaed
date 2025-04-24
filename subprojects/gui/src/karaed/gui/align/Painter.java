@@ -84,9 +84,8 @@ final class Painter extends Sizer {
         }
     }
 
-    void paintDrag(int dragStart, int dragging) {
+    void paintDrag(int x) {
         g.setColor(Color.black);
-        g.drawLine(dragStart, 0, dragStart, height);
-        g.drawLine(dragging, 0, dragging, height);
+        g.drawLine(x, 0, x, height);
     }
 }

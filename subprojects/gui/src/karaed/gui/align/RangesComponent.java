@@ -2,6 +2,7 @@ package karaed.gui.align;
 
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
+import karaed.gui.align.model.AreaSide;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.BaseWindow;
@@ -21,7 +22,6 @@ import java.util.function.Consumer;
 
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
-// todo: allow to edit areas
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
 // todo: show text inside ranges???
 // todo: better "currently playing" display
@@ -47,7 +47,10 @@ final class RangesComponent extends JComponent implements Scrollable {
     private SavedData beforeSplitting = null;
 
     private Integer dragStart = null;
-    private Integer dragging = null;
+    private Integer dragEnd = null;
+    private EditableArea resizingArea = null;
+    private AreaSide resizeSide = null;
+    private Integer draggingBorder = null;
 
     RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model) {
         this.owner = owner;
@@ -69,46 +72,114 @@ final class RangesComponent extends JComponent implements Scrollable {
                 mouseClick(e);
             }
 
+            private static boolean areaTooSmall(Measurer m, int from, int to) {
+                int frames = to - from;
+                if (frames <= 0)
+                    return true;
+                int min = m.sec2frame(1f);
+                return frames < min;
+            }
+
+            private void createNewArea() {
+                Measurer m = newMeasurer();
+                int f1 = m.x2frame(dragStart.intValue());
+                int f2 = m.x2frame(dragEnd.intValue());
+                int from = Math.min(f1, f2);
+                int to = Math.max(f1, f2);
+                if (areaTooSmall(m, from, to))
+                    return;
+                EditableArea area = model.newArea(from, to);
+                if (area != null) {
+                    model.addArea(area);
+                }
+            }
+
+            private void resizeArea() {
+                Measurer m = newMeasurer();
+                int newBorder = m.x2frame(draggingBorder.intValue());
+                int from;
+                int to;
+                if (resizeSide == AreaSide.LEFT) {
+                    from = newBorder;
+                    to = resizingArea.to();
+                } else {
+                    from = resizingArea.from();
+                    to = newBorder;
+                }
+                if (areaTooSmall(m, from, to))
+                    return;
+                model.resizeArea(resizingArea, from, to);
+                // todo: resize area
+            }
+
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (dragStart != null && dragging != null) {
+                boolean wasDragging;
+                if (dragStart != null && dragEnd != null) {
+                    wasDragging = true;
                     if (canEdit()) {
-                        Measurer m = new Measurer(frameRate, pixPerSec);
-                        int f1 = m.x2frame(dragStart.intValue());
-                        int f2 = m.x2frame(dragging.intValue());
-                        int from = Math.min(f1, f2);
-                        int to = Math.max(f1, f2);
-                        if (to > from) {
-                            // todo: skip too small areas!!!
-                            try {
-                                EditableArea area = model.newArea(from, to);
-                                if (area != null) {
-                                    model.addArea(area);
-                                }
-                            } catch (Exception ex) {
-                                owner.error(ex);
-                            }
-                        }
+                        createNewArea();
                     }
-                    dragStart = null;
-                    dragging = null;
+                } else if (draggingBorder != null) {
+                    wasDragging = true;
+                    if (canEdit()) {
+                        resizeArea();
+                    }
+                } else {
+                    wasDragging = false;
+                }
+                dragStart = null;
+                dragEnd = null;
+                draggingBorder = null;
+                if (wasDragging) {
                     repaint();
                 }
             }
         });
         addMouseMotionListener(new MouseMotionAdapter() {
 
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                Cursor c = Cursor.getDefaultCursor();
-                if (model.getAreaCount() > 0 && !isSplitting()) {
-                    Sizer s = newSizer();
-                    int frame = s.x2frame(e.getX());
-                    EditableArea area = s.findArea(frame, e.getY(), model);
-                    if (area != null) {
-                        c = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+            private static final int NEAR_BORDER = 5;
+
+            private Cursor maybeNewCursor(MouseEvent e) {
+                if (isSplitting()) {
+                    // Areas are not editable & cannot select/unselect area until commit/rollback
+                    return null;
+                }
+                if (model.getAreaCount() <= 0) {
+                    // No areas to show cursor for
+                    return null;
+                }
+                if (dragStart != null || draggingBorder != null) {
+                    // When dragging show default cursor
+                    return null;
+                }
+                Sizer s = newSizer();
+                int frame = s.x2frame(e.getX());
+                EditableArea area = s.findArea(frame, e.getY(), model);
+                if (area != null) {
+                    // Can select/unselect area
+                    // todo: what if cursor is over area != editingArea, and editingArea != null???
+                    return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                }
+                if (canEdit()) {
+                    int delta = s.pix2frame(NEAR_BORDER);
+                    AreaSide side = model.isOnAreaBorder(frame, delta, null);
+                    if (side != null) {
+                        // Can resize area
+                        return Cursor.getPredefinedCursor(side == AreaSide.LEFT ? Cursor.W_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR);
                     }
                 }
+                return null;
+            }
+
+            private Cursor getNewCursor(MouseEvent e) {
+                Cursor c = maybeNewCursor(e);
+                return c == null ? Cursor.getDefaultCursor() : c;
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                Cursor c = getNewCursor(e);
                 if (getCursor() != c) {
                     setCursor(c);
                 }
@@ -118,13 +189,31 @@ final class RangesComponent extends JComponent implements Scrollable {
             public void mouseDragged(MouseEvent e) {
                 if (!canEdit())
                     return;
-                if (dragStart == null) {
-                    dragStart = e.getX();
+                if (draggingBorder != null) {
+                    draggingBorder = e.getX();
+                } else if (dragStart != null) {
+                    dragEnd = e.getX();
+                } else {
+                    Measurer m = newMeasurer();
+                    int frame = m.x2frame(e.getX());
+                    int delta = m.pix2frame(NEAR_BORDER);
+                    EditableArea[] area = new EditableArea[1];
+                    AreaSide side = model.isOnAreaBorder(frame, delta, area);
+                    if (side != null) {
+                        resizingArea = area[0];
+                        resizeSide = side;
+                        draggingBorder = e.getX();
+                    } else {
+                        dragStart = dragEnd = e.getX();
+                    }
                 }
-                dragging = e.getX();
                 repaint();
             }
         });
+    }
+
+    private Measurer newMeasurer() {
+        return new Measurer(frameRate, pixPerSec);
     }
 
     private Sizer newSizer() {
@@ -185,8 +274,12 @@ final class RangesComponent extends JComponent implements Scrollable {
             doPaint(painter);
         }
 
-        if (dragStart != null && dragging != null) {
-            painter.paintDrag(dragStart.intValue(), dragging.intValue());
+        if (dragStart != null && dragEnd != null) {
+            painter.paintDrag(dragStart.intValue());
+            painter.paintDrag(dragEnd.intValue());
+        }
+        if (draggingBorder != null) {
+            painter.paintDrag(draggingBorder.intValue());
         }
     }
 
@@ -228,7 +321,7 @@ final class RangesComponent extends JComponent implements Scrollable {
             if (!canEdit())
                 return;
             MenuBuilder menu = new MenuBuilder(me);
-            Measurer m = new Measurer(frameRate, pixPerSec);
+            Measurer m = newMeasurer();
             int delta = m.sec2frame(1);
             EditableArea area = model.newAreaFromRange(range, delta);
             if (area != null) {
