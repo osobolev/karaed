@@ -159,6 +159,10 @@ final class AlignComponent {
         return new Ranges(model.getParams(), ranges, areas, lyrics.getLines());
     }
 
+    boolean isSplitting() {
+        return vocals.isSplitting();
+    }
+
     void close() {
         vocals.stop();
     }

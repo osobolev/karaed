@@ -170,6 +170,9 @@ public final class ManualAlign extends BaseDialog {
     @Override
     public boolean onClosing() {
         alignComponent.close();
+        if (alignComponent.isSplitting()) {
+            return confirm2("You have uncommitted changes. Really close?");
+        }
         if (!actionSave.isEnabled())
             return true;
         return confirm2("You have unsaved changes. Really close?");
