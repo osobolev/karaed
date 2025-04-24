@@ -30,9 +30,13 @@ class Measurer {
         return Math.round(seconds * frameRate);
     }
 
-    final int x2frame(int x) {
-        float seconds = (x - LPAD) / pixPerSec;
+    final int pix2frame(int pixels) {
+        float seconds = pixels / pixPerSec;
         return sec2frame(seconds);
+    }
+
+    final int x2frame(int x) {
+        return pix2frame(x - LPAD);
     }
 
     final int prefWidth(int seconds) {
