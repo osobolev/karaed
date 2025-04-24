@@ -10,12 +10,30 @@ final class RangeList<R extends RangeLike> {
 
     private final TreeMap<Integer, R> areas = new TreeMap<>();
 
+    void clear() {
+        areas.clear();
+    }
+
     void add(R area) {
         this.areas.put(area.from(), area);
     }
 
     boolean remove(R area) {
         return areas.entrySet().removeIf(e -> e.getValue() == area);
+    }
+
+    R before(R area) {
+        Map.Entry<Integer, R> before = areas.lowerEntry(area.from()); // < from
+        if (before == null)
+            return null;
+        return before.getValue();
+    }
+
+    R after(R area) {
+        Map.Entry<Integer, R> after = areas.higherEntry(area.from()); // > from
+        if (after == null)
+            return null;
+        return after.getValue();
     }
 
     boolean intersects(R newArea) {

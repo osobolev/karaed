@@ -6,17 +6,14 @@ import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public final class EditableRanges {
 
     public final PreparedAudioSource source;
 
     private AreaParams params;
-    private final List<Range> ranges;
+    private final RangeList<Range> ranges = new RangeList<>();
     private final RangeList<EditableArea> areas = new RangeList<>();
 
     private final List<RangeEditListener> listeners = new ArrayList<>();
@@ -25,9 +22,16 @@ public final class EditableRanges {
                           AreaParams params, List<Range> ranges, List<Area> areas) {
         this.source = source;
         this.params = params;
-        this.ranges = new ArrayList<>(ranges);
+        replaceRanges(ranges);
         for (Area area : areas) {
             this.areas.add(new EditableArea(area.from(), area.to(), area.params()));
+        }
+    }
+
+    private void replaceRanges(List<Range> ranges) {
+        this.ranges.clear();
+        for (Range range : ranges) {
+            this.ranges.add(range);
         }
     }
 
@@ -37,16 +41,29 @@ public final class EditableRanges {
         } else {
             area.params = params;
         }
-        this.ranges.clear();
-        this.ranges.addAll(ranges);
+        replaceRanges(ranges);
     }
+
+    private static boolean differs(Collection<Range> my, Collection<Range> other) {
+        if (my.size() != other.size())
+            return true;
+        Iterator<Range> i1 = my.iterator();
+        Iterator<Range> i2 = other.iterator();
+        while (i1.hasNext()) {
+            Range r1 = i1.next();
+            Range r2 = i2.next();
+            if (!r1.equals(r2))
+                return true;
+        }
+        return true;
+    }
+
 
     private void resplit(boolean fireNotChanged) {
         List<Range> ranges = source.detectVoice(getRangeParams());
-        boolean changed = !this.ranges.equals(ranges);
+        boolean changed = differs(ranges, this.ranges.values());
         if (changed) {
-            this.ranges.clear();
-            this.ranges.addAll(ranges);
+            replaceRanges(ranges);
             fireChanged(true);
         } else if (fireNotChanged) {
             fireChanged(false);
@@ -126,19 +143,18 @@ public final class EditableRanges {
     }
 
     public EditableArea newAreaFromRange(Range range, int delta) {
-        int i = ranges.indexOf(range);
-        if (i < 0)
-            return null;
         int from;
-        if (i > 0) {
-            int prev = ranges.get(i - 1).to();
+        Range before = ranges.before(range);
+        if (before != null) {
+            int prev = before.to();
             from = Math.max(range.from() - delta, Range.mid(prev, range.from()));
         } else {
             from = Math.max(range.from() - delta, 0);
         }
         int to;
-        if (i + 1 < ranges.size()) {
-            int next = ranges.get(i + 1).from();
+        Range after = ranges.after(range);
+        if (after != null) {
+            int next = after.from();
             to = Math.min(range.to() + delta, Range.mid(range.to(), next));
         } else {
             to = Math.min(range.to() + delta, source.frames());
@@ -168,16 +184,11 @@ public final class EditableRanges {
     }
 
     public Collection<Range> getRanges() {
-        return ranges;
+        return ranges.values();
     }
 
     public Range findRange(int frame) {
-        for (Range range : ranges) {
-            if (frame >= range.from() && frame < range.to()) {
-                return range;
-            }
-        }
-        return null;
+        return ranges.findContaining(frame);
     }
 
     public int getAreaCount() {
