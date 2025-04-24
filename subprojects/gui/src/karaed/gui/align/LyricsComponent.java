@@ -3,6 +3,8 @@ package karaed.gui.align;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -27,18 +29,6 @@ final class LyricsComponent {
 
         AbstractDocument document = (AbstractDocument) taLines.getDocument();
         document.setDocumentFilter(new DocumentFilter() {
-
-            @Override
-            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                fb.insertString(offset, string, attr);
-                recolor();
-            }
-
-            @Override
-            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-                fb.replace(offset, length, text, attrs);
-                recolor();
-            }
 
             @Override
             public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
@@ -70,7 +60,27 @@ final class LyricsComponent {
                 } else {
                     fb.remove(offset, length);
                 }
+            }
+        });
+        document.addDocumentListener(new DocumentListener() {
+
+            private void changed() {
                 recolor();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changed();
             }
         });
         recolor();
