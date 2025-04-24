@@ -44,9 +44,24 @@ final class LyricsComponent {
             public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
                 String insert = null;
                 if (length == 1) {
-                    String text = fb.getDocument().getText(offset, length);
+                    Document doc = fb.getDocument();
+                    String text = doc.getText(offset, length);
                     if ("\n".equals(text)) {
-                        insert = " ";
+                        char before;
+                        if (offset > 0) {
+                            before = doc.getText(offset - 1, 1).charAt(0);
+                        } else {
+                            before = ' ';
+                        }
+                        char after;
+                        if (offset + 1 < doc.getLength()) {
+                            after = doc.getText(offset + 1, 1).charAt(0);
+                        } else {
+                            after = ' ';
+                        }
+                        if (before > ' ' && after > ' ') {
+                            insert = " ";
+                        }
                         SwingUtilities.invokeLater(() -> end());
                     }
                 }
