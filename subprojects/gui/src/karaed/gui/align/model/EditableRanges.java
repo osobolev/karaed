@@ -111,8 +111,6 @@ public final class EditableRanges {
     }
 
     public void addArea(EditableArea area) {
-        if (intersects(area))
-            return;
         areas.put(area.from(), area);
         areasChanged();
     }
