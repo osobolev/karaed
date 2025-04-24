@@ -5,6 +5,7 @@ import karaed.engine.formats.ranges.Range;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.BaseWindow;
+import karaed.gui.util.MenuBuilder;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
@@ -223,7 +224,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         } else if (me.getButton() == MouseEvent.BUTTON3) {
             if (!canEdit())
                 return;
-            JPopupMenu menu = new JPopupMenu();
+            MenuBuilder menu = new MenuBuilder(me);
             menu.add(new AbstractAction("Add area & edit") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -242,7 +243,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                     }
                 }
             });
-            menu.show(this, me.getX() - 5, me.getY() - 5);
+            menu.showMenu();
         }
     }
 
@@ -264,7 +265,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         } else {
             if (!canEdit())
                 return;
-            JPopupMenu menu = new JPopupMenu();
+            MenuBuilder menu = new MenuBuilder(me);
             menu.add(new AbstractAction("Remove area") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -275,7 +276,7 @@ final class RangesComponent extends JComponent implements Scrollable {
                     }
                 }
             });
-            menu.show(this, me.getX() - 5, me.getY() - 5);
+            menu.showMenu();
         }
     }
 
