@@ -6,7 +6,10 @@ import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public final class EditableRanges {
 
@@ -14,7 +17,7 @@ public final class EditableRanges {
 
     private AreaParams params;
     private final List<Range> ranges;
-    private final TreeMap<Integer, EditableArea> areas = new TreeMap<>();
+    private final RangeList<EditableArea> areas = new RangeList<>();
 
     private final List<RangeEditListener> listeners = new ArrayList<>();
 
@@ -24,7 +27,7 @@ public final class EditableRanges {
         this.params = params;
         this.ranges = new ArrayList<>(ranges);
         for (Area area : areas) {
-            this.areas.put(area.from(), new EditableArea(area.from(), area.to(), area.params()));
+            this.areas.add(new EditableArea(area.from(), area.to(), area.params()));
         }
     }
 
@@ -89,44 +92,27 @@ public final class EditableRanges {
         };
     }
 
-    private boolean intersects(EditableArea newArea) {
-        NavigableSet<Integer> keySet = areas.navigableKeySet();
-        Integer before = keySet.floor(newArea.from()); // <= from
-        if (before != null) {
-            EditableArea areaBefore = areas.get(before);
-            if (areaBefore.contains(newArea.from()))
-                return true;
-        }
-        Integer after = keySet.higher(newArea.from()); // > from
-        if (after != null) {
-            EditableArea areaAfter = areas.get(after);
-            if (newArea.contains(areaAfter.from()))
-                return true;
-        }
-        return false;
-    }
-
     private void areasChanged() {
         resplit(true);
     }
 
     public void addArea(EditableArea area) {
-        areas.put(area.from(), area);
+        areas.add(area);
         areasChanged();
     }
 
     public void removeArea(EditableArea area) {
-        if (areas.entrySet().removeIf(e -> e.getValue() == area)) {
+        if (areas.remove(area)) {
             areasChanged();
         }
     }
 
     public void resizeArea(EditableArea area, int from, int to) {
-        if (areas.remove(area.from()) != area)
+        if (!areas.remove(area))
             return;
         EditableArea newArea = new EditableArea(from, to, area.params());
-        if (intersects(newArea)) {
-            areas.put(area.from(), area);
+        if (areas.intersects(newArea)) {
+            areas.add(area);
             return;
         }
         addArea(newArea);
@@ -134,7 +120,7 @@ public final class EditableRanges {
 
     public EditableArea newArea(int from, int to) {
         EditableArea area = new EditableArea(from, to, params);
-        if (intersects(area))
+        if (areas.intersects(area))
             return null;
         return area;
     }
@@ -158,7 +144,7 @@ public final class EditableRanges {
             to = Math.min(range.to() + delta, source.frames());
         }
         EditableArea area = new EditableArea(from, to, params);
-        if (intersects(area))
+        if (areas.intersects(area))
             return null;
         return area;
     }
@@ -203,62 +189,10 @@ public final class EditableRanges {
     }
 
     public EditableArea findArea(int frame) {
-        Integer floor = areas.navigableKeySet().floor(frame);
-        if (floor == null)
-            return null;
-        EditableArea area = areas.get(floor);
-        if (area.contains(frame))
-            return area;
-        return null;
+        return areas.findArea(frame);
     }
 
     public AreaSide isOnAreaBorder(int frame, int delta, EditableArea[] area) {
-        NavigableSet<Integer> keySet = areas.navigableKeySet();
-        EditableArea areaBefore;
-        int dx1;
-        int dx2;
-        Integer before = keySet.floor(frame); // <= frame
-        if (before != null) {
-            areaBefore = areas.get(before);
-            dx1 = Math.abs(before.intValue() - frame);
-            dx2 = Math.abs(areaBefore.to() - frame);
-        } else {
-            areaBefore = null;
-            dx1 = Integer.MAX_VALUE;
-            dx2 = Integer.MAX_VALUE;
-        }
-        EditableArea areaAfter;
-        int dx3;
-        Integer after = keySet.higher(frame); // > frame
-        if (after != null) {
-            areaAfter = areas.get(after);
-            dx3 = Math.abs(after.intValue() - frame);
-        } else {
-            areaAfter = null;
-            dx3 = Integer.MAX_VALUE;
-        }
-        if (dx1 <= dx2 && dx1 <= dx3) {
-            if (dx1 < delta) {
-                if (area != null) {
-                    area[0] = areaBefore;
-                }
-                return AreaSide.LEFT;
-            }
-        } else if (dx2 <= dx1 && dx2 <= dx3) {
-            if (dx2 < delta) {
-                if (area != null) {
-                    area[0] = areaBefore;
-                }
-                return AreaSide.RIGHT;
-            }
-        } else {
-            if (dx3 < delta) {
-                if (area != null) {
-                    area[0] = areaAfter;
-                }
-                return AreaSide.LEFT;
-            }
-        }
-        return null;
+        return areas.isOnAreaBorder(frame, delta, area);
     }
 }
