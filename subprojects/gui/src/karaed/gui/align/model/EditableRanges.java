@@ -189,10 +189,10 @@ public final class EditableRanges {
     }
 
     public EditableArea findArea(int frame) {
-        return areas.findArea(frame);
+        return areas.findContaining(frame);
     }
 
     public AreaSide isOnAreaBorder(int frame, int delta, EditableArea[] area) {
-        return areas.isOnAreaBorder(frame, delta, area);
+        return areas.isOnBorder(frame, delta, area);
     }
 }

@@ -3,7 +3,7 @@ package karaed.gui.align.model;
 import karaed.engine.formats.ranges.RangeLike;
 
 import java.util.Collection;
-import java.util.NavigableSet;
+import java.util.Map;
 import java.util.TreeMap;
 
 final class RangeList<R extends RangeLike> {
@@ -19,41 +19,39 @@ final class RangeList<R extends RangeLike> {
     }
 
     boolean intersects(R newArea) {
-        NavigableSet<Integer> keySet = areas.navigableKeySet();
-        Integer before = keySet.floor(newArea.from()); // <= from
+        Map.Entry<Integer, R> before = areas.floorEntry(newArea.from()); // <= from
         if (before != null) {
-            R areaBefore = areas.get(before);
+            R areaBefore = before.getValue();
             if (areaBefore.contains(newArea.from()))
                 return true;
         }
-        Integer after = keySet.higher(newArea.from()); // > from
+        Map.Entry<Integer, R> after = areas.higherEntry(newArea.from()); // > from
         if (after != null) {
-            R areaAfter = areas.get(after);
+            R areaAfter = after.getValue();
             if (newArea.contains(areaAfter.from()))
                 return true;
         }
         return false;
     }
 
-    R findArea(int frame) {
-        Integer floor = areas.navigableKeySet().floor(frame);
+    R findContaining(int frame) {
+        Map.Entry<Integer, R> floor = areas.floorEntry(frame);
         if (floor == null)
             return null;
-        R area = areas.get(floor);
+        R area = floor.getValue();
         if (area.contains(frame))
             return area;
         return null;
     }
 
-    AreaSide isOnAreaBorder(int frame, int delta, R[] area) {
-        NavigableSet<Integer> keySet = areas.navigableKeySet();
+    AreaSide isOnBorder(int frame, int delta, R[] area) {
         R areaBefore;
         int dx1;
         int dx2;
-        Integer before = keySet.floor(frame); // <= frame
+        Map.Entry<Integer, R> before = areas.floorEntry(frame); // <= frame
         if (before != null) {
-            areaBefore = areas.get(before);
-            dx1 = Math.abs(before.intValue() - frame);
+            areaBefore = before.getValue();
+            dx1 = Math.abs(areaBefore.from() - frame);
             dx2 = Math.abs(areaBefore.to() - frame);
         } else {
             areaBefore = null;
@@ -62,10 +60,10 @@ final class RangeList<R extends RangeLike> {
         }
         R areaAfter;
         int dx3;
-        Integer after = keySet.higher(frame); // > frame
+        Map.Entry<Integer, R> after = areas.higherEntry(frame); // > frame
         if (after != null) {
-            areaAfter = areas.get(after);
-            dx3 = Math.abs(after.intValue() - frame);
+            areaAfter = after.getValue();
+            dx3 = Math.abs(areaAfter.from() - frame);
         } else {
             areaAfter = null;
             dx3 = Integer.MAX_VALUE;
