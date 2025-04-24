@@ -39,7 +39,7 @@ final class AlignComponent {
         this.model = model;
         this.onChange = onChange;
 
-        this.vocals = new RangesComponent(owner, colors, model, lyrics::getLineAt);
+        this.vocals = new RangesComponent(owner, colors, model, lyrics::getLineAt, lyrics::goTo);
         this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override
             public void actionPerformed(ActionEvent e) {
