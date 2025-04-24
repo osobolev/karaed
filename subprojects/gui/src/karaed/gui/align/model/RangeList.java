@@ -53,7 +53,7 @@ final class RangeList<R extends RangeLike> {
     }
 
     R findContaining(int frame) {
-        Map.Entry<Integer, R> floor = areas.floorEntry(frame);
+        Map.Entry<Integer, R> floor = areas.floorEntry(frame); // <= frame
         if (floor == null)
             return null;
         R area = floor.getValue();
