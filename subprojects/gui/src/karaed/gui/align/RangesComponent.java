@@ -235,14 +235,10 @@ final class RangesComponent extends JComponent implements Scrollable {
                 menu.add(new AbstractAction("Add area & edit") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        try {
-                            model.addArea(area);
-                            editingArea = area;
-                            fireParamsChanged();
-                            repaint();
-                        } catch (Exception ex) {
-                            owner.error(ex);
-                        }
+                        model.addArea(area);
+                        editingArea = area;
+                        fireParamsChanged();
+                        repaint();
                     }
                 });
             }
@@ -272,11 +268,7 @@ final class RangesComponent extends JComponent implements Scrollable {
             menu.add(new AbstractAction("Remove area") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    try {
-                        model.removeArea(area);
-                    } catch (Exception ex) {
-                        owner.error(ex);
-                    }
+                    model.removeArea(area);
                 }
             });
             menu.showMenu();
@@ -353,11 +345,7 @@ final class RangesComponent extends JComponent implements Scrollable {
     }
 
     void setParams(AreaParams params) {
-        try {
-            model.splitByParams(editingArea, params);
-        } catch (Exception ex) {
-            owner.error(ex);
-        }
+        model.splitByParams(editingArea, params);
     }
 
     void rollbackChanges() {
