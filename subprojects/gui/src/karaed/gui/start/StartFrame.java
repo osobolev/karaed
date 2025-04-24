@@ -19,9 +19,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public final class StartFrame extends BaseFrame {
@@ -83,31 +82,32 @@ public final class StartFrame extends BaseFrame {
 
         JPanel rip = new JPanel();
         rip.setLayout(new BoxLayout(rip, BoxLayout.Y_AXIS));
-        Map<Path, RecentItem> ripMap = new LinkedHashMap<>();
-        Consumer<Path> listener = dir -> {
-            Workdir workDir = new Workdir(dir);
+        Consumer<RecentItem> onDelete = item -> {
+            Path dir = item.dir;
+            RecentItems.removeRecentItem(logger, dir);
+            rip.remove(item.getVisual());
+            rip.revalidate();
+        };
+        Consumer<RecentItem> onClick = item -> {
+            Workdir workDir = new Workdir(item.dir);
             openProject(workDir, error -> {
                 if (!ShowMessage.confirm2(this, error + ".\nRemove this project from list?"))
                     return;
-                RecentItems.removeRecentItem(logger, dir);
-                RecentItem recentItem = ripMap.remove(dir);
-                if (recentItem != null) {
-                    rip.remove(recentItem.getVisual());
-                    rip.revalidate();
-                }
+                onDelete.accept(item);
             });
         };
+        List<RecentItem> loadInfos = new ArrayList<>();
         for (Path dir : recent) {
-            RecentItem itemPanel = new RecentItem(dir, listener);
+            RecentItem itemPanel = new RecentItem(dir, onClick, onDelete);
             rip.add(itemPanel.getVisual());
-            ripMap.put(dir, itemPanel);
+            loadInfos.add(itemPanel);
         }
         JScrollPane sp = new JScrollPane(rip, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         sp.setPreferredSize(new Dimension(600, 400));
         add(sp, BorderLayout.CENTER);
 
         new Thread(() -> {
-            for (RecentItem itemPanel : ripMap.values()) {
+            for (RecentItem itemPanel : loadInfos) {
                 Workdir workDir = new Workdir(itemPanel.dir);
                 boolean exists = RecentItems.isProjectDir(workDir) == null;
                 Info info = TitleUtil.getInfo(workDir);

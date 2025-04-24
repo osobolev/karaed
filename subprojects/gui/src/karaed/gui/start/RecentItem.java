@@ -1,8 +1,11 @@
 package karaed.gui.start;
 
+import karaed.gui.util.MenuBuilder;
+
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
@@ -12,6 +15,7 @@ final class RecentItem {
 
     private static final Color NORMAL_BG = Color.white;
     private static final Color ROLLOVER_BG = new Color(200, 240, 255);
+    private static final Color MENU_BG = new Color(160, 200, 240);
 
     private static final Color NORMAL_FG = new Color(150, 150, 150);
     private static final Color BAD_FG = new Color(255, 120, 120);
@@ -22,7 +26,10 @@ final class RecentItem {
     private final JLabel lblTitle = new JLabel("-");
     private final JLabel lblDir = new JLabel(" ");
 
-    RecentItem(Path dir, Consumer<Path> listener) {
+    private boolean showingMenu = false;
+    private boolean mouseInside = false;
+
+    RecentItem(Path dir, Consumer<RecentItem> onClick, Consumer<RecentItem> onDelete) {
         this.dir = dir;
 
         main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
@@ -46,22 +53,46 @@ final class RecentItem {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
-                    listener.accept(dir);
+                    onClick.accept(RecentItem.this);
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    MenuBuilder menu = new MenuBuilder(e);
+                    menu.add(new AbstractAction("Remove from list") {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            onDelete.accept(RecentItem.this);
+                        }
+                    });
+                    showingMenu = true;
+                    main.setBackground(MENU_BG);
+                    menu.showMenu(() -> {
+                        showingMenu = false;
+                        highlight();
+                    });
                 }
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                main.setBackground(ROLLOVER_BG);
+                mouseInside = true;
+                if (showingMenu)
+                    return;
+                highlight();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                main.setBackground(NORMAL_BG);
+                mouseInside = false;
+                if (showingMenu)
+                    return;
+                highlight();
             }
         });
 
         lblDir.setText(dir.toString());
+    }
+
+    private void highlight() {
+        main.setBackground(mouseInside ? ROLLOVER_BG : NORMAL_BG);
     }
 
     void updateInfo(boolean ok, String title) {
