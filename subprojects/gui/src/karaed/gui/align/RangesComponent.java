@@ -81,7 +81,10 @@ final class RangesComponent extends JComponent implements Scrollable {
                         if (to > from) {
                             // todo: skip too small areas!!!
                             try {
-                                model.addArea(model.newArea(from, to));
+                                EditableArea area = model.newArea(from, to);
+                                if (area != null) {
+                                    model.addArea(area);
+                                }
                             } catch (Exception ex) {
                                 owner.error(ex);
                             }
@@ -225,24 +228,24 @@ final class RangesComponent extends JComponent implements Scrollable {
             if (!canEdit())
                 return;
             MenuBuilder menu = new MenuBuilder(me);
-            menu.add(new AbstractAction("Add area & edit") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Measurer m = new Measurer(frameRate, pixPerSec);
-                    int delta = m.sec2frame(1);
-                    EditableArea area = model.newAreaFromRange(range, delta);
-                    if (area == null)
-                        return;
-                    try {
-                        model.addArea(area);
-                        editingArea = area;
-                        fireParamsChanged();
-                        repaint();
-                    } catch (Exception ex) {
-                        owner.error(ex);
+            Measurer m = new Measurer(frameRate, pixPerSec);
+            int delta = m.sec2frame(1);
+            EditableArea area = model.newAreaFromRange(range, delta);
+            if (area != null) {
+                menu.add(new AbstractAction("Add area & edit") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            model.addArea(area);
+                            editingArea = area;
+                            fireParamsChanged();
+                            repaint();
+                        } catch (Exception ex) {
+                            owner.error(ex);
+                        }
                     }
-                }
-            });
+                });
+            }
             menu.showMenu();
         }
     }

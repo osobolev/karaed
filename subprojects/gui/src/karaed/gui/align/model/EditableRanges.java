@@ -126,7 +126,10 @@ public final class EditableRanges {
     }
 
     public EditableArea newArea(int from, int to) {
-        return new EditableArea(from, to, params);
+        EditableArea area = new EditableArea(from, to, params);
+        if (intersects(area))
+            return null;
+        return area;
     }
 
     public EditableArea newAreaFromRange(Range range, int delta) {
@@ -147,7 +150,10 @@ public final class EditableRanges {
         } else {
             to = Math.min(range.to() + delta, source.frames());
         }
-        return new EditableArea(from, to, params);
+        EditableArea area = new EditableArea(from, to, params);
+        if (intersects(area))
+            return null;
+        return area;
     }
 
     public void addListener(RangeEditListener listener) {
