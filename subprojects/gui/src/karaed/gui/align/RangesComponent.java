@@ -109,7 +109,6 @@ final class RangesComponent extends JComponent implements Scrollable {
                 if (areaTooSmall(m, from, to))
                     return;
                 model.resizeArea(resizingArea, from, to);
-                // todo: resize area
             }
 
             @Override
@@ -157,9 +156,11 @@ final class RangesComponent extends JComponent implements Scrollable {
                 int frame = s.x2frame(e.getX());
                 EditableArea area = s.findArea(frame, e.getY(), model);
                 if (area != null) {
-                    // Can select/unselect area
-                    // todo: what if cursor is over area != editingArea, and editingArea != null???
-                    return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                    boolean canToggle = editingArea == null || area == editingArea;
+                    if (canToggle) {
+                        // Can select/unselect area
+                        return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                    }
                 }
                 if (canEdit()) {
                     int delta = s.pix2frame(NEAR_BORDER);
