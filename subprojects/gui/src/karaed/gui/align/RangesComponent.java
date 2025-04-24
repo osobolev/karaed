@@ -101,7 +101,7 @@ final class RangesComponent extends JComponent implements Scrollable {
             @Override
             public void mouseMoved(MouseEvent e) {
                 Cursor c = Cursor.getDefaultCursor();
-                if (model.getAreaCount() > 0 && beforeSplitting == null) {
+                if (model.getAreaCount() > 0 && !isSplitting()) {
                     Sizer s = newSizer();
                     int frame = s.x2frame(e.getX());
                     EditableArea area = s.findArea(frame, e.getY(), model);
@@ -140,7 +140,7 @@ final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private boolean canEdit() {
-        return editingArea == null && beforeSplitting == null;
+        return editingArea == null && !isSplitting();
     }
 
     @Override
@@ -252,7 +252,7 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     private void areaClicked(MouseEvent me, EditableArea area) {
         if (me.getButton() == MouseEvent.BUTTON1) {
-            if (beforeSplitting != null)
+            if (isSplitting())
                 return;
             if (editingArea != null) {
                 if (editingArea == area) {
