@@ -12,6 +12,29 @@ final class ColorSequence {
         new Color(255, 150, 255),
         new Color(255, 255, 150)
     };
+    private static final Color[] TRANSCLUCENT = new Color[COLORS.length];
+
+    static {
+        for (int i = 0; i < COLORS.length; i++) {
+            Color c = COLORS[i];
+            TRANSCLUCENT[i] = forText(c);
+        }
+    }
+
+    private static float addTransparency(int value, float alpha) {
+        float vf = value / 255f;
+        return (vf + alpha - 1f) / (vf * alpha);
+    }
+
+    static Color forText(Color c) {
+        float alpha = 0.5f;
+        return new Color(
+            addTransparency(c.getRed(), alpha),
+            addTransparency(c.getGreen(), alpha),
+            addTransparency(c.getBlue(), alpha),
+            alpha
+        );
+    }
 
     private int n = 0;
 
@@ -19,9 +42,10 @@ final class ColorSequence {
         this.n = n;
     }
 
-    Color getColor(int i) {
+    Color getColor(int i, boolean opaque) {
         if (i >= n)
             return null;
-        return COLORS[i % COLORS.length];
+        int index = i % COLORS.length;
+        return (opaque ? COLORS : TRANSCLUCENT)[index];
     }
 }

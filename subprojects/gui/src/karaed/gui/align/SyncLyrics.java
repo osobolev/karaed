@@ -22,9 +22,9 @@ import java.util.function.Consumer;
 
 final class SyncLyrics {
 
-    private static final MyPainter INSERT = new MyPainter(new Color(150, 255, 150));
-    private static final MyPainter DELETE = new MyPainter(new Color(255, 150, 150));
-    private static final MyPainter CHANGE = new MyPainter(new Color(150, 150, 255));
+    private static final MyPainter INSERT = new MyPainter(ColorSequence.forText(new Color(150, 255, 150)));
+    private static final MyPainter DELETE = new MyPainter(ColorSequence.forText(new Color(255, 150, 150)));
+    private static final MyPainter CHANGE = new MyPainter(ColorSequence.forText(new Color(150, 150, 255)));
 
     private final JTextArea taRanges;
     private final JTextArea taText;

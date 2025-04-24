@@ -77,7 +77,7 @@ final class Painter extends Sizer {
             if (rangeIndexes != null) {
                 rangeIndexes.put(range, colorIndex);
             }
-            Color color = colors.getColor(colorIndex);
+            Color color = colors.getColor(colorIndex, true);
             g.setColor(color == null ? Color.black : color);
             int x1 = frame2x(range.from());
             int x2 = frame2x(range.to());

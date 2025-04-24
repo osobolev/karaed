@@ -125,7 +125,7 @@ final class LyricsComponent {
             }
         }
         scanLines((lineIndex, lineStart, lineEnd, line) -> {
-            Color color = colors.getColor(lineIndex);
+            Color color = colors.getColor(lineIndex, false);
             if (color != null) {
                 hl.addHighlight(lineStart, lineEnd, new MyPainter(color));
             }
