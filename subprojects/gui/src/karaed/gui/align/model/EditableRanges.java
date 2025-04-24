@@ -6,8 +6,6 @@ import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.IOException;
 import java.util.*;
 
 public final class EditableRanges {
@@ -40,7 +38,7 @@ public final class EditableRanges {
         this.ranges.addAll(ranges);
     }
 
-    private void resplit(boolean fireNotChanged) throws UnsupportedAudioFileException, IOException {
+    private void resplit(boolean fireNotChanged) {
         List<Range> ranges = source.detectVoice(getRangeParams());
         boolean changed = !this.ranges.equals(ranges);
         if (changed) {
@@ -52,7 +50,7 @@ public final class EditableRanges {
         }
     }
 
-    public void splitByParams(EditableArea area, AreaParams params) throws UnsupportedAudioFileException, IOException {
+    public void splitByParams(EditableArea area, AreaParams params) {
         if (area == null) {
             this.params = params;
         } else {
@@ -108,18 +106,18 @@ public final class EditableRanges {
         return false;
     }
 
-    private void areasChanged() throws UnsupportedAudioFileException, IOException {
+    private void areasChanged() {
         resplit(true);
     }
 
-    public void addArea(EditableArea area) throws UnsupportedAudioFileException, IOException {
+    public void addArea(EditableArea area) {
         if (intersects(area))
             return;
         areas.put(area.from(), area);
         areasChanged();
     }
 
-    public void removeArea(EditableArea area) throws UnsupportedAudioFileException, IOException {
+    public void removeArea(EditableArea area) {
         if (areas.entrySet().removeIf(e -> e.getValue() == area)) {
             areasChanged();
         }
