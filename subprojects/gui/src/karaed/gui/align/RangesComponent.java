@@ -315,39 +315,60 @@ final class RangesComponent extends JComponent implements Scrollable {
 
     private void rangeClicked(MouseEvent me, Range range) {
         if (me.getButton() == MouseEvent.BUTTON1) {
-            stop();
-            try {
-                Clip clip = model.source.open(range.from(), range.to());
-                playingRange = range;
-                playing = clip;
-                clip.addLineListener(le -> {
-                    if (le.getType() == LineEvent.Type.STOP) {
-                        stop();
-                    }
-                });
-                firePlayChanged();
-                clip.start();
-                repaint();
-            } catch (Exception ex) {
-                owner.error(ex);
-            }
+            playRange(range);
         } else if (me.getButton() == MouseEvent.BUTTON3) {
             MenuBuilder menu = new MenuBuilder(me);
-            Measurer m = newMeasurer();
-            int delta = m.sec2frame(1);
-            EditableArea area = model.newAreaFromRange(range, delta);
-            if (area != null) {
-                menu.add(new AbstractAction("Add area & edit") {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        model.addArea(area);
-                        editingArea = area;
-                        fireParamsChanged();
-                        repaint();
+            menu.add(new AbstractAction("Play") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    playRange(range);
+                }
+            });
+            menu.add(new AbstractAction("Go to lyrics") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Integer index = paintedRangeIndex.get(range);
+                    if (index != null) {
+                        goTo.accept(index.intValue());
                     }
-                });
+                }
+            });
+            if (canEdit()) {
+                Measurer m = newMeasurer();
+                int delta = m.sec2frame(1);
+                EditableArea area = model.newAreaFromRange(range, delta);
+                if (area != null) {
+                    menu.add(new AbstractAction("Add area & edit") {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            model.addArea(area);
+                            editingArea = area;
+                            fireParamsChanged();
+                            repaint();
+                        }
+                    });
+                }
             }
             menu.showMenu();
+        }
+    }
+
+    private void playRange(Range range) {
+        stop();
+        try {
+            Clip clip = model.source.open(range.from(), range.to());
+            playingRange = range;
+            playing = clip;
+            clip.addLineListener(le -> {
+                if (le.getType() == LineEvent.Type.STOP) {
+                    stop();
+                }
+            });
+            firePlayChanged();
+            clip.start();
+            repaint();
+        } catch (Exception ex) {
+            owner.error(ex);
         }
     }
 
@@ -357,17 +378,32 @@ final class RangesComponent extends JComponent implements Scrollable {
                 return;
             if (editingArea != null) {
                 if (editingArea == area) {
-                    editingArea = null;
-                    fireParamsChanged();
-                    repaint();
+                    selectArea(null);
                 }
             } else {
-                editingArea = area;
-                fireParamsChanged();
-                repaint();
+                selectArea(area);
             }
         } else {
             MenuBuilder menu = new MenuBuilder(me);
+            if (!isSplitting()) {
+                if (editingArea != null) {
+                    if (editingArea == area) {
+                        menu.add(new AbstractAction("Unselect area") {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                selectArea(null);
+                            }
+                        });
+                    }
+                } else {
+                    menu.add(new AbstractAction("Select area") {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            selectArea(area);
+                        }
+                    });
+                }
+            }
             if (canEdit()) {
                 menu.add(new AbstractAction("Remove area") {
                     @Override
@@ -378,6 +414,12 @@ final class RangesComponent extends JComponent implements Scrollable {
             }
             menu.showMenu();
         }
+    }
+
+    private void selectArea(EditableArea area) {
+        editingArea = area;
+        fireParamsChanged();
+        repaint();
     }
 
     @Override
