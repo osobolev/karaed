@@ -3,6 +3,7 @@ package karaed.gui.util;
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,15 @@ public final class MenuBuilder {
 
     public void add(Action action) {
         actions.add(action);
+    }
+
+    public void add(String text, Runnable action) {
+        actions.add(new AbstractAction(text) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                action.run();
+            }
+        });
     }
 
     public void showMenu(Runnable onClose) {

@@ -5,7 +5,6 @@ import karaed.gui.util.MenuBuilder;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
@@ -56,12 +55,7 @@ final class RecentItem {
                     onClick.accept(RecentItem.this);
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
                     MenuBuilder menu = new MenuBuilder(e);
-                    menu.add(new AbstractAction("Remove from list") {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            onDelete.accept(RecentItem.this);
-                        }
-                    });
+                    menu.add("Remove from list", () -> onDelete.accept(RecentItem.this));
                     showingMenu = true;
                     main.setBackground(MENU_BG);
                     menu.showMenu(() -> {
