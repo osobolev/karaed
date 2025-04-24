@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 
 // todo: allow selection of ranges => make area of selected ranges???
@@ -34,6 +35,7 @@ final class RangesComponent extends JComponent implements Scrollable {
     private final ColorSequence colors;
     private final EditableRanges model;
     private final IntFunction<String> getText;
+    private final IntConsumer goTo;
     private final float frameRate;
 
     private final List<Runnable> playChangeListeners = new ArrayList<>();
@@ -56,11 +58,13 @@ final class RangesComponent extends JComponent implements Scrollable {
     private AreaSide resizeSide = null;
     private Integer draggingBorder = null;
 
-    RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model, IntFunction<String> getText) {
+    RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
+                    IntFunction<String> getText, IntConsumer goTo) {
         this.owner = owner;
         this.colors = colors;
         this.model = model;
         this.getText = getText;
+        this.goTo = goTo;
         this.frameRate = model.source.frameRate();
 
         model.addListener(rangesChanged -> {
@@ -328,8 +332,6 @@ final class RangesComponent extends JComponent implements Scrollable {
                 owner.error(ex);
             }
         } else if (me.getButton() == MouseEvent.BUTTON3) {
-            if (!canEdit())
-                return;
             MenuBuilder menu = new MenuBuilder(me);
             Measurer m = newMeasurer();
             int delta = m.sec2frame(1);
@@ -365,15 +367,15 @@ final class RangesComponent extends JComponent implements Scrollable {
                 repaint();
             }
         } else {
-            if (!canEdit())
-                return;
             MenuBuilder menu = new MenuBuilder(me);
-            menu.add(new AbstractAction("Remove area") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    model.removeArea(area);
-                }
-            });
+            if (canEdit()) {
+                menu.add(new AbstractAction("Remove area") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        model.removeArea(area);
+                    }
+                });
+            }
             menu.showMenu();
         }
     }

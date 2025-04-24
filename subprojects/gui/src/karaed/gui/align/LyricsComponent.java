@@ -151,6 +151,21 @@ final class LyricsComponent {
         return found[0];
     }
 
+    void goTo(int index) {
+        int[] found = {-1};
+        scanLines((lineIndex, lineStart, lineEnd, line) -> {
+            if (lineIndex == index) {
+                found[0] = lineStart;
+                return false;
+            }
+            return true;
+        });
+        if (found[0] >= 0) {
+            taLines.setCaretPosition(found[0]);
+            SwingUtilities.invokeLater(taLines::requestFocusInWindow);
+        }
+    }
+
     void addLinesChanged(Runnable listener) {
         linesChanged.add(listener);
     }
