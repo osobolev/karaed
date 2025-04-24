@@ -61,7 +61,12 @@ final class LyricsComponent {
         recolor();
     }
 
-    private int scanLines(Highlighter hl) {
+    private interface LineConsumer {
+
+        boolean consume(int lineIndex, int lineStart, int lineEnd, String line) throws BadLocationException;
+    }
+
+    private int scanLines(LineConsumer consumer) {
         int count = 0;
         int lines = taLines.getLineCount();
         for (int i = 0; i < lines; i++) {
@@ -71,11 +76,9 @@ final class LyricsComponent {
                 String line = taLines.getText(lineStart, lineEnd - lineStart);
                 if (line.trim().isEmpty())
                     continue;
-                if (hl != null) {
-                    Color color = colors.getColor(count);
-                    if (color != null) {
-                        hl.addHighlight(lineStart, lineEnd, new MyPainter(color));
-                    }
+                if (consumer != null) {
+                    if (!consumer.consume(count, lineStart, lineEnd, line))
+                        break;
                 }
             } catch (BadLocationException ex) {
                 // ignore
@@ -96,7 +99,13 @@ final class LyricsComponent {
                 listener.run();
             }
         }
-        scanLines(hl);
+        scanLines((lineIndex, lineStart, lineEnd, line) -> {
+            Color color = colors.getColor(lineIndex);
+            if (color != null) {
+                hl.addHighlight(lineStart, lineEnd, new MyPainter(color));
+            }
+            return true;
+        });
     }
 
     private void end() {
@@ -128,6 +137,18 @@ final class LyricsComponent {
 
     List<String> getLines() {
         return taLines.getText().lines().toList();
+    }
+
+    String getLineAt(int index) {
+        String[] found = new String[1];
+        scanLines((lineIndex, lineStart, lineEnd, line) -> {
+            if (lineIndex == index) {
+                found[0] = line;
+                return false;
+            }
+            return true;
+        });
+        return found[0];
     }
 
     void addLinesChanged(Runnable listener) {

@@ -7,6 +7,7 @@ import karaed.gui.align.model.EditableRanges;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.util.Map;
 
 final class Painter extends Sizer {
 
@@ -54,7 +55,8 @@ final class Painter extends Sizer {
         }
     }
 
-    void paint(ColorSequence colors, EditableRanges model, Range playingRange, EditableArea editingArea) {
+    void paint(ColorSequence colors, EditableRanges model, Range playingRange, EditableArea editingArea,
+               Map<Range, Integer> rangeIndexes) {
         int ya = areaEditY1();
         for (EditableArea area : model.getAreas()) {
             int x1 = frame2x(area.from());
@@ -71,7 +73,11 @@ final class Painter extends Sizer {
         int yr = rangeY1();
         int i = 0;
         for (Range range : model.getRanges()) {
-            Color color = colors.getColor(i++);
+            int colorIndex = i++;
+            if (rangeIndexes != null) {
+                rangeIndexes.put(range, colorIndex);
+            }
+            Color color = colors.getColor(colorIndex);
             g.setColor(color == null ? Color.black : color);
             int x1 = frame2x(range.from());
             int x2 = frame2x(range.to());
