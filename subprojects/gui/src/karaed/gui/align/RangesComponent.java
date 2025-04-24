@@ -324,6 +324,14 @@ final class RangesComponent extends JComponent implements Scrollable {
                     playRange(range);
                 }
             });
+            if (range == playingRange) {
+                menu.add(new AbstractAction("Stop") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        stop();
+                    }
+                });
+            }
             menu.add(new AbstractAction("Go to lyrics") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
