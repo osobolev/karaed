@@ -2,7 +2,7 @@ package karaed.engine.formats.ranges;
 
 import java.time.Duration;
 
-public record Range(int from, int to) {
+public record Range(int from, int to) implements RangeLike {
 
     public static String formatTime(float totalSeconds) {
         Duration duration = Duration.ofSeconds(Math.round(totalSeconds));

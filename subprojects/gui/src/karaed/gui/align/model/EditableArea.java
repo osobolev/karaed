@@ -1,8 +1,9 @@
 package karaed.gui.align.model;
 
 import karaed.engine.formats.ranges.AreaParams;
+import karaed.engine.formats.ranges.RangeLike;
 
-public final class EditableArea {
+public final class EditableArea implements RangeLike {
 
     private final int from;
     private final int to;
@@ -24,9 +25,5 @@ public final class EditableArea {
 
     public AreaParams params() {
         return params;
-    }
-
-    boolean contains(int frame) {
-        return from <= frame && frame < to;
     }
 }
