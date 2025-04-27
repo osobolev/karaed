@@ -17,9 +17,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
@@ -28,7 +26,6 @@ import java.util.function.IntFunction;
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
 // todo: better "currently playing" display
-// todo: "go to": from lyrics to range, from range to lyrics
 // todo: need some action to start global edit, so that it is clear that global area is edited
 public final class RangesComponent extends JComponent implements Scrollable {
 
@@ -47,7 +44,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
     private Range playingRange = null;
     private Clip playing = null;
 
-    private final Map<Range, Integer> paintedRangeIndex = new HashMap<>();
+    private final RangeIndexes paintedRangeIndex = new RangeIndexes();
 
     private EditableArea editingArea = null;
 
@@ -236,7 +233,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
         return (int) Math.ceil(model.source.frames() / frameRate);
     }
 
-    private void doPaint(Painter painter, Map<Range, Integer> rangeIndexes) {
+    private void doPaint(Painter painter, RangeIndexes rangeIndexes) {
         painter.paint(colors, model, playingRange, editingArea, rangeIndexes);
     }
 
@@ -323,7 +320,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 menu.add("Stop", this::stop);
             }
             menu.add("Go to lyrics", () -> {
-                Integer index = paintedRangeIndex.get(range);
+                Integer index = paintedRangeIndex.getIndex(range);
                 if (index != null) {
                     for (IntConsumer listener : goToListeners) {
                         listener.accept(index.intValue());
@@ -412,20 +409,27 @@ public final class RangesComponent extends JComponent implements Scrollable {
         Sizer s = newSizer();
         int frame = s.x2frame(e.getX());
         Range range = s.findRange(frame, e.getY(), model);
-        Integer index = paintedRangeIndex.get(range);
+        Integer index = paintedRangeIndex.getIndex(range);
         if (index == null)
             return null;
         return getText.apply(index.intValue());
     }
 
     public void showRange(int lineIndex, boolean play) {
-        if (lineIndex >= 0 && lineIndex < model.getRangeCount()) {
-            // todo: translate index to range!!!
-            // todo: select range in scroll (preferably in center)
-            if (play) {
-                stop();
-                // todo: play it
-            }
+        Range range = paintedRangeIndex.getRange(lineIndex);
+        if (range == null)
+            return;
+        JViewport vp = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
+        if (vp != null) {
+            Measurer m = newMeasurer();
+            int from = m.frame2x(range.from());
+            int to = m.frame2x(range.to());
+            int width = vp.getExtentSize().width;
+            int x = Math.max((from + to - width) / 2, 0);
+            vp.setViewPosition(new Point(x, 0));
+        }
+        if (play) {
+            playRange(range);
         }
     }
 
