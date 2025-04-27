@@ -7,13 +7,19 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.Color;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 final class LyricsComponent {
 
     private final ColorSequence colors;
     private final JTextArea taLines = new JTextArea(25, 60);
+    private final GutterComponent gutter = new GutterComponent(taLines);
     private final JScrollPane sp = new JScrollPane(taLines);
 
     private int lineCount = 0;
@@ -26,6 +32,8 @@ final class LyricsComponent {
         taLines.setLineWrap(true);
         taLines.setWrapStyleWord(true);
         InputUtil.undoable(taLines);
+
+        sp.setRowHeaderView(gutter);
 
         AbstractDocument document = (AbstractDocument) taLines.getDocument();
         document.setDocumentFilter(new DocumentFilter() {
@@ -66,6 +74,7 @@ final class LyricsComponent {
 
             private void changed() {
                 recolor();
+                syncGutter();
             }
 
             @Override
@@ -83,7 +92,13 @@ final class LyricsComponent {
                 changed();
             }
         });
-        recolor();
+
+        sp.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                syncGutter();
+            }
+        });
     }
 
     private interface LineConsumer {
@@ -130,6 +145,21 @@ final class LyricsComponent {
                 hl.addHighlight(lineStart, lineEnd, new MyPainter(color));
             }
             return true;
+        });
+    }
+
+    private void syncGutter() {
+        SwingUtilities.invokeLater(() -> {
+            NavigableMap<Integer, Integer> ys = new TreeMap<>();
+            scanLines((lineIndex, lineStart, lineEnd, line) -> {
+                Rectangle2D rect = taLines.modelToView2D(lineStart);
+                if (rect != null) {
+                    int y = (int) rect.getCenterY();
+                    ys.put(y, lineIndex);
+                }
+                return true;
+            });
+            gutter.setLines(ys);
         });
     }
 
@@ -193,5 +223,9 @@ final class LyricsComponent {
 
     void addLinesChanged(Runnable listener) {
         linesChanged.add(listener);
+    }
+
+    void addLyricsListener(LyricsClickListener listener) {
+        gutter.addListener(listener);
     }
 }

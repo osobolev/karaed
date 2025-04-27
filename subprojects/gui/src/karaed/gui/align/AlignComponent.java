@@ -29,7 +29,7 @@ final class AlignComponent {
     private final JButton btnCommit = new JButton("Commit");
     private final JButton btnRollback = new JButton("Rollback");
     private final JPanel main = new JPanel(new BorderLayout());
-    private final LyricsComponent lyrics = new LyricsComponent(colors);
+    private final LyricsComponent lyrics;
 
     private final Action actionStop;
 
@@ -39,7 +39,11 @@ final class AlignComponent {
         this.model = model;
         this.onChange = onChange;
 
-        this.vocals = new RangesComponent(owner, colors, model, lyrics::getLineAt, lyrics::goTo);
+        this.lyrics = new LyricsComponent(colors);
+        this.vocals = new RangesComponent(owner, colors, model, lyrics::getLineAt);
+        lyrics.addLyricsListener(vocals::showRange);
+        vocals.addGoToListener(lyrics::goTo);
+
         this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override
             public void actionPerformed(ActionEvent e) {

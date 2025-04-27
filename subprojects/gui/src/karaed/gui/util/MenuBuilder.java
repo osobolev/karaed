@@ -3,6 +3,7 @@ package karaed.gui.util;
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -12,9 +13,14 @@ public final class MenuBuilder {
 
     private final MouseEvent me;
     private final List<Action> actions = new ArrayList<>();
+    private Point showAt = null;
 
     public MenuBuilder(MouseEvent me) {
         this.me = me;
+    }
+
+    public void setShowAt(Point p) {
+        this.showAt = p;
     }
 
     public void add(Action action) {
@@ -30,9 +36,9 @@ public final class MenuBuilder {
         });
     }
 
-    public void showMenu(Runnable onClose) {
+    public JPopupMenu showMenu(Runnable onClose) {
         if (actions.isEmpty())
-            return;
+            return null;
         JPopupMenu menu = new JPopupMenu();
         for (Action action : actions) {
             menu.add(action);
@@ -54,10 +60,15 @@ public final class MenuBuilder {
                 }
             });
         }
-        menu.show(me.getComponent(), me.getX() - 5, me.getY() - 5);
+        if (showAt != null) {
+            menu.show(me.getComponent(), showAt.x, showAt.y);
+        } else {
+            menu.show(me.getComponent(), me.getX() - 5, me.getY() - 5);
+        }
+        return menu;
     }
 
-    public void showMenu() {
-        showMenu(null);
+    public JPopupMenu showMenu() {
+        return showMenu(null);
     }
 }

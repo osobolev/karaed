@@ -34,11 +34,11 @@ final class RangesComponent extends JComponent implements Scrollable {
     private final ColorSequence colors;
     private final EditableRanges model;
     private final IntFunction<String> getText;
-    private final IntConsumer goTo;
     private final float frameRate;
 
     private final List<Runnable> playChangeListeners = new ArrayList<>();
     private final List<Consumer<AreaParams>> paramListeners = new ArrayList<>();
+    private final List<IntConsumer> goToListeners = new ArrayList<>();
 
     private float pixPerSec = 30.0f;
 
@@ -58,12 +58,11 @@ final class RangesComponent extends JComponent implements Scrollable {
     private Integer draggingBorder = null;
 
     RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
-                    IntFunction<String> getText, IntConsumer goTo) {
+                    IntFunction<String> getText) {
         this.owner = owner;
         this.colors = colors;
         this.model = model;
         this.getText = getText;
-        this.goTo = goTo;
         this.frameRate = model.source.frameRate();
 
         model.addListener(rangesChanged -> {
@@ -324,7 +323,9 @@ final class RangesComponent extends JComponent implements Scrollable {
             menu.add("Go to lyrics", () -> {
                 Integer index = paintedRangeIndex.get(range);
                 if (index != null) {
-                    goTo.accept(index.intValue());
+                    for (IntConsumer listener : goToListeners) {
+                        listener.accept(index.intValue());
+                    }
                 }
             });
             if (canEdit()) {
@@ -413,6 +414,21 @@ final class RangesComponent extends JComponent implements Scrollable {
         if (index == null)
             return null;
         return getText.apply(index.intValue());
+    }
+
+    void showRange(int lineIndex, boolean play) {
+        if (lineIndex >= 0 && lineIndex < model.getRangeCount()) {
+            // todo: translate index to range!!!
+            // todo: select range in scroll (preferably in center)
+            if (play) {
+                stop();
+                // todo: play it
+            }
+        }
+    }
+
+    void addGoToListener(IntConsumer listener) {
+        goToListeners.add(listener);
     }
 
     private void firePlayChanged() {
