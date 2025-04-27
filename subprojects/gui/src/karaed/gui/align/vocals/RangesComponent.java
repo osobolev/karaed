@@ -1,7 +1,8 @@
-package karaed.gui.align;
+package karaed.gui.align.vocals;
 
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
+import karaed.gui.align.ColorSequence;
 import karaed.gui.align.model.AreaSide;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
@@ -28,7 +29,8 @@ import java.util.function.IntFunction;
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
 // todo: better "currently playing" display
 // todo: "go to": from lyrics to range, from range to lyrics
-final class RangesComponent extends JComponent implements Scrollable {
+// todo: need some action to start global edit, so that it is clear that global area is edited
+public final class RangesComponent extends JComponent implements Scrollable {
 
     private final BaseWindow owner;
     private final ColorSequence colors;
@@ -57,8 +59,8 @@ final class RangesComponent extends JComponent implements Scrollable {
     private AreaSide resizeSide = null;
     private Integer draggingBorder = null;
 
-    RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
-                    IntFunction<String> getText) {
+    public RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
+                           IntFunction<String> getText) {
         this.owner = owner;
         this.colors = colors;
         this.model = model;
@@ -416,7 +418,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         return getText.apply(index.intValue());
     }
 
-    void showRange(int lineIndex, boolean play) {
+    public void showRange(int lineIndex, boolean play) {
         if (lineIndex >= 0 && lineIndex < model.getRangeCount()) {
             // todo: translate index to range!!!
             // todo: select range in scroll (preferably in center)
@@ -427,7 +429,7 @@ final class RangesComponent extends JComponent implements Scrollable {
         }
     }
 
-    void addGoToListener(IntConsumer listener) {
+    public void addGoToListener(IntConsumer listener) {
         goToListeners.add(listener);
     }
 
@@ -437,15 +439,15 @@ final class RangesComponent extends JComponent implements Scrollable {
         }
     }
 
-    void addPlayChangeListener(Runnable listener) {
+    public void addPlayChangeListener(Runnable listener) {
         playChangeListeners.add(listener);
     }
 
-    boolean isPlaying() {
+    public boolean isPlaying() {
         return playing != null;
     }
 
-    void stop() {
+    public void stop() {
         if (playing != null) {
             playing.stop();
             playingRange = null;
@@ -455,13 +457,13 @@ final class RangesComponent extends JComponent implements Scrollable {
         }
     }
 
-    void setScale(float pixPerSec) {
+    public void setScale(float pixPerSec) {
         this.pixPerSec = pixPerSec;
         revalidate();
         repaint();
     }
 
-    void recolor() {
+    public void recolor() {
         repaint();
     }
 
@@ -469,36 +471,36 @@ final class RangesComponent extends JComponent implements Scrollable {
         return editingArea == null ? model.getParams() : editingArea.params();
     }
 
-    void fireParamsChanged() {
+    public void fireParamsChanged() {
         AreaParams params = getModelParams();
         for (Consumer<AreaParams> listener : paramListeners) {
             listener.accept(params);
         }
     }
 
-    void addParamListener(Consumer<AreaParams> listener) {
+    public void addParamListener(Consumer<AreaParams> listener) {
         paramListeners.add(listener);
     }
 
-    void startSplitting() {
+    public void startSplitting() {
         this.beforeSplitting = new SavedData(
             getModelParams(), model.getRanges().stream().toList()
         );
     }
 
-    void finishSplitting() {
+    public void finishSplitting() {
         this.beforeSplitting = null;
     }
 
-    boolean isSplitting() {
+    public boolean isSplitting() {
         return beforeSplitting != null;
     }
 
-    void setParams(AreaParams params) {
+    public void setParams(AreaParams params) {
         model.splitByParams(editingArea, params);
     }
 
-    void rollbackChanges() {
+    public void rollbackChanges() {
         if (beforeSplitting == null)
             return;
         model.setRangesSilent(editingArea, beforeSplitting.params(), beforeSplitting.ranges());

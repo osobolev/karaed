@@ -1,4 +1,4 @@
-package karaed.gui.align;
+package karaed.gui.align.vocals;
 
 class Measurer {
 

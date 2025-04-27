@@ -1,4 +1,4 @@
-package karaed.gui.align;
+package karaed.gui.align.lyrics;
 
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;

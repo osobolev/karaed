@@ -1,5 +1,6 @@
-package karaed.gui.align;
+package karaed.gui.align.lyrics;
 
+import karaed.gui.align.ColorSequence;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-final class LyricsComponent {
+public final class LyricsComponent {
 
     private final ColorSequence colors;
     private final JTextArea taLines = new JTextArea(25, 60);
@@ -26,7 +27,7 @@ final class LyricsComponent {
 
     private final List<Runnable> linesChanged = new ArrayList<>();
 
-    LyricsComponent(ColorSequence colors) {
+    public LyricsComponent(ColorSequence colors) {
         this.colors = colors;
 
         taLines.setLineWrap(true);
@@ -128,7 +129,7 @@ final class LyricsComponent {
         return count;
     }
 
-    void recolor() {
+    public void recolor() {
         Highlighter hl = taLines.getHighlighter();
         MyPainter.removeMyHighlights(hl);
 
@@ -174,27 +175,27 @@ final class LyricsComponent {
         }
     }
 
-    void setLines(List<String> text) {
+    public void setLines(List<String> text) {
         InputUtil.setText(taLines, String.join("\n", text) + "\n");
     }
 
-    Document getDocument() {
+    public Document getDocument() {
         return taLines.getDocument();
     }
 
-    JComponent getVisual() {
+    public JComponent getVisual() {
         return sp;
     }
 
-    int getLineCount() {
+    public int getLineCount() {
         return lineCount;
     }
 
-    List<String> getLines() {
+    public List<String> getLines() {
         return taLines.getText().lines().toList();
     }
 
-    String getLineAt(int index) {
+    public String getLineAt(int index) {
         String[] found = new String[1];
         scanLines((lineIndex, lineStart, lineEnd, line) -> {
             if (lineIndex == index) {
@@ -206,7 +207,7 @@ final class LyricsComponent {
         return found[0];
     }
 
-    void goTo(int index) {
+    public void goTo(int index) {
         int[] found = {-1};
         scanLines((lineIndex, lineStart, lineEnd, line) -> {
             if (lineIndex == index) {
@@ -221,11 +222,11 @@ final class LyricsComponent {
         }
     }
 
-    void addLinesChanged(Runnable listener) {
+    public void addLinesChanged(Runnable listener) {
         linesChanged.add(listener);
     }
 
-    void addLyricsListener(LyricsClickListener listener) {
+    public void addLyricsListener(LyricsClickListener listener) {
         gutter.addListener(listener);
     }
 }

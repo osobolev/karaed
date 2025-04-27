@@ -1,4 +1,4 @@
-package karaed.gui.align;
+package karaed.gui.align.lyrics;
 
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.AbstractDelta;
@@ -7,6 +7,7 @@ import com.github.difflib.patch.DeltaType;
 import com.github.difflib.patch.Patch;
 import karaed.engine.ass.AssUtil;
 import karaed.engine.steps.align.Align;
+import karaed.gui.align.ColorSequence;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SyncLyrics {
+public final class SyncLyrics {
 
     private static final MyPainter INSERT = new MyPainter(ColorSequence.forText(new Color(150, 255, 150)));
     private static final MyPainter DELETE = new MyPainter(ColorSequence.forText(new Color(255, 150, 150)));
@@ -34,7 +35,7 @@ final class SyncLyrics {
     private boolean ignoreTextScroll = false;
     private boolean aligned = false;
 
-    SyncLyrics(Document rangesDocument, String text, Runnable onChange) {
+    public SyncLyrics(Document rangesDocument, String text, Runnable onChange) {
         this.taRanges = new JTextArea(25, 30);
         this.taText = new JTextArea(25, 30);
         JScrollPane rangesScroll = new JScrollPane(taRanges);
@@ -235,15 +236,15 @@ final class SyncLyrics {
         this.aligned = !hasDiff;
     }
 
-    JComponent getVisual() {
+    public JComponent getVisual() {
         return split;
     }
 
-    boolean isAligned() {
+    public boolean isAligned() {
         return aligned;
     }
 
-    List<String> getText() {
+    public List<String> getText() {
         return taText.getText().lines().toList();
     }
 }

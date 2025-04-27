@@ -2,7 +2,7 @@ package karaed.gui.align;
 
 import java.awt.Color;
 
-final class ColorSequence {
+public final class ColorSequence {
 
     private static final Color[] COLORS = {
         new Color(255, 150, 150),
@@ -26,7 +26,7 @@ final class ColorSequence {
         return (vf + alpha - 1f) / (vf * alpha);
     }
 
-    static Color forText(Color c) {
+    public static Color forText(Color c) {
         float alpha = 0.5f;
         return new Color(
             addTransparency(c.getRed(), alpha),
@@ -42,7 +42,7 @@ final class ColorSequence {
         this.n = n;
     }
 
-    Color getColor(int i, boolean opaque) {
+    public Color getColor(int i, boolean opaque) {
         if (i >= n)
             return null;
         int index = i % COLORS.length;

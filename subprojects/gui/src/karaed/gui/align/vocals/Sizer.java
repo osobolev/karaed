@@ -1,4 +1,4 @@
-package karaed.gui.align;
+package karaed.gui.align.vocals;
 
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.align.model.EditableArea;
