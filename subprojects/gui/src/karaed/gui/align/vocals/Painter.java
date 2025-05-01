@@ -32,10 +32,10 @@ final class Painter extends Sizer {
             int width = width(x1, x2);
             g.fillRect(x1, y0, width, h);
         }
-        {
-            int position = sec2pix(millis / 1000f);
+        int xp = x1 + sec2pix(millis / 1000f);
+        if (xp < x2) {
             g.setColor(Color.white);
-            g.fillRect(x1 + position - 2, y0, 4, h);
+            g.fillRect(xp - 2, y0, 4, h);
         }
     }
 
