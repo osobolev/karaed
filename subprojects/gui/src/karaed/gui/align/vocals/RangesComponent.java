@@ -25,8 +25,7 @@ import java.util.function.IntFunction;
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
-// todo: better "currently playing" display
-// todo: need some action to start global edit, so that it is clear that global area is edited
+// todo: better "currently playing" display (play bar ala video players)
 public final class RangesComponent extends JComponent implements Scrollable {
 
     private final BaseWindow owner;
@@ -37,6 +36,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
 
     private final List<Runnable> playChangeListeners = new ArrayList<>();
     private final List<Consumer<AreaParams>> paramListeners = new ArrayList<>();
+    private final List<AreaListener> areaListeners = new ArrayList<>();
     private final List<IntConsumer> goToListeners = new ArrayList<>();
 
     private float pixPerSec = 30.0f;
@@ -334,9 +334,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 if (area != null) {
                     menu.add("Add area & edit", () -> {
                         model.addArea(area);
-                        editingArea = area;
-                        fireParamsChanged();
-                        repaint();
+                        selectArea(area, true);
                     });
                 }
             }
@@ -369,20 +367,20 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 return;
             if (editingArea != null) {
                 if (editingArea == area) {
-                    selectArea(null);
+                    selectArea(null, false);
                 }
             } else {
-                selectArea(area);
+                selectArea(area, true);
             }
         } else {
             MenuBuilder menu = new MenuBuilder(me);
             if (!isSplitting()) {
                 if (editingArea != null) {
                     if (editingArea == area) {
-                        menu.add("Unselect area", () -> selectArea(null));
+                        menu.add("Unselect area", () -> selectArea(null, false));
                     }
                 } else {
-                    menu.add("Select area", () -> selectArea(area));
+                    menu.add("Select area & edit", () -> selectArea(area, true));
                 }
             }
             if (canEdit()) {
@@ -392,9 +390,10 @@ public final class RangesComponent extends JComponent implements Scrollable {
         }
     }
 
-    private void selectArea(EditableArea area) {
+    private void selectArea(EditableArea area, boolean forEdit) {
         editingArea = area;
         fireParamsChanged();
+        fireAreaSelected(forEdit);
         repaint();
     }
 
@@ -484,6 +483,20 @@ public final class RangesComponent extends JComponent implements Scrollable {
 
     public void addParamListener(Consumer<AreaParams> listener) {
         paramListeners.add(listener);
+    }
+
+    public boolean isAreaSelected() {
+        return editingArea != null;
+    }
+
+    private void fireAreaSelected(boolean forEdit) {
+        for (AreaListener listener : areaListeners) {
+            listener.areaSelected(forEdit);
+        }
+    }
+
+    public void addAreaListener(AreaListener listener) {
+        areaListeners.add(listener);
     }
 
     public void startSplitting() {

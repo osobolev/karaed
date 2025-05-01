@@ -13,6 +13,7 @@ import karaed.gui.util.InputUtil;
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ final class AlignComponent {
 
     private final RangesComponent vocals;
     private final JSlider scaleSlider = new JSlider(2, 50, 30);
+    private final JButton btnResplit = new JButton();
     private final ParamsComponent paramsInput = new ParamsComponent();
     private final JButton btnCommit = new JButton("Commit");
     private final JButton btnRollback = new JButton("Rollback");
@@ -64,17 +66,23 @@ final class AlignComponent {
         toolBar.addSeparator();
         toolBar.add(new JLabel("Scale:"));
         toolBar.add(scaleSlider);
-        toolBar.add(paramsInput.getVisual());
-        toolBar.add(btnCommit);
-        toolBar.add(btnRollback);
+
+        JPanel params = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        params.add(btnResplit);
+        params.add(paramsInput.getVisual());
+        params.add(btnCommit);
+        params.add(btnRollback);
+
+        JPanel pranges = new JPanel(new BorderLayout());
+        pranges.add(params, BorderLayout.NORTH);
+        JScrollPane spv = new JScrollPane(vocals, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        pranges.add(spv, BorderLayout.CENTER);
 
         JPanel top = new JPanel(new BorderLayout());
         top.add(toolBar, BorderLayout.NORTH);
-        JScrollPane spv = new JScrollPane(vocals, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        top.add(spv, BorderLayout.CENTER);
+        top.add(pranges, BorderLayout.CENTER);
 
         main.add(top, BorderLayout.NORTH);
-
         main.add(lyrics.getVisual(), BorderLayout.CENTER);
 
         lyrics.setLines(lines);
@@ -101,21 +109,32 @@ final class AlignComponent {
         lyrics.recolor();
 
         vocals.addParamListener(paramsInput::setParams);
-        paramsInput.addListener(params -> {
-            startSplitting();
-            vocals.setParams(params);
-        });
+        paramsInput.addListener(vocals::setParams);
         vocals.fireParamsChanged();
 
+        vocals.addAreaListener(forEdit -> {
+            showEditLabel();
+            if (forEdit) {
+                startSplitting();
+            }
+        });
+        showEditLabel();
+        btnResplit.addActionListener(e -> startSplitting());
         btnCommit.addActionListener(e -> endSplitting(true));
         btnRollback.addActionListener(e -> endSplitting(false));
         endSplitting(false);
+    }
+
+    private void showEditLabel() {
+        btnResplit.setText(vocals.isAreaSelected() ? "Edit area params" : "Edit global params");
     }
 
     private void startSplitting() {
         if (!vocals.isSplitting()) {
             vocals.startSplitting();
             splitModified = false;
+            btnResplit.setEnabled(false);
+            paramsInput.setEnabled(true);
             btnCommit.setEnabled(true);
             btnRollback.setEnabled(true);
         }
@@ -128,8 +147,12 @@ final class AlignComponent {
             }
         } else {
             vocals.rollbackChanges();
+            syncNumbers();
+            lyrics.recolor();
         }
         vocals.finishSplitting();
+        btnResplit.setEnabled(true);
+        paramsInput.setEnabled(false);
         btnCommit.setEnabled(false);
         btnRollback.setEnabled(false);
         splitModified = false;

@@ -13,8 +13,12 @@ final class ParamsComponent {
 
     private static final float MILLIS_SCALE = 1000f;
 
+    private final JLabel lblThreshold = new JLabel("Silence threshold, %:");
     private final JSpinner chThreshold = new JSpinner(new SpinnerNumberModel(1, 0, 100, 1));
+    private final JLabel lblSilenceGap = new JLabel("Max silence gap, millis:");
     private final JSpinner chSilenceGap = new JSpinner(new SpinnerNumberModel(10, 10, 1000, 10));
+    private final JLabel lblRangeDuration = new JLabel("Min range duration, millis:");
+    // todo: correlate chRangeDuration with chSilenceGap???
     private final JSpinner chRangeDuration = new JSpinner(new SpinnerNumberModel(10, 10, 1000, 10));
     private final JPanel main = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
@@ -35,11 +39,11 @@ final class ParamsComponent {
         chSilenceGap.addChangeListener(changeListener);
         chRangeDuration.addChangeListener(changeListener);
 
-        main.add(new JLabel("Silence threshold, %:"));
+        main.add(lblThreshold);
         main.add(chThreshold);
-        main.add(new JLabel("Max silence gap, millis:"));
+        main.add(lblSilenceGap);
         main.add(chSilenceGap);
-        main.add(new JLabel("Min range duration, millis:"));
+        main.add(lblRangeDuration);
         main.add(chRangeDuration);
     }
 
@@ -76,5 +80,14 @@ final class ParamsComponent {
         float maxSilenceGap = getValue(chSilenceGap, MILLIS_SCALE);
         float minRangeDuration = getValue(chRangeDuration, MILLIS_SCALE);
         return new AreaParams(silenceThreshold, maxSilenceGap, minRangeDuration);
+    }
+
+    void setEnabled(boolean on) {
+        lblThreshold.setEnabled(on);
+        chThreshold.setEnabled(on);
+        lblSilenceGap.setEnabled(on);
+        chSilenceGap.setEnabled(on);
+        lblRangeDuration.setEnabled(on);
+        chRangeDuration.setEnabled(on);
     }
 }
