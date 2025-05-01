@@ -43,4 +43,8 @@ class Measurer {
         int pixels = (int) Math.ceil(seconds * pixPerSec);
         return LPAD + pixels + RPAD;
     }
+
+    static int width(int x1, int x2) {
+        return Math.max(x2 - x1, 1);
+    }
 }

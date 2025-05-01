@@ -25,7 +25,6 @@ import java.util.function.IntFunction;
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
-// todo: better "currently playing" display (play bar ala video players)
 public final class RangesComponent extends JComponent implements Scrollable {
 
     private final BaseWindow owner;
@@ -43,6 +42,15 @@ public final class RangesComponent extends JComponent implements Scrollable {
 
     private Range playingRange = null;
     private Clip playing = null;
+    private long playingStarted;
+    private final Timer playingTimer = new Timer(100, e -> {
+        if (playingRange != null) {
+            Sizer s = newSizer();
+            int x1 = s.frame2x(playingRange.from());
+            int x2 = s.frame2x(playingRange.to());
+            repaint(x1 - 2, s.seekY1(), Sizer.width(x1, x2) + 2, Sizer.SEEK_H);
+        }
+    });
 
     private final RangeIndexes paintedRangeIndex = new RangeIndexes();
 
@@ -218,6 +226,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
             }
         });
 
+        playingTimer.setInitialDelay(0);
         ToolTipManager.sharedInstance().registerComponent(this);
     }
 
@@ -234,7 +243,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private void doPaint(Painter painter, RangeIndexes rangeIndexes) {
-        painter.paint(colors, model, playingRange, editingArea, rangeIndexes);
+        painter.paint(colors, model, editingArea, rangeIndexes);
     }
 
     private boolean canEdit() {
@@ -285,6 +294,9 @@ public final class RangesComponent extends JComponent implements Scrollable {
             doPaint(painter, paintedRangeIndex);
         }
 
+        if (playingRange != null) {
+            painter.paintPlay(playingRange, System.currentTimeMillis() - playingStarted);
+        }
         if (dragStart != null && dragEnd != null) {
             painter.paintDrag(dragStart.intValue());
             painter.paintDrag(dragEnd.intValue());
@@ -354,6 +366,8 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 }
             });
             firePlayChanged();
+            playingStarted = System.currentTimeMillis();
+            playingTimer.start();
             clip.start();
             repaint();
         } catch (Exception ex) {
@@ -452,6 +466,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
 
     public void stop() {
         if (playing != null) {
+            playingTimer.stop();
             playing.stop();
             playingRange = null;
             playing = null;

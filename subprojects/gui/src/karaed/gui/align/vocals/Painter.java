@@ -22,6 +22,23 @@ final class Painter extends Sizer {
         this.height = height;
     }
 
+    void paintPlay(Range range, long millis) {
+        int x1 = frame2x(range.from());
+        int x2 = frame2x(range.to());
+        int y0 = seekY1();
+        int h = SEEK_H;
+        {
+            g.setColor(Color.black);
+            int width = width(x1, x2);
+            g.fillRect(x1, y0, width, h);
+        }
+        {
+            int position = sec2pix(millis / 1000f);
+            g.setColor(Color.white);
+            g.fillRect(x1 + position - 2, y0, 4, h);
+        }
+    }
+
     private int getTick(int minTickWidth, int[] ticks) {
         for (int tickSize : ticks) {
             int pixels = sec2pix(tickSize);
@@ -55,13 +72,13 @@ final class Painter extends Sizer {
         }
     }
 
-    void paint(ColorSequence colors, EditableRanges model, Range playingRange, EditableArea editingArea,
+    void paint(ColorSequence colors, EditableRanges model, EditableArea editingArea,
                RangeIndexes rangeIndexes) {
         int ya = areaEditY1();
         for (EditableArea area : model.getAreas()) {
             int x1 = frame2x(area.from());
             int x2 = frame2x(area.to());
-            int width = Math.max(x2 - x1, 1);
+            int width = width(x1, x2);
             if (area != editingArea) {
                 g.setColor(new Color(120, 120, 120, 120)); // todo
                 g.fillRect(x1, 0, width, height); // todo
@@ -81,12 +98,8 @@ final class Painter extends Sizer {
             g.setColor(color == null ? Color.black : color);
             int x1 = frame2x(range.from());
             int x2 = frame2x(range.to());
-            int width = Math.max(x2 - x1, 1);
+            int width = width(x1, x2);
             g.fillRect(x1, yr, width, RANGE_H);
-            if (range == playingRange) {
-                g.setColor(Color.red);
-                g.drawRect(x1 - 1, yr - 1, width + 1, RANGE_H + 1);
-            }
         }
     }
 

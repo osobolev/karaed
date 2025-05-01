@@ -8,6 +8,7 @@ import java.awt.FontMetrics;
 
 class Sizer extends Measurer {
 
+    static final int SEEK_H = 4;
     static final int RANGE_H = 20;
     static final int AREA_EDIT_H = 15;
 
@@ -16,6 +17,11 @@ class Sizer extends Measurer {
     Sizer(FontMetrics fm, float frameRate, float pixPerSec) {
         super(frameRate, pixPerSec);
         this.fm = fm;
+    }
+
+    final int seekY1() {
+        int h = fm.getHeight();
+        return h + 13;
     }
 
     final int rangeY1() {
