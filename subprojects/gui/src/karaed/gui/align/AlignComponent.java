@@ -6,15 +6,16 @@ import karaed.engine.formats.ranges.Ranges;
 import karaed.gui.align.lyrics.LyricsComponent;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
+import karaed.gui.align.model.Language;
 import karaed.gui.align.vocals.RangesComponent;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ final class AlignComponent {
     private final Runnable onChange;
 
     private final RangesComponent vocals;
+    private final JComboBox<Language> chLanguage = new JComboBox<>(Language.languages());
     private final JSlider scaleSlider = new JSlider(2, 50, 30);
     private final JButton btnResplit = new JButton();
     private final ParamsComponent paramsInput = new ParamsComponent();
@@ -39,7 +41,7 @@ final class AlignComponent {
 
     private boolean splitModified = false;
 
-    AlignComponent(BaseWindow owner, EditableRanges model, List<String> lines, Runnable onChange) {
+    AlignComponent(BaseWindow owner, EditableRanges model, String languageCode, List<String> lines, Runnable onChange) {
         this.model = model;
         this.onChange = onChange;
 
@@ -61,11 +63,23 @@ final class AlignComponent {
         enableDisableStop();
         vocals.addPlayChangeListener(this::enableDisableStop);
 
-        JToolBar toolBar = new JToolBar();
-        toolBar.add(new JButton(actionStop));
-        toolBar.addSeparator();
-        toolBar.add(new JLabel("Scale:"));
-        toolBar.add(scaleSlider);
+        JPanel toolBar = new JPanel(new GridBagLayout());
+        toolBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+        toolBar.add(new JButton(actionStop), new GridBagConstraints(
+            0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0
+        ));
+        toolBar.add(new JLabel("Language:"), new GridBagConstraints(
+            1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 15, 0, 0), 0, 0
+        ));
+        toolBar.add(chLanguage, new GridBagConstraints(
+            2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 0), 0, 0
+        ));
+        toolBar.add(new JLabel("Scale:"), new GridBagConstraints(
+            3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 15, 0, 0), 0, 0
+        ));
+        toolBar.add(scaleSlider, new GridBagConstraints(
+            4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 0), 0, 0
+        ));
 
         JPanel params = new JPanel(new FlowLayout(FlowLayout.LEFT));
         params.add(btnResplit);
@@ -84,6 +98,13 @@ final class AlignComponent {
 
         main.add(top, BorderLayout.NORTH);
         main.add(lyrics.getVisual(), BorderLayout.CENTER);
+
+        chLanguage.setSelectedItem(Language.valueOf(languageCode));
+        chLanguage.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                onChange.run();
+            }
+        });
 
         lyrics.setLines(lines);
 
@@ -177,6 +198,12 @@ final class AlignComponent {
 
     JComponent getVisual() {
         return main;
+    }
+
+    String getLanguage() {
+        Language language = (Language) chLanguage.getSelectedItem();
+        assert language != null;
+        return language.code();
     }
 
     Ranges getData() {

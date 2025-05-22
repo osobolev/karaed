@@ -3,6 +3,7 @@ package karaed.gui.align;
 import karaed.engine.audio.PreparedAudioSource;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
+import karaed.engine.steps.align.Align;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.lyrics.SyncLyrics;
 import karaed.gui.align.model.EditableRanges;
@@ -21,10 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+// todo: undo/redo
 public final class ManualAlign extends BaseDialog {
 
     private final Path rangesFile;
     private final Path textFile;
+    private final Path langFile;
 
     private final AlignComponent alignComponent;
     private final SyncLyrics syncComponent;
@@ -41,13 +44,15 @@ public final class ManualAlign extends BaseDialog {
 
     private ManualAlign(Window owner, ErrorLogger logger, boolean canContinue,
                         Path rangesFile, EditableRanges model, List<String> rangeLines, boolean fromFile,
-                        Path textFile, List<String> textLines) {
+                        Path textFile, List<String> textLines,
+                        Path langFile, String languageCode) {
         super(owner, logger, "Align vocals & lyrics");
         this.rangesFile = rangesFile;
         this.textFile = textFile;
+        this.langFile = langFile;
 
         Runnable onChange = () -> actionSave.setEnabled(true);
-        this.alignComponent = new AlignComponent(this, model, rangeLines, onChange);
+        this.alignComponent = new AlignComponent(this, model, languageCode, rangeLines, onChange);
         this.syncComponent = new SyncLyrics(alignComponent.getRangesDocument(), String.join("\n", textLines), onChange);
 
         actionSave.setEnabled(!fromFile);
@@ -93,7 +98,7 @@ public final class ManualAlign extends BaseDialog {
     }
 
     public static ManualAlign create(Window owner, ErrorLogger logger, boolean canContinue,
-                                     Path vocals, Path textFile, Path rangesFile) throws IOException, UnsupportedAudioFileException {
+                                     Path vocals, Path textFile, Path rangesFile, Path langFile) throws IOException, UnsupportedAudioFileException {
         PreparedAudioSource maxSource = PreparedAudioSource.create(vocals.toFile());
 
         List<String> textLines = loadText(textFile);
@@ -112,10 +117,13 @@ public final class ManualAlign extends BaseDialog {
             rangeLines = textLines;
         }
 
+        String languageCode = Align.readLanguage(langFile);
+
         return new ManualAlign(
             owner, logger, canContinue,
             rangesFile, model, rangeLines, fileData != null,
-            textFile, textLines
+            textFile, textLines,
+            langFile, languageCode
         );
     }
 
@@ -148,6 +156,7 @@ public final class ManualAlign extends BaseDialog {
         boolean ok = false;
         if (actionSave.isEnabled()) {
             List<String> newText = syncComponent.getText();
+            String newLang = alignComponent.getLanguage();
             try {
                 Ranges currData = loadData(rangesFile);
                 if (!Objects.equals(newData, currData)) {
@@ -156,6 +165,10 @@ public final class ManualAlign extends BaseDialog {
                 List<String> currText = loadText(textFile);
                 if (!Objects.equals(newText, currText)) {
                     Files.write(textFile, newText);
+                }
+                String currLang = Align.readLanguage(langFile);
+                if (!Objects.equals(newLang, currLang)) {
+                    Align.writeLanguage(langFile, newLang);
                 }
                 actionSave.setEnabled(false);
                 ok = true;

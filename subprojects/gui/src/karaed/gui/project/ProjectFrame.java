@@ -207,6 +207,7 @@ public final class ProjectFrame extends BaseFrame {
                 boolean ok = true;
                 for (PipeStep step : PipeStep.values()) {
                     StepState state = pipe.stepStates().get(step);
+                    // todo: always run ranges step??? or only if has some misalignment???
                     if (state instanceof StepState.Done)
                         continue;
                     setState(step, new RunStepState.Running());
@@ -258,9 +259,10 @@ public final class ProjectFrame extends BaseFrame {
 
     private boolean editRanges(boolean canContinue) throws UnsupportedAudioFileException, IOException {
         Path ranges = workDir.file("ranges.json");
+        Path lang = workDir.file("lang.json");
         Path vocals = workDir.vocals();
         Path text = workDir.file("text.txt");
-        ManualAlign ma = ManualAlign.create(this, getLogger(), canContinue, vocals, text, ranges);
+        ManualAlign ma = ManualAlign.create(this, getLogger(), canContinue, vocals, text, ranges, lang);
         ma.setVisible(true);
         return ma.isContinue();
     }
