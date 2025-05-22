@@ -104,8 +104,9 @@ public final class StepRunner {
         Path aligned = workDir.file("aligned.json");
         Path vocals = workDir.vocals();
         Path ranges = workDir.file("ranges.json");
+        Path lang = workDir.file("lang.json");
         try {
-            Align.align(runner, vocals, ranges, workDir.file("tmp"), aligned);
+            Align.align(runner, vocals, ranges, lang, workDir.file("tmp"), aligned);
         } catch (InterruptedException ex) {
             Files.deleteIfExists(aligned);
             throw ex;

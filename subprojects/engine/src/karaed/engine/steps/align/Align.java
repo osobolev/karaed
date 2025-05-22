@@ -5,6 +5,7 @@ import karaed.engine.audio.AudioSource;
 import karaed.engine.formats.aligned.AlignSegment;
 import karaed.engine.formats.aligned.Aligned;
 import karaed.engine.formats.aligned.WordSegment;
+import karaed.engine.formats.lang.Lang;
 import karaed.engine.formats.lang.LangDetect;
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
@@ -95,8 +96,15 @@ public final class Align {
         return new FilteredRanges(filteredRanges, filteredLines);
     }
 
-    public static void align(ProcRunner runner, Path vocals, Path rangesFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
-        FilteredRanges data = filterRanges(JsonUtil.readFile(rangesFile, Ranges.class));
+    public interface GetLanguage {
+
+        String getLanguage(List<Range> ranges) throws IOException, InterruptedException;
+    }
+
+    public static void align(ProcRunner runner, Path vocals, Path rangesFile, Path tmpDir, Path alignedFile,
+                             GetLanguage getLanguage) throws IOException, UnsupportedAudioFileException, InterruptedException {
+        Ranges allRanges = JsonUtil.readFile(rangesFile, Ranges.class);
+        FilteredRanges data = filterRanges(allRanges);
         List<Range> ranges = data.ranges();
         List<String> lines = data.lines();
         AudioSource source = AudioSource.create(vocals.toFile());
@@ -109,9 +117,7 @@ public final class Align {
                 source.cut(range.from(), range.to(), out);
             }
         }
-        runner.println("Detecting language..."); // todo: make manual language choice option
-        String language = detectLanguage(runner, tmpDir, ranges);
-        runner.println("Detected language: " + language);
+        String language = getLanguage.getLanguage(ranges);
         List<Aligned> alignedRanges = new ArrayList<>();
         for (int i = 0; i < ranges.size(); i++) {
             runner.println(String.format("Aligning range %d of %d", i + 1, ranges.size()));
@@ -132,5 +138,31 @@ public final class Align {
 
         Aligned allAligned = new Aligned(segments, wordSegments);
         JsonUtil.writeFile(alignedFile, allAligned);
+    }
+
+    public static String readLanguage(Path langFile) throws IOException {
+        Lang lang = JsonUtil.readFile(langFile, Lang.class, Lang::new);
+        return lang.language();
+    }
+
+    public static void writeLanguage(Path langFile, String language) throws IOException {
+        JsonUtil.writeFile(langFile, new Lang(language));
+    }
+
+    public static void align(ProcRunner runner, Path vocals, Path rangesFile, Path langFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
+        align(runner, vocals, rangesFile, tmpDir, alignedFile, ranges -> {
+            String lang = readLanguage(langFile);
+            String language;
+            if (lang == null) {
+                runner.println("Detecting language...");
+                language = detectLanguage(runner, tmpDir, ranges);
+                runner.println("Detected language: " + language);
+                writeLanguage(langFile, language);
+            } else {
+                language = lang;
+                runner.println("Using language " + language);
+            }
+            return language;
+        });
     }
 }

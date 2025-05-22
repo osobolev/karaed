@@ -12,6 +12,7 @@ enum ProjectFile {
     VOCALS("demucs.json"),
     NO_VOCALS("demucs.json"),
     RANGES,
+    LANGUAGE,
     ALIGNED,
     SUBS("align.json"),
     KARAOKE_SUBS("karaoke.json"),

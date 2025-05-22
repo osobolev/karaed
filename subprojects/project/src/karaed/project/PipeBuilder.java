@@ -54,6 +54,7 @@ public final class PipeBuilder {
         setFile(ProjectFile.VOCALS, workDir.vocals());
         setFile(ProjectFile.NO_VOCALS, workDir.noVocals());
         setFile(ProjectFile.RANGES, workDir.file("ranges.json"));
+        setFile(ProjectFile.LANGUAGE, workDir.file("lang.json"));
         setFile(ProjectFile.ALIGNED, workDir.file("aligned.json"));
         setFile(ProjectFile.SUBS, workDir.file("subs.ass"));
         setFile(ProjectFile.KARAOKE_SUBS, workDir.file("karaoke.ass"));

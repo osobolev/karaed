@@ -40,6 +40,7 @@ final class Dependencies {
 
         add(ALIGNED, VOCALS);
         add(ALIGNED, RANGES);
+        add(ALIGNED, LANGUAGE, false);
 
         add(SUBS, TEXT);
         add(SUBS, ALIGNED);
@@ -71,6 +72,7 @@ final class Dependencies {
         step(PipeStep.RANGES, RANGES);
 
         step(PipeStep.ALIGN, ALIGNED);
+        step(PipeStep.ALIGN, LANGUAGE);
 
         step(PipeStep.SUBS, SUBS);
 
