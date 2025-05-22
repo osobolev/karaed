@@ -22,7 +22,7 @@ public final class Main {
             Path.of("C:\\Users\\sobol\\.jkara\\python"),
             Path.of("C:\\Users\\sobol\\.jkara\\ffmpeg\\bin")
         );
-        Path rootDir = Path.of("C:\\home\\projects\\my\\kara2");
+        Path rootDir = Path.of("C:\\home\\projects\\my\\karaed");
 
         SwingUtilities.invokeLater(() -> {
             Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
