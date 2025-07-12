@@ -3,7 +3,6 @@ package karaed.tools;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,19 +13,25 @@ public final class ProcUtil {
 
     private static final Set<Process> running = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public static void eatOutput(Reader rdr) {
+    private static Thread runInThread(OutputProcessor processor, Reader stream) {
         Thread thread = new Thread(() -> {
             try {
-                rdr.transferTo(Writer.nullWriter());
+                processor.process(stream);
             } catch (IOException ex) {
                 // ignore
             }
         });
         thread.start();
+        return thread;
+    }
+
+    public interface OutputProcessor {
+
+        void process(Reader rdr) throws IOException;
     }
 
     public static void runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
-                                  Consumer<Reader> stdout, Consumer<Reader> stderr, Consumer<String> log) throws IOException, InterruptedException {
+                                  OutputProcessor stdout, OutputProcessor stderr, Consumer<String> log) throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add(exe.toString());
         command.addAll(args);
@@ -51,9 +56,11 @@ public final class ProcUtil {
         running.add(p);
         int exitCode;
         try {
-            stderr.accept(p.errorReader());
-            stdout.accept(p.inputReader());
+            Thread t1 = runInThread(stderr, p.errorReader());
+            Thread t2 = runInThread(stdout, p.inputReader());
             exitCode = p.waitFor();
+            t1.join();
+            t2.join();
         } catch (InterruptedException ex) {
             kill(p, log);
             throw ex;

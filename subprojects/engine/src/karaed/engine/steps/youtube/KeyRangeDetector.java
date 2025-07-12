@@ -7,10 +7,11 @@ import karaed.engine.formats.ffprobe.FFFrame;
 import karaed.json.JsonUtil;
 import karaed.tools.ProcRunner;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 final class KeyRangeDetector {
@@ -99,39 +100,22 @@ final class KeyRangeDetector {
             duration = Double.parseDouble(format.duration());
         }
         {
-            AtomicReference<CutRange> realCut = new AtomicReference<>(original);
-            try (PipedReader sink = new PipedReader()) {
-                Thread sinkReader = new Thread(() -> {
-                    try {
-                        CutRange range = parseFrameStream(duration, sink);
-                        realCut.set(range);
-                    } catch (IOException ex) {
-                        // ignore
-                    }
-                });
-
-                runner.runFFProbeStreaming(
-                    List.of(
-                        "-print_format", "json",
-                        "-select_streams", "v",
-                        "-skip_frame", "nokey",
-                        "-show_frames",
-                        "-show_entries", "frame=best_effort_timestamp_time,pict_type",
-                        file.toString()
-                    ),
-                    stdout -> {
-                        try (PipedWriter out = new PipedWriter(sink)) {
-                            sinkReader.start();
-                            stdout.transferTo(out);
-                        } catch (IOException ex) {
-                            // ignore
-                        }
-                    }
-                );
-
-                sinkReader.join();
-            }
-            return realCut.get();
+            CutRange[] realCut = {original};
+            runner.runFFProbeStreaming(
+                List.of(
+                    "-print_format", "json",
+                    "-select_streams", "v",
+                    "-skip_frame", "nokey",
+                    "-show_frames",
+                    "-show_entries", "frame=best_effort_timestamp_time,pict_type",
+                    file.toString()
+                ),
+                stdout -> {
+                    CutRange range = parseFrameStream(duration, stdout);
+                    realCut[0] = range;
+                }
+            );
+            return realCut[0];
         }
     }
 }

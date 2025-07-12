@@ -2,12 +2,12 @@ package karaed.tools;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class ProcRunner {
@@ -39,35 +39,28 @@ public final class ProcRunner {
         return dir == null ? Path.of(name) : dir.resolve(name);
     }
 
-    private void capture(Reader rdr, boolean stderr) {
-        Thread thread = new Thread(() -> {
-            try {
-                char[] buf = new char[16_384];
-                while (true) {
-                    int read = rdr.read(buf);
-                    if (read < 0)
-                        break;
-                    String text = new String(buf, 0, read);
-                    output.output(stderr, text);
-                }
-            } catch (IOException ex) {
-                // ignore
-            }
-        });
-        thread.start();
+    private void capture(Reader rdr, boolean stderr) throws IOException {
+        char[] buf = new char[16_384];
+        while (true) {
+            int read = rdr.read(buf);
+            if (read < 0)
+                break;
+            String text = new String(buf, 0, read);
+            output.output(stderr, text);
+        }
     }
 
-    private void runCommand(String what, Path exe, List<String> args, Consumer<Reader> out) throws IOException, InterruptedException {
+    private void runCommand(String what, Path exe, List<String> args, ProcUtil.OutputProcessor out) throws IOException, InterruptedException {
         List<Path> pathDirs;
         if (tools.ffmpegDir != null) {
             pathDirs = Collections.singletonList(tools.ffmpegDir);
         } else {
             pathDirs = Collections.emptyList();
         }
-        Consumer<Reader> stdout;
-        Consumer<Reader> stderr;
+        ProcUtil.OutputProcessor stdout;
+        ProcUtil.OutputProcessor stderr;
         if (out != null) {
-            stderr = ProcUtil::eatOutput;
+            stderr = rdr -> rdr.transferTo(Writer.nullWriter());
             stdout = out;
         } else {
             stderr = rdr -> capture(rdr, true);
@@ -96,7 +89,7 @@ public final class ProcRunner {
         runCommand(exe, exe(tools.pythonExeDir, exe), List.of(args), null);
     }
 
-    private void runFF(String ff, List<String> args, Consumer<Reader> out) throws IOException, InterruptedException {
+    private void runFF(String ff, List<String> args, ProcUtil.OutputProcessor out) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
         list.addAll(List.of("-v", "quiet"));
         list.addAll(args);
@@ -107,7 +100,7 @@ public final class ProcRunner {
         runFF("ffmpeg", args, null);
     }
 
-    public void runFFProbeStreaming(List<String> args, Consumer<Reader> out) throws IOException, InterruptedException {
+    public void runFFProbeStreaming(List<String> args, ProcUtil.OutputProcessor out) throws IOException, InterruptedException {
         runFF("ffprobe", args, out);
     }
 
@@ -117,7 +110,7 @@ public final class ProcRunner {
         return capture.getParsed();
     }
 
-    private static final class ParseCapture<T> implements Consumer<Reader> {
+    private static final class ParseCapture<T> implements ProcUtil.OutputProcessor {
 
         private final Function<Reader, T> parser;
         private T parsed = null;
@@ -127,7 +120,7 @@ public final class ProcRunner {
         }
 
         @Override
-        public void accept(Reader stdout) {
+        public void process(Reader stdout) {
             if (parser != null) {
                 parsed = parser.apply(stdout);
             }
