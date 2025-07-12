@@ -276,20 +276,23 @@ public final class RangesComponent extends JComponent implements Scrollable {
             Graphics2D g2 = (Graphics2D) g;
             Composite composite = g2.getComposite();
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
+            Shape clip = g2.getClip();
             {
-                g.setClip(0, 0, x1, height);
+                g2.clipRect(0, 0, x1, height);
                 doPaint(painter, null);
+                g2.setClip(clip);
             }
             {
-                g.setClip(x2, 0, width - x2, height);
+                g2.clipRect(x2, 0, width - x2, height);
                 doPaint(painter, null);
+                g2.setClip(clip);
             }
             g2.setComposite(composite);
             {
-                g.setClip(x1, 0, x2 - x1, height);
+                g2.clipRect(x1, 0, x2 - x1, height);
                 doPaint(painter, paintedRangeIndex);
+                g2.setClip(clip);
             }
-            g.setClip(null);
         } else {
             doPaint(painter, paintedRangeIndex);
         }
