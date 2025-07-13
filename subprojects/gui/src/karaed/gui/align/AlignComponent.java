@@ -46,7 +46,10 @@ final class AlignComponent {
         this.onChange = onChange;
 
         this.lyrics = new LyricsComponent(colors);
-        this.vocals = new RangesComponent(owner, colors, model, lyrics::getLineAt);
+        this.vocals = new RangesComponent(
+            owner, colors, model,
+            this::endSplitting, lyrics::getLineAt
+        );
         lyrics.addLyricsListener(vocals::showRange);
         vocals.addGoToListener(lyrics::goTo);
 

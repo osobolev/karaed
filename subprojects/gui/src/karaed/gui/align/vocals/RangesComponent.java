@@ -35,6 +35,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
     private final BaseWindow owner;
     private final ColorSequence colors;
     private final EditableRanges model;
+    private final Consumer<Boolean> finishSplit;
     private final IntFunction<String> getText;
     private final float frameRate;
 
@@ -70,10 +71,11 @@ public final class RangesComponent extends JComponent implements Scrollable {
     private Integer draggingBorder = null;
 
     public RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
-                           IntFunction<String> getText) {
+                           Consumer<Boolean> finishSplit, IntFunction<String> getText) {
         this.owner = owner;
         this.colors = colors;
         this.model = model;
+        this.finishSplit = finishSplit;
         this.getText = getText;
         this.frameRate = model.source.frameRate();
 
@@ -159,21 +161,26 @@ public final class RangesComponent extends JComponent implements Scrollable {
             private static final int NEAR_BORDER = 5;
 
             private Cursor maybeNewCursor(MouseEvent e) {
-                if (isSplitting()) {
-                    // Areas are not editable & cannot select/unselect area until commit/rollback
+                if (dragStart != null || draggingBorder != null) {
+                    // When dragging show default cursor
                     return null;
                 }
                 if (model.getAreaCount() <= 0) {
                     // No areas to show cursor for
                     return null;
                 }
-                if (dragStart != null || draggingBorder != null) {
-                    // When dragging show default cursor
-                    return null;
-                }
                 Sizer s = newSizer();
                 int frame = s.x2frame(e.getX());
                 EditableArea area = s.findArea(frame, e.getY(), model);
+                if (isSplitting()) {
+                    if (area != null && area == editingArea) {
+                        // Can unselect area
+                        return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                    } else {
+                        // Areas are not editable & cannot select/unselect area until commit/rollback
+                        return null;
+                    }
+                }
                 if (area != null) {
                     boolean canToggle = editingArea == null || area == editingArea;
                     if (canToggle) {
@@ -404,12 +411,20 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 } else {
                     menu.add("Select area & edit", () -> selectArea(area, true));
                 }
+            } else if (editingArea == area) {
+                menu.add("Commit & unselect area", () -> endSplitting(true));
+                menu.add("Rollback & unselect area", () -> endSplitting(false));
             }
             if (canEdit()) {
                 menu.add("Remove area", () -> model.removeArea(area));
             }
             menu.showMenu();
         }
+    }
+
+    private void endSplitting(boolean commit) {
+        finishSplit.accept(commit);
+        selectArea(null, false);
     }
 
     private void selectArea(EditableArea area, boolean forEdit) {
