@@ -7,6 +7,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 final class ParamsComponent {
@@ -17,34 +18,57 @@ final class ParamsComponent {
     private final JSpinner chThreshold = new JSpinner(new SpinnerNumberModel(1, 0, 100, 1));
     private final JLabel lblSilenceGap = new JLabel("Max silence gap, millis:");
     private final JSpinner chSilenceGap = new JSpinner(new SpinnerNumberModel(10, 10, 1000, 10));
-    private final JLabel lblRangeDuration = new JLabel("Min range duration, millis:");
-    // todo: correlate chRangeDuration with chSilenceGap???
+    private final JCheckBox cbRangeDuration = new JCheckBox("Min range duration, millis:");
     private final JSpinner chRangeDuration = new JSpinner(new SpinnerNumberModel(10, 10, 1000, 10));
     private final JPanel main = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
     private final List<Consumer<AreaParams>> listeners = new ArrayList<>();
 
+    private boolean enabled = true;
     private boolean ignoreChanges = false;
 
     ParamsComponent() {
         ChangeListener changeListener = e -> {
             if (ignoreChanges)
                 return;
-            AreaParams params = getParams();
-            for (Consumer<AreaParams> listener : listeners) {
-                listener.accept(params);
+            if (e.getSource() == chSilenceGap && !cbRangeDuration.isSelected()) {
+                runWithoutEvents(() -> {
+                    Object maxSilenceGap = chSilenceGap.getValue();
+                    chRangeDuration.setValue(maxSilenceGap);
+                });
             }
+            fireParamsChanged();
         };
         chThreshold.addChangeListener(changeListener);
         chSilenceGap.addChangeListener(changeListener);
         chRangeDuration.addChangeListener(changeListener);
+        cbRangeDuration.addActionListener(e -> {
+            enableDisableRangeDuration();
+            if (!cbRangeDuration.isSelected()) {
+                runWithoutEvents(() -> {
+                    Object maxSilenceGap = chSilenceGap.getValue();
+                    Object minRangeDuration = chRangeDuration.getValue();
+                    if (!Objects.equals(maxSilenceGap, minRangeDuration)) {
+                        chRangeDuration.setValue(maxSilenceGap);
+                        fireParamsChanged();
+                    }
+                });
+            }
+        });
 
         main.add(lblThreshold);
         main.add(chThreshold);
         main.add(lblSilenceGap);
         main.add(chSilenceGap);
-        main.add(lblRangeDuration);
+        main.add(cbRangeDuration);
         main.add(chRangeDuration);
+    }
+
+    private void fireParamsChanged() {
+        AreaParams params = getParams();
+        for (Consumer<AreaParams> listener : listeners) {
+            listener.accept(params);
+        }
     }
 
     JComponent getVisual() {
@@ -55,15 +79,29 @@ final class ParamsComponent {
         listeners.add(listener);
     }
 
-    void setParams(AreaParams params) {
+    private void runWithoutEvents(Runnable code) {
         ignoreChanges = true;
         try {
-            chThreshold.setValue(params.silenceThreshold());
-            chSilenceGap.setValue(Math.round(params.maxSilenceGap() * MILLIS_SCALE));
-            chRangeDuration.setValue(Math.round(params.minRangeDuration() * MILLIS_SCALE));
+            code.run();
         } finally {
             ignoreChanges = false;
         }
+    }
+
+    void setParams(AreaParams params) {
+        runWithoutEvents(() -> {
+            chThreshold.setValue(params.silenceThreshold());
+            int maxSilenceGap = Math.round(params.maxSilenceGap() * MILLIS_SCALE);
+            int minRangeDuration = Math.round(params.minRangeDuration() * MILLIS_SCALE);
+            chSilenceGap.setValue(maxSilenceGap);
+            cbRangeDuration.setSelected(maxSilenceGap != minRangeDuration);
+            chRangeDuration.setValue(minRangeDuration);
+            enableDisableRangeDuration();
+        });
+    }
+
+    private void enableDisableRangeDuration() {
+        chRangeDuration.setEnabled(cbRangeDuration.isSelected() && enabled);
     }
 
     private static Number getNumberValue(JSpinner spinner) {
@@ -83,11 +121,12 @@ final class ParamsComponent {
     }
 
     void setEnabled(boolean on) {
+        this.enabled = on;
         lblThreshold.setEnabled(on);
         chThreshold.setEnabled(on);
         lblSilenceGap.setEnabled(on);
         chSilenceGap.setEnabled(on);
-        lblRangeDuration.setEnabled(on);
-        chRangeDuration.setEnabled(on);
+        cbRangeDuration.setEnabled(on);
+        enableDisableRangeDuration();
     }
 }
