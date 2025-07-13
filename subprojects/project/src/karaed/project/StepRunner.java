@@ -162,10 +162,18 @@ public final class StepRunner {
     }
 
     private static void deleteIfExists(Path path) {
-        try {
-            Files.deleteIfExists(path);
-        } catch (IOException ex2) {
-            // ignore
+        for (int i = 0; i < 2; i++) {
+            try {
+                Files.deleteIfExists(path);
+                break;
+            } catch (IOException ex2) {
+                // ignore
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }
