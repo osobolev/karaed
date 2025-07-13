@@ -2,6 +2,7 @@ package karaed.tools;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,12 +58,14 @@ public final class ProcRunner {
             pathDirs = Collections.emptyList();
         }
         OutputProcessor<T> stdout;
+        OutputProcessor<Object> stderr;
         if (out != null) {
             stdout = out;
+            stderr = stream -> stream.transferTo(Writer.nullWriter());
         } else {
             stdout = rdr -> capture(rdr, false);
+            stderr = rdr -> capture(rdr, true);
         }
-        OutputProcessor<Object> stderr = rdr -> capture(rdr, true);
         Pair<T, Object> pair = ProcUtil.runCommand(
             what, exe, args, pathDirs,
             stdout, stderr, str -> output.output(true, "\n" + str + "\n")
@@ -74,7 +77,13 @@ public final class ProcRunner {
         List<String> list = new ArrayList<>();
         list.add(rootDir.resolve(script).toString());
         list.addAll(Arrays.asList(args));
-        return runCommand("script " + script, exe(tools.pythonDir, "python"), list, parseStdout);
+        OutputProcessor<T> out;
+        if (parseStdout != null) {
+            out = parseStdout;
+        } else {
+            out = stream -> null;
+        }
+        return runCommand("script " + script, exe(tools.pythonDir, "python"), list, out);
     }
 
     public void runPythonScript(String script, String... args) throws IOException, InterruptedException {
