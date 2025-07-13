@@ -2,7 +2,6 @@ package karaed.tools;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,25 +12,8 @@ public final class ProcUtil {
 
     private static final Set<Process> running = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    private static Thread runInThread(OutputProcessor processor, Reader stream) {
-        Thread thread = new Thread(() -> {
-            try {
-                processor.process(stream);
-            } catch (IOException ex) {
-                // ignore
-            }
-        });
-        thread.start();
-        return thread;
-    }
-
-    public interface OutputProcessor {
-
-        void process(Reader rdr) throws IOException;
-    }
-
-    public static void runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
-                                  OutputProcessor stdout, OutputProcessor stderr, Consumer<String> log) throws IOException, InterruptedException {
+    public static <O, E> Pair<O, E> runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
+                                               OutputProcessor<O> stdout, OutputProcessor<E> stderr, Consumer<String> log) throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add(exe.toString());
         command.addAll(args);
@@ -55,12 +37,14 @@ public final class ProcUtil {
         Process p = pb.start();
         running.add(p);
         int exitCode;
+        Pair<O, E> result;
         try {
-            Thread t1 = runInThread(stderr, p.errorReader());
-            Thread t2 = runInThread(stdout, p.inputReader());
+            CaptureThread<E> t1 = CaptureThread.start(stderr, p.errorReader());
+            CaptureThread<O> t2 = CaptureThread.start(stdout, p.inputReader());
             exitCode = p.waitFor();
-            t1.join();
-            t2.join();
+            E e = t1.join();
+            O o = t2.join();
+            result = new Pair<>(o, e);
         } catch (InterruptedException ex) {
             kill(p, log);
             throw ex;
@@ -70,6 +54,7 @@ public final class ProcUtil {
         boolean ok = exitCode == 0;
         if (!ok)
             throw new IOException("Error running " + what + ": " + exitCode);
+        return result;
     }
 
     private static String getSimpleName(String command) {

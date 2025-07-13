@@ -17,13 +17,11 @@ import java.util.function.Function;
 final class KeyRangeDetector {
 
     private final ProcRunner runner;
-    private final CutRange original;
     private final Double start;
     private final Double end;
 
     KeyRangeDetector(ProcRunner runner, CutRange range) {
         this.runner = runner;
-        this.original = range;
         this.start = range.start;
         this.end = range.end;
     }
@@ -100,8 +98,7 @@ final class KeyRangeDetector {
             duration = Double.parseDouble(format.duration());
         }
         {
-            CutRange[] realCut = {original};
-            runner.runFFProbeStreaming(
+            return runner.runFFProbeStreaming(
                 List.of(
                     "-print_format", "json",
                     "-select_streams", "v",
@@ -110,12 +107,8 @@ final class KeyRangeDetector {
                     "-show_entries", "frame=best_effort_timestamp_time,pict_type",
                     file.toString()
                 ),
-                stdout -> {
-                    CutRange range = parseFrameStream(duration, stdout);
-                    realCut[0] = range;
-                }
+                stdout -> parseFrameStream(duration, stdout)
             );
-            return realCut[0];
         }
     }
 }
