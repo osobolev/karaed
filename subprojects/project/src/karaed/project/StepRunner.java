@@ -58,8 +58,8 @@ public final class StepRunner {
         try {
             Youtube.download(runner, input, cut, audio, info, workDir.video());
         } catch (InterruptedException ex) {
-            Files.deleteIfExists(audio);
-            Files.deleteIfExists(info);
+            deleteIfExists(audio);
+            deleteIfExists(info);
             throw ex;
         }
         SwingUtilities.invokeLater(showTitle);
@@ -71,8 +71,8 @@ public final class StepRunner {
         try {
             Demucs.demucs(runner, workDir.audio(), options, workDir.dir());
         } catch (InterruptedException ex) {
-            Files.deleteIfExists(workDir.vocals());
-            Files.deleteIfExists(workDir.noVocals());
+            deleteIfExists(workDir.vocals());
+            deleteIfExists(workDir.noVocals());
             throw ex;
         }
     }
@@ -108,7 +108,7 @@ public final class StepRunner {
         try {
             Align.align(runner, vocals, ranges, lang, workDir.file("tmp"), aligned);
         } catch (InterruptedException ex) {
-            Files.deleteIfExists(aligned);
+            deleteIfExists(aligned);
             throw ex;
         }
     }
@@ -138,7 +138,7 @@ public final class StepRunner {
             } catch (InterruptedException ex) {
                 Path preparedVideo = finder.getVideo(MakeVideo.PREPARED, false);
                 if (preparedVideo != null) {
-                    Files.deleteIfExists(preparedVideo);
+                    deleteIfExists(preparedVideo);
                 }
                 throw ex;
             }
@@ -154,8 +154,16 @@ public final class StepRunner {
         try {
             MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
         } catch (InterruptedException ex) {
-            Files.deleteIfExists(karaokeVideo);
+            deleteIfExists(karaokeVideo);
             throw ex;
+        }
+    }
+
+    private static void deleteIfExists(Path path) {
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException ex2) {
+            // ignore
         }
     }
 }
