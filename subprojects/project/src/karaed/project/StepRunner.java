@@ -118,6 +118,7 @@ public final class StepRunner {
         Path text = workDir.file("text.txt");
         Path aligned = workDir.file("aligned.json");
         OAlign options = JsonUtil.readFile(workDir.option("align.json"), OAlign.class, OAlign::new);
+        runner.println("Making editable subtitles");
         MakeSubs.makeSubs(text, aligned, options, subs);
     }
 
@@ -126,6 +127,7 @@ public final class StepRunner {
         Path subs = workDir.file("subs.ass");
         Path info = workDir.info();
         OKaraoke options = JsonUtil.readFile(workDir.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
+        runner.println("Making karaoke subtitles");
         AssJoiner.join(subs, info, options, karaoke);
     }
 
