@@ -48,7 +48,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
             Sizer s = newSizer();
             int x1 = s.frame2x(playingRange.from());
             int x2 = s.frame2x(playingRange.to());
-            repaint(x1 - 2, s.seekY1(), Sizer.width(x1, x2) + 2, Sizer.SEEK_H);
+            repaint(x1 - 3, s.seekY1() - 1, Sizer.width(x1, x2) + 4, Sizer.SEEK_H + 2);
         }
     });
 

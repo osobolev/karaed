@@ -36,6 +36,8 @@ final class Painter extends Sizer {
         if (xp < x2) {
             g.setColor(Color.white);
             g.fillRect(xp - 2, y0, 4, h);
+            g.setColor(Color.gray);
+            g.drawRect(xp - 3, y0 - 1, 5, h + 1);
         }
     }
 
