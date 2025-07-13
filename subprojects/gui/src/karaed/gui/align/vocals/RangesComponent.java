@@ -391,18 +391,20 @@ public final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private void areaClicked(MouseEvent me, EditableArea area) {
+        MenuBuilder menu = new MenuBuilder(me);
         if (me.getButton() == MouseEvent.BUTTON1) {
-            if (isSplitting())
-                return;
-            if (editingArea != null) {
-                if (editingArea == area) {
-                    selectArea(null, false);
+            if (!isSplitting()) {
+                if (editingArea != null) {
+                    if (editingArea == area) {
+                        selectArea(null, false);
+                    }
+                } else {
+                    selectArea(area, true);
                 }
             } else {
-                selectArea(area, true);
+                showSplittingMenu(menu, area);
             }
         } else {
-            MenuBuilder menu = new MenuBuilder(me);
             if (!isSplitting()) {
                 if (editingArea != null) {
                     if (editingArea == area) {
@@ -411,14 +413,20 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 } else {
                     menu.add("Select area & edit", () -> selectArea(area, true));
                 }
-            } else if (editingArea == area) {
-                menu.add("Commit & unselect area", () -> endSplitting(true));
-                menu.add("Rollback & unselect area", () -> endSplitting(false));
+            } else {
+                showSplittingMenu(menu, area);
             }
             if (canEdit()) {
                 menu.add("Remove area", () -> model.removeArea(area));
             }
-            menu.showMenu();
+        }
+        menu.showMenu();
+    }
+
+    private void showSplittingMenu(MenuBuilder menu, EditableArea area) {
+        if (editingArea == area) {
+            menu.add("Commit & unselect area", () -> endSplitting(true));
+            menu.add("Rollback & unselect area", () -> endSplitting(false));
         }
     }
 
