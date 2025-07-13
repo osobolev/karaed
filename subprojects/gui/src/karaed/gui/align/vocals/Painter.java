@@ -13,6 +13,15 @@ final class Painter extends Sizer {
 
     private static final int[] SECOND_TICKS = {1, 5, 10, 30, 60};
 
+    /**
+     * Background color for area
+     */
+    private static final Color AREA_BG = new Color(120, 120, 120, 120);
+    /**
+     * Background color for area action band
+     */
+    private static final Color ACTION_BAND_BG = Color.gray;
+
     private final Graphics g;
     private final int height;
 
@@ -82,11 +91,14 @@ final class Painter extends Sizer {
             int x2 = frame2x(area.to());
             int width = width(x1, x2);
             if (area != editingArea) {
-                g.setColor(new Color(120, 120, 120, 120)); // todo
-                g.fillRect(x1, 0, width, height); // todo
+                g.setColor(AREA_BG);
+                g.fillRect(x1, 0, width, height);
             }
-            g.setColor(Color.red); // todo!!!
+            g.setColor(ACTION_BAND_BG);
             g.fillRect(x1, ya, width, AREA_EDIT_H);
+            g.setColor(Color.darkGray);
+            g.drawLine(x1, ya, x1 + width, ya);
+            g.drawLine(x1, ya + AREA_EDIT_H, x1 + width, ya + AREA_EDIT_H);
         }
 
         int yr = rangeY1();

@@ -27,6 +27,11 @@ import java.util.function.IntFunction;
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
 public final class RangesComponent extends JComponent implements Scrollable {
 
+    /**
+     * Background color for everything outside of edited area
+     */
+    private static final Color NOT_AREA_BG = new Color(120, 120, 120, 120);
+
     private final BaseWindow owner;
     private final ColorSequence colors;
     private final EditableRanges model;
@@ -266,10 +271,10 @@ public final class RangesComponent extends JComponent implements Scrollable {
             int x1 = painter.frame2x(editingArea.from());
             int x2 = painter.frame2x(editingArea.to());
 
-            g.setColor(new Color(120, 120, 120, 120)); // todo
+            g.setColor(NOT_AREA_BG);
             g.fillRect(0, 0, x1, height);
             g.fillRect(x2, 0, width - x2, height);
-            g.setColor(Color.gray); // todo
+            g.setColor(Color.gray);
             g.drawLine(x1, 0, x1, height);
             g.drawLine(x2, 0, x2, height);
 
