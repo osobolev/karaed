@@ -1,10 +1,11 @@
 package karaed.engine.opts;
 
 public record OAlign(
-    boolean words
+    boolean words,
+    double tagPause
 ) {
 
     public OAlign() {
-        this(false);
+        this(false, 0.5);
     }
 }
