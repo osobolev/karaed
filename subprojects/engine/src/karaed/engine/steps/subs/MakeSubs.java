@@ -52,14 +52,13 @@ public final class MakeSubs {
         List<List<TargetSegment>> lines = new ArrayList<>();
         double lastEnd = SyncAny.sync(textFile, alignedFile, getSrcSegments, getTargetSegments, lines);
 
-        String tag = options.words() ? "K" : "k";
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
             long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
             String header = String.format(HEADER, VIDEO_FRAME_RATE, dummyFrames);
             header.lines().forEach(pw::println);
             lines
                 .stream()
-                .map(line -> assLine(line, tag))
+                .map(line -> assLine(line, options))
                 .filter(Objects::nonNull)
                 .forEach(pw::println);
         }
@@ -69,7 +68,7 @@ public final class MakeSubs {
         AssUtil.appendK(buf, tag, end - start);
     }
 
-    private static String assLine(List<TargetSegment> line, String tag) {
+    private static String assLine(List<TargetSegment> line, OAlign options) {
         double minStart = Double.NaN;
         double maxEnd = Double.NaN;
         for (TargetSegment ch : line) {
@@ -87,34 +86,70 @@ public final class MakeSubs {
             return null;
         StringBuilder buf = new StringBuilder();
         int i = 0;
+        // 1. Skip all leading spaces (really should not happen)
         while (i < line.size()) {
             TargetSegment ch = line.get(i);
-            Timestamps ts = ch.timestamps;
-            if (ts == null) {
-                if (i > 0) {
-                    double prevEnd = line.get(i - 1).timestamps.end();
-                    StringBuilder spaces = new StringBuilder();
-                    double end = maxEnd;
-                    while (i < line.size()) {
-                        TargetSegment chi = line.get(i);
-                        if (chi.timestamps != null) {
-                            end = chi.timestamps.start();
-                            break;
-                        }
-                        spaces.append(chi.text);
-                        i++;
-                    }
-                    append(buf, tag, prevEnd, end);
-                    buf.append(spaces);
-                } else {
-                    buf.append(ch.text);
-                    i++;
-                }
-            } else {
-                append(buf, tag, ts.start(), ts.end());
-                buf.append(ch.text);
+            if (ch.timestamps != null)
+                break;
+            buf.append(ch.text);
+            i++;
+        }
+        String tag = options.words() ? "K" : "k";
+        while (i < line.size()) {
+            // 2. Skip all words until next space
+            int word1 = i;
+            while (i < line.size()) {
+                TargetSegment ch = line.get(i);
+                if (ch.timestamps == null)
+                    break;
                 i++;
             }
+            // 3. Skip all spaces until next word
+            int space1 = i;
+            while (i < line.size()) {
+                TargetSegment ch = line.get(i);
+                if (ch.timestamps != null)
+                    break;
+                i++;
+            }
+
+            for (int j = word1; j < space1 - 1; j++) {
+                TargetSegment ch = line.get(j);
+                Timestamps ts = ch.timestamps;
+                append(buf, tag, ts.start(), ts.end());
+                buf.append(ch.text);
+            }
+            TargetSegment lastWord = line.get(space1 - 1);
+            double lastWordEnd;
+            StringBuilder spaces = new StringBuilder();
+            if (i > space1 && i < line.size()) {
+                double prevWord = lastWord.timestamps.end();
+                double nextWord = line.get(i).timestamps.start();
+                boolean tagSpaces;
+                if (options.words()) {
+                    double pause = nextWord - prevWord;
+                    tagSpaces = pause >= options.tagPause();
+                } else {
+                    tagSpaces = true;
+                }
+                if (tagSpaces) {
+                    lastWordEnd = lastWord.timestamps.end();
+                    append(spaces, tag, prevWord, nextWord);
+                } else {
+                    lastWordEnd = nextWord;
+                }
+            } else {
+                lastWordEnd = lastWord.timestamps.end();
+            }
+            for (int j = space1; j < i; j++) {
+                TargetSegment ch = line.get(j);
+                spaces.append(ch.text);
+            }
+            {
+                append(buf, tag, lastWord.timestamps.start(), lastWordEnd);
+                buf.append(lastWord.text);
+            }
+            buf.append(spaces);
         }
         return assLine(minStart, maxEnd, buf.toString());
     }
