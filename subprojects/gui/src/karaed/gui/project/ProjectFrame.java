@@ -102,7 +102,7 @@ public final class ProjectFrame extends BaseFrame {
         top.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         JTextField tfPath = new JTextField(40);
         tfPath.setEditable(false);
-        InputUtil.setText(tfPath, workDir.dir().toString());
+        InputUtil.setText(tfPath, workDir.dir().toAbsolutePath().normalize().toString());
 
         tfTitle.setEditable(false);
         showTitle();
