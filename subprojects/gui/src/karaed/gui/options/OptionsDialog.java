@@ -32,7 +32,8 @@ public final class OptionsDialog extends BaseDialog {
         panels.add(panel);
     }
 
-    public OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir) throws IOException {
+    public OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir,
+                         Path defaultDir, String defaultURL) throws IOException {
         super(owner, logger, title);
         this.ctx = new OptCtx(workDir);
 
@@ -42,6 +43,9 @@ public final class OptionsDialog extends BaseDialog {
 
         if (ctx.workDir == null) {
             tfDir = new JTextField(40);
+            if (defaultDir != null) {
+                InputUtil.setText(tfDir, defaultDir.toAbsolutePath().normalize().toString());
+            }
             JButton btnChoose = InputUtil.getChooseButtonFor(tfDir, "...", () -> {
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -70,7 +74,7 @@ public final class OptionsDialog extends BaseDialog {
             tfDir = null;
         }
 
-        add(new InputPanel(ctx), main);
+        add(new InputPanel(ctx, defaultURL), main);
         add(new LyricsPanel(ctx), main);
         add(new CutPanel(ctx), options);
         add(new AlignPanel(ctx), options);

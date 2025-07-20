@@ -38,7 +38,7 @@ final class InputPanel extends BasePanel<OInput> {
         InputUtil.setText(tfFile, file.getAbsolutePath());
     });
 
-    InputPanel(OptCtx ctx) throws IOException {
+    InputPanel(OptCtx ctx, String defaultURL) throws IOException {
         super(null, () -> ctx.file("input.json"), OInput.class, OInput::new);
 
         main.add(rbURL, new GridBagConstraints(
@@ -68,7 +68,10 @@ final class InputPanel extends BasePanel<OInput> {
         bg.add(rbURL);
         bg.add(rbFile);
 
-        if (origData.file() != null) {
+        if (defaultURL != null) {
+            rbURL.setSelected(true);
+            InputUtil.setText(tfURL, defaultURL);
+        } else if (origData.file() != null) {
             rbFile.setSelected(true);
             InputUtil.setText(tfFile, origData.file());
         } else {

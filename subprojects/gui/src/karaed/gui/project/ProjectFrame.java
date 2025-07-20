@@ -80,7 +80,7 @@ public final class ProjectFrame extends BaseFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = new OptionsDialog(logger, "Options", ProjectFrame.this, workDir);
+                    OptionsDialog dlg = new OptionsDialog(logger, "Options", ProjectFrame.this, workDir, null, null);
                     if (dlg.isSaved()) {
                         refreshStepStates();
                     }
