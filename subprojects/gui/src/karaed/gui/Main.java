@@ -48,8 +48,15 @@ public final class Main {
         int i = 0;
         while (i < args.length) {
             String arg = args[i++];
-            if (arg.startsWith("-")) {
-                String option = arg.substring(1); // todo: remove -- as well!!!
+            String option;
+            if (arg.startsWith("--")) {
+                option = arg.substring(2);
+            } else if (arg.startsWith("-")) {
+                option = arg.substring(1);
+            } else {
+                option = null;
+            }
+            if (option != null) {
                 if ("r".equals(option)) {
                     if (i < args.length) {
                         rootDir = args[i++];
