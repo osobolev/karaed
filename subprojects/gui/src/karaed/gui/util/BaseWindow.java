@@ -11,8 +11,7 @@ public interface BaseWindow {
     ErrorLogger getLogger();
 
     default void error(Throwable ex) {
-        getLogger().error(ex);
-        ShowMessage.error(toWindow(), ex.toString());
+        ShowMessage.error(getLogger(), toWindow(), ex);
     }
 
     default void error(String message) {
