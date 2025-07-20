@@ -83,43 +83,45 @@ public final class Main {
         return new Args(rootDir, create, help, paths, uris);
     }
 
+    private static void help() {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        pw.println("Usage:");
+        pw.println("karaed -new [<dir>]");
+        pw.println("karaed -create [<dir>]");
+        pw.println("    - creates new project in the directory (current directory by default)");
+        pw.println("karaed <URL> [<dir>]");
+        pw.println("    - creates new project in the directory (current directory by default) with URL as a source");
+        pw.println("karaed <path>");
+        pw.println("    - opens the project (path can be a project directory or any file in it)");
+        pw.println("karaed");
+        pw.println("    - opens project list window");
+        pw.close();
+        JOptionPane.showMessageDialog(null, sw.toString(), "Help", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     public static void main(String[] args) {
         ProcUtil.registerShutdown();
 
         ErrorLogger logger = new FileLogger("karaed.log");
-
-        Args pargs = parseArgs(args);
-        if (pargs.help) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            pw.println("Usage:");
-            pw.println("karaed -new [<dir>]");
-            pw.println("karaed -create [<dir>]");
-            pw.println("    - creates new project in the directory (current directory by default)");
-            pw.println("karaed <URL> [<dir>]");
-            pw.println("    - creates new project in the directory (current directory by default) with URL as a source");
-            pw.println("karaed <path>");
-            pw.println("    - opens the project (path can be a project directory or any file in it)");
-            pw.println("karaed");
-            pw.println("    - opens project list window");
-            pw.close();
-            JOptionPane.showMessageDialog(null, sw.toString(), "Help", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
         // todo:
         Tools tools = new Tools(
             Path.of("C:\\Users\\sobol\\.jkara\\python"),
             Path.of("C:\\Users\\sobol\\.jkara\\ffmpeg\\bin")
         );
 
+        Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
+            Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
+            if (pargs.help) {
+                help();
+                return;
+            }
             if (pargs.rootDir == null) {
                 ShowMessage.error(null, "No root directory specified");
                 return;
             }
             Path rootDir = Path.of(pargs.rootDir);
-            Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
             Workdir workDir;
             if (!pargs.paths.isEmpty()) {
                 workDir = new Workdir(pargs.getProjectDir());
