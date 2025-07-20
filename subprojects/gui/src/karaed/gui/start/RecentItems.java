@@ -68,7 +68,7 @@ public final class RecentItems {
             return;
         RecentModel model = loadModel(logger, recentFile);
         List<RecentDir> newRecent = new ArrayList<>();
-        newRecent.add(new RecentDir(dir.toAbsolutePath().toString()));
+        newRecent.add(new RecentDir(dir.toAbsolutePath().normalize().toString()));
         Set<Path> visited = new HashSet<>();
         visited.add(dir.normalize());
         for (RecentDir recentDir : model.recent()) {
