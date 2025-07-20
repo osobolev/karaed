@@ -32,8 +32,8 @@ public final class OptionsDialog extends BaseDialog {
         panels.add(panel);
     }
 
-    public OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir,
-                         Path defaultDir, String defaultURL) throws IOException {
+    private OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir,
+                          Path defaultDir, String defaultURL) throws IOException {
         super(owner, logger, title);
         this.ctx = new OptCtx(workDir);
 
@@ -107,6 +107,14 @@ public final class OptionsDialog extends BaseDialog {
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    public static OptionsDialog newProject(ErrorLogger logger, Window owner, Path defaultDir, String defaultURL) throws IOException {
+        return new OptionsDialog(logger, "New project", owner, null, defaultDir, defaultURL);
+    }
+
+    public static OptionsDialog options(ErrorLogger logger, Window owner, Workdir workdir) throws IOException {
+        return new OptionsDialog(logger, "Options", owner, workdir, null, null);
     }
 
     private void save() {

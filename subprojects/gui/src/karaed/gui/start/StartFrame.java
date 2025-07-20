@@ -36,7 +36,7 @@ public final class StartFrame extends BaseFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = new OptionsDialog(logger, "New project", StartFrame.this, null, null, null);
+                    OptionsDialog dlg = OptionsDialog.newProject(logger, StartFrame.this, null, null);
                     Workdir workDir = dlg.getWorkDir();
                     if (workDir == null)
                         return;

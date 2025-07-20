@@ -95,10 +95,7 @@ public final class Main {
             } else if (pargs.create || !pargs.uris.isEmpty()) {
                 OptionsDialog dlg;
                 try {
-                    dlg = new OptionsDialog(
-                        logger, "New project", null, null,
-                        pargs.getProjectDir(), pargs.getDefaultURL()
-                    );
+                    dlg = OptionsDialog.newProject(logger, null, pargs.getProjectDir(), pargs.getDefaultURL());
                 } catch (Exception ex) {
                     ShowMessage.error(logger, null, ex);
                     return;
