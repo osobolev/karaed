@@ -1,5 +1,6 @@
 package karaed.gui;
 
+import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
 import karaed.gui.start.StartFrame;
 import karaed.gui.util.ShowMessage;
@@ -8,6 +9,7 @@ import karaed.tools.ProcUtil;
 import karaed.tools.Tools;
 
 import javax.swing.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,11 +17,31 @@ import java.util.List;
 
 public final class Main {
 
-    private record Args(String rootDir, List<String> args) {}
+    private record Args(String rootDir, boolean create, List<String> paths, List<URI> uris) {
+
+        Path getProjectDir() {
+            if (paths.isEmpty())
+                return Path.of(System.getProperty("user.dir"));
+            Path path = Path.of(paths.getFirst());
+            if (Files.isDirectory(path)) {
+                return path;
+            } else {
+                return path.getParent();
+            }
+        }
+
+        String getDefaultURL() {
+            if (uris.isEmpty())
+                return null;
+            return uris.getFirst().toString();
+        }
+    }
 
     private static Args parseArgs(String[] args) {
         String rootDir = null;
-        List<String> other = new ArrayList<>();
+        boolean create = false;
+        List<String> paths = new ArrayList<>();
+        List<URI> uris = new ArrayList<>();
         int i = 0;
         while (i < args.length) {
             String arg = args[i++];
@@ -29,12 +51,24 @@ public final class Main {
                     if (i < args.length) {
                         rootDir = args[i++];
                     }
+                } else if ("new".equals(option) || "create".equals(option)) {
+                    create = true;
                 }
             } else {
-                other.add(arg);
+                URI uri = null;
+                try {
+                    uri = new URI(arg);
+                } catch (Exception ex) {
+                    // ignore
+                }
+                if (uri != null && uri.getScheme() != null && uri.getScheme().startsWith("http")) {
+                    uris.add(uri);
+                } else {
+                    paths.add(arg);
+                }
             }
         }
-        return new Args(rootDir, other);
+        return new Args(rootDir, create, paths, uris);
     }
 
     public static void main(String[] args) {
@@ -55,18 +89,29 @@ public final class Main {
             }
             Path rootDir = Path.of(pargs.rootDir);
             Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
-            if (!pargs.args.isEmpty()) {
-                Path path = Path.of(pargs.args.getFirst());
-                Path dir;
-                if (Files.isDirectory(path)) {
-                    dir = path;
-                } else {
-                    dir = path.getParent();
-                }
+            if (!pargs.paths.isEmpty()) {
+                Path dir = pargs.getProjectDir();
                 ProjectFrame pf = ProjectFrame.create(
                     logger, false, tools, rootDir, new Workdir(dir),
                     error -> ShowMessage.error(null, error)
                 );
+                if (pf != null) {
+                    pf.setVisible(true);
+                }
+            } else if (pargs.create || !pargs.uris.isEmpty()) {
+                OptionsDialog dlg;
+                try {
+                    dlg = new OptionsDialog(
+                        logger, "New project", null, null,
+                        pargs.getProjectDir(), pargs.getDefaultURL()
+                    );
+                } catch (Exception ex) {
+                    ShowMessage.error(logger, null, ex);
+                    return;
+                }
+                if (!dlg.isSaved())
+                    return;
+                ProjectFrame pf = ProjectFrame.create(logger, false, tools, rootDir, dlg.getWorkDir(), error -> ShowMessage.error(null, error));
                 if (pf != null) {
                     pf.setVisible(true);
                 }
