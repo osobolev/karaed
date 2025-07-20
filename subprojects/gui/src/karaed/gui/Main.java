@@ -9,6 +9,8 @@ import karaed.tools.ProcUtil;
 import karaed.tools.Tools;
 
 import javax.swing.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,7 +19,7 @@ import java.util.List;
 
 public final class Main {
 
-    private record Args(String rootDir, boolean create, List<String> paths, List<URI> uris) {
+    private record Args(String rootDir, boolean create, boolean help, List<String> paths, List<URI> uris) {
 
         Path getProjectDir() {
             if (paths.isEmpty())
@@ -40,19 +42,22 @@ public final class Main {
     private static Args parseArgs(String[] args) {
         String rootDir = null;
         boolean create = false;
+        boolean help = false;
         List<String> paths = new ArrayList<>();
         List<URI> uris = new ArrayList<>();
         int i = 0;
         while (i < args.length) {
             String arg = args[i++];
             if (arg.startsWith("-")) {
-                String option = arg.substring(1);
+                String option = arg.substring(1); // todo: remove -- as well!!!
                 if ("r".equals(option)) {
                     if (i < args.length) {
                         rootDir = args[i++];
                     }
                 } else if ("new".equals(option) || "create".equals(option)) {
                     create = true;
+                } else if ("help".equals(option)) {
+                    help = true;
                 }
             } else {
                 URI uri = null;
@@ -68,20 +73,39 @@ public final class Main {
                 }
             }
         }
-        return new Args(rootDir, create, paths, uris);
+        return new Args(rootDir, create, help, paths, uris);
     }
 
     public static void main(String[] args) {
         ProcUtil.registerShutdown();
 
         ErrorLogger logger = new FileLogger("karaed.log");
+
+        Args pargs = parseArgs(args);
+        if (pargs.help) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            pw.println("Usage:");
+            pw.println("karaed -new [<dir>]");
+            pw.println("karaed -create [<dir>]");
+            pw.println("    - creates new project in the directory (current directory by default)");
+            pw.println("karaed <URL> [<dir>]");
+            pw.println("    - creates new project in the directory (current directory by default) with URL as a source");
+            pw.println("karaed <path>");
+            pw.println("    - opens the project (path can be a project directory or any file in it)");
+            pw.println("karaed");
+            pw.println("    - opens project list window");
+            pw.close();
+            JOptionPane.showMessageDialog(null, sw.toString(), "Help", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         // todo:
         Tools tools = new Tools(
             Path.of("C:\\Users\\sobol\\.jkara\\python"),
             Path.of("C:\\Users\\sobol\\.jkara\\ffmpeg\\bin")
         );
 
-        Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
             if (pargs.rootDir == null) {
                 ShowMessage.error(null, "No root directory specified");
