@@ -89,15 +89,9 @@ public final class Main {
             }
             Path rootDir = Path.of(pargs.rootDir);
             Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
+            Workdir workDir;
             if (!pargs.paths.isEmpty()) {
-                Path dir = pargs.getProjectDir();
-                ProjectFrame pf = ProjectFrame.create(
-                    logger, false, tools, rootDir, new Workdir(dir),
-                    error -> ShowMessage.error(null, error)
-                );
-                if (pf != null) {
-                    pf.setVisible(true);
-                }
+                workDir = new Workdir(pargs.getProjectDir());
             } else if (pargs.create || !pargs.uris.isEmpty()) {
                 OptionsDialog dlg;
                 try {
@@ -111,7 +105,15 @@ public final class Main {
                 }
                 if (!dlg.isSaved())
                     return;
-                ProjectFrame pf = ProjectFrame.create(logger, false, tools, rootDir, dlg.getWorkDir(), error -> ShowMessage.error(null, error));
+                workDir = dlg.getWorkDir();
+            } else {
+                workDir = null;
+            }
+            if (workDir != null) {
+                ProjectFrame pf = ProjectFrame.create(
+                    logger, false, tools, rootDir, workDir,
+                    error -> ShowMessage.error(null, error)
+                );
                 if (pf != null) {
                     pf.setVisible(true);
                 }
