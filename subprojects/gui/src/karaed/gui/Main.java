@@ -28,7 +28,7 @@ public final class Main {
             if (Files.isDirectory(path)) {
                 return path;
             } else {
-                return path.getParent();
+                return path.toAbsolutePath().getParent();
             }
         }
 
