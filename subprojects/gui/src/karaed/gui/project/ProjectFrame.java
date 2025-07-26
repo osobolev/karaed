@@ -19,6 +19,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -75,8 +76,8 @@ public final class ProjectFrame extends BaseFrame {
             }
         };
 
-        JToolBar toolBar = new JToolBar();
-        toolBar.add(new AbstractAction("Options") {
+        JPanel toolBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        toolBar.add(new JButton(new AbstractAction("Options") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -88,10 +89,10 @@ public final class ProjectFrame extends BaseFrame {
                     error(ex);
                 }
             }
-        });
-        toolBar.addSeparator();
-        toolBar.add(runAction);
-        toolBar.add(stopAction);
+        }));
+        toolBar.add(Box.createHorizontalStrut(5));
+        toolBar.add(new JButton(runAction));
+        toolBar.add(new JButton(stopAction));
         add(toolBar, BorderLayout.NORTH);
 
         JPanel main = new JPanel(new BorderLayout());
