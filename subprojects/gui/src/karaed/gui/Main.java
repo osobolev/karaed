@@ -2,6 +2,7 @@ package karaed.gui;
 
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
+import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
 import karaed.gui.util.ShowMessage;
 import karaed.project.Workdir;
@@ -126,16 +127,37 @@ public final class Main {
             if (!pargs.paths.isEmpty()) {
                 workDir = new Workdir(pargs.getProjectDir());
             } else if (pargs.create || !pargs.uris.isEmpty()) {
-                OptionsDialog dlg;
-                try {
-                    dlg = OptionsDialog.newProject(logger, null, pargs.getProjectDir(), pargs.getDefaultURL());
-                } catch (Exception ex) {
-                    ShowMessage.error(logger, null, ex);
-                    return;
+                Path dir = pargs.getProjectDir();
+                Workdir existingWorkDir = new Workdir(dir);
+                boolean openExisting;
+                if (RecentItems.isProjectDir(existingWorkDir) == null) {
+                    int ans = JOptionPane.showConfirmDialog(
+                        null, "Project already exists. Open it?", "Warning", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE
+                    );
+                    if (ans == JOptionPane.YES_OPTION) {
+                        openExisting = true;
+                    } else if (ans == JOptionPane.NO_OPTION) {
+                        openExisting = false;
+                    } else {
+                        return;
+                    }
+                } else {
+                    openExisting = false;
                 }
-                if (!dlg.isSaved())
-                    return;
-                workDir = dlg.getWorkDir();
+                if (openExisting) {
+                    workDir = existingWorkDir;
+                } else {
+                    OptionsDialog dlg;
+                    try {
+                        dlg = OptionsDialog.newProject(logger, null, dir, pargs.getDefaultURL());
+                    } catch (Exception ex) {
+                        ShowMessage.error(logger, null, ex);
+                        return;
+                    }
+                    if (!dlg.isSaved())
+                        return;
+                    workDir = dlg.getWorkDir();
+                }
             } else {
                 workDir = null;
             }
