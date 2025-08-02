@@ -249,8 +249,13 @@ public final class ProjectFrame extends BaseFrame {
     }
 
     private void enableDisable(boolean running) {
-        runAction.setEnabled(!running);
-        stopAction.setEnabled(running);
+        if (running) {
+            stopAction.setEnabled(true);
+            runAction.setEnabled(false);
+        } else {
+            runAction.setEnabled(true);
+            stopAction.setEnabled(false);
+        }
     }
 
     private void editRanges() throws UnsupportedAudioFileException, IOException {
