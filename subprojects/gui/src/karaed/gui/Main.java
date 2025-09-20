@@ -22,7 +22,7 @@ public final class Main {
 
     private record Args(String rootDir, boolean create, boolean help, List<String> paths, List<URI> uris) {
 
-        Path getProjectDir() {
+        Path getProjectDirRaw() {
             if (paths.isEmpty())
                 return Path.of(System.getProperty("user.dir"));
             Path path = Path.of(paths.getFirst());
@@ -31,6 +31,10 @@ public final class Main {
             } else {
                 return path.toAbsolutePath().getParent();
             }
+        }
+
+        Workdir getProjectDir() {
+            return new Workdir(getProjectDirRaw());
         }
 
         String getDefaultURL() {
@@ -84,6 +88,61 @@ public final class Main {
         return new Args(rootDir, create, help, paths, uris);
     }
 
+    private static Workdir newProject(ErrorLogger logger, Workdir workDir, Args pargs) {
+        OptionsDialog dlg;
+        try {
+            dlg = OptionsDialog.newProject(logger, null, workDir.dir(), pargs.getDefaultURL());
+        } catch (Exception ex) {
+            ShowMessage.error(logger, null, ex);
+            return null;
+        }
+        if (!dlg.isSaved())
+            return null;
+        return dlg.getWorkDir();
+    }
+
+    private static Workdir start(ErrorLogger logger, Args pargs, Runnable noArgs) {
+        if (!pargs.paths.isEmpty()) {
+            Workdir argsDir = pargs.getProjectDir();
+            DirStatus status = DirStatus.test(argsDir);
+            if (status == DirStatus.DOES_NOT_EXIST || status == DirStatus.NOT_A_PROJECT) {
+                int ans = JOptionPane.showConfirmDialog(
+                    null, "Project does not exist. Create new one?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE
+                );
+                if (ans != JOptionPane.YES_OPTION)
+                    return null;
+                return newProject(logger, argsDir, pargs);
+            } else {
+                return argsDir;
+            }
+        } else if (pargs.create || !pargs.uris.isEmpty()) {
+            Workdir existingWorkDir = pargs.getProjectDir();
+            boolean openExisting;
+            if (DirStatus.test(existingWorkDir) == DirStatus.OK) {
+                int ans = JOptionPane.showConfirmDialog(
+                    null, "Project already exists. Open it?", "Warning", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE
+                );
+                if (ans == JOptionPane.YES_OPTION) {
+                    openExisting = true;
+                } else if (ans == JOptionPane.NO_OPTION) {
+                    openExisting = false;
+                } else {
+                    return null;
+                }
+            } else {
+                openExisting = false;
+            }
+            if (openExisting) {
+                return existingWorkDir;
+            } else {
+                return newProject(logger, existingWorkDir, pargs);
+            }
+        } else {
+            noArgs.run();
+            return null;
+        }
+    }
+
     private static void help() {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -123,54 +182,15 @@ public final class Main {
                 return;
             }
             Path rootDir = Path.of(pargs.rootDir);
-            Workdir workDir;
-            if (!pargs.paths.isEmpty()) {
-                workDir = new Workdir(pargs.getProjectDir());
-            } else if (pargs.create || !pargs.uris.isEmpty()) {
-                Path dir = pargs.getProjectDir();
-                Workdir existingWorkDir = new Workdir(dir);
-                boolean openExisting;
-                if (DirStatus.test(existingWorkDir) == DirStatus.OK) {
-                    int ans = JOptionPane.showConfirmDialog(
-                        null, "Project already exists. Open it?", "Warning", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE
-                    );
-                    if (ans == JOptionPane.YES_OPTION) {
-                        openExisting = true;
-                    } else if (ans == JOptionPane.NO_OPTION) {
-                        openExisting = false;
-                    } else {
-                        return;
-                    }
-                } else {
-                    openExisting = false;
-                }
-                if (openExisting) {
-                    workDir = existingWorkDir;
-                } else {
-                    OptionsDialog dlg;
-                    try {
-                        dlg = OptionsDialog.newProject(logger, null, dir, pargs.getDefaultURL());
-                    } catch (Exception ex) {
-                        ShowMessage.error(logger, null, ex);
-                        return;
-                    }
-                    if (!dlg.isSaved())
-                        return;
-                    workDir = dlg.getWorkDir();
-                }
-            } else {
-                workDir = null;
-            }
-            if (workDir != null) {
-                ProjectFrame pf = ProjectFrame.create(
-                    logger, false, tools, rootDir, workDir,
-                    error -> ShowMessage.error(null, error)
-                );
-                if (pf != null) {
-                    pf.setVisible(true);
-                }
-            } else {
-                new StartFrame(logger, tools, rootDir);
+            Workdir workDir = start(logger, pargs, () -> new StartFrame(logger, tools, rootDir));
+            if (workDir == null)
+                return;
+            ProjectFrame pf = ProjectFrame.create(
+                logger, false, tools, rootDir, workDir,
+                error -> ShowMessage.error(null, error)
+            );
+            if (pf != null) {
+                pf.setVisible(true);
             }
         });
     }
