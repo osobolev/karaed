@@ -34,7 +34,12 @@ public final class ProcUtil {
                 pb.environment().compute(name, (k, pathValue) -> pathValue == null ? addPath : addPath + File.pathSeparator + pathValue);
             }
         }
-        Process p = pb.start();
+        Process p;
+        try {
+            p = pb.start();
+        } catch (IOException ex) {
+            throw new CommandException(ex.getMessage(), command);
+        }
         running.add(p);
         int exitCode;
         Pair<O, E> result;
@@ -52,8 +57,9 @@ public final class ProcUtil {
             running.remove(p);
         }
         boolean ok = exitCode == 0;
-        if (!ok)
-            throw new IOException("Error running " + what + ": " + exitCode);
+        if (!ok) {
+            throw new CommandException("Error running " + what + ": " + exitCode, command);
+        }
         return result;
     }
 
