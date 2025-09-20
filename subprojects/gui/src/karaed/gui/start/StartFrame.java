@@ -108,7 +108,7 @@ public final class StartFrame extends BaseFrame {
         new Thread(() -> {
             for (RecentItem itemPanel : loadInfos) {
                 Workdir workDir = new Workdir(itemPanel.dir);
-                boolean exists = RecentItems.isProjectDir(workDir) == null;
+                boolean exists = DirStatus.test(workDir) == DirStatus.OK;
                 Info info = TitleUtil.getInfo(workDir);
                 String title = info == null ? null : info.toString();
                 SwingUtilities.invokeLater(() -> itemPanel.updateInfo(exists, title));

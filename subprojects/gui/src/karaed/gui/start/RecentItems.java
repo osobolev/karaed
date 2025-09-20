@@ -2,28 +2,12 @@ package karaed.gui.start;
 
 import karaed.gui.ErrorLogger;
 import karaed.json.JsonUtil;
-import karaed.project.Workdir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 public final class RecentItems {
-
-    public static String isProjectDir(Workdir workDir) {
-        Path dir = workDir.dir();
-        if (!Files.exists(dir)) {
-            return "Directory does not exist";
-        }
-        if (!Files.isDirectory(dir)) {
-            return dir.getFileName().toString() + " is not a directory";
-        }
-        Path input = workDir.file("input.json");
-        if (!Files.isRegularFile(input)) {
-            return dir.getFileName().toString() + " is not a project directory";
-        }
-        return null;
-    }
 
     private static Path getRecentFile() {
         String homeDir = System.getProperty("user.home");

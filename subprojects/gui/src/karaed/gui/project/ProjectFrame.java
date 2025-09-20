@@ -6,6 +6,7 @@ import karaed.engine.formats.ranges.Range;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.options.OptionsDialog;
+import karaed.gui.start.DirStatus;
 import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
 import karaed.gui.util.BaseFrame;
@@ -59,9 +60,9 @@ public final class ProjectFrame extends BaseFrame {
 
     public static ProjectFrame create(ErrorLogger logger, boolean reopenStart, Tools tools, Path rootDir, Workdir workDir,
                                       Consumer<String> onError) {
-        String error = RecentItems.isProjectDir(workDir);
-        if (error != null) {
-            onError.accept(error);
+        DirStatus status = DirStatus.test(workDir);
+        if (status != DirStatus.OK) {
+            onError.accept(status.getText(workDir));
             return null;
         }
         RecentItems.addRecentItem(logger, workDir.dir());

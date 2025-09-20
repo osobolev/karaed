@@ -2,7 +2,7 @@ package karaed.gui;
 
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
-import karaed.gui.start.RecentItems;
+import karaed.gui.start.DirStatus;
 import karaed.gui.start.StartFrame;
 import karaed.gui.util.ShowMessage;
 import karaed.project.Workdir;
@@ -130,7 +130,7 @@ public final class Main {
                 Path dir = pargs.getProjectDir();
                 Workdir existingWorkDir = new Workdir(dir);
                 boolean openExisting;
-                if (RecentItems.isProjectDir(existingWorkDir) == null) {
+                if (DirStatus.test(existingWorkDir) == DirStatus.OK) {
                     int ans = JOptionPane.showConfirmDialog(
                         null, "Project already exists. Open it?", "Warning", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE
                     );
