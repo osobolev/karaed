@@ -12,6 +12,7 @@ import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.TitleUtil;
 import karaed.project.*;
+import karaed.tools.CommandException;
 import karaed.tools.ProcRunner;
 import karaed.tools.Tools;
 
@@ -27,6 +28,7 @@ import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class ProjectFrame extends BaseFrame {
 
@@ -227,6 +229,14 @@ public final class ProjectFrame extends BaseFrame {
                             }
                             setState(step, new RunStepState.Error(message));
                             runner.println("ERROR: " + message);
+                            if (ex instanceof CommandException cmex) {
+                                runner.println("Command line was:");
+                                String commandLine = cmex.commandLine
+                                    .stream()
+                                    .map(str -> str.indexOf(' ') >= 0 ? '"' + str + '"' : str)
+                                    .collect(Collectors.joining(" "));
+                                runner.println(commandLine);
+                            }
                         } else {
                             setState(step, new RunStepState.NotRan());
                             runner.println("CANCELLED");
