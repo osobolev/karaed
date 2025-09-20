@@ -26,7 +26,7 @@ public final class Main {
             if (paths.isEmpty())
                 return Path.of(System.getProperty("user.dir"));
             Path path = Path.of(paths.getFirst());
-            if (Files.isDirectory(path)) {
+            if (!Files.exists(path) || Files.isDirectory(path)) {
                 return path;
             } else {
                 return path.toAbsolutePath().getParent();
