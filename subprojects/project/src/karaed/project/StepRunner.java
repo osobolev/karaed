@@ -57,7 +57,7 @@ public final class StepRunner {
         OCut cut = JsonUtil.readFile(workDir.option("cut.json"), OCut.class, OCut::new);
         try {
             Youtube.download(runner, input, cut, audio, info, workDir.video());
-        } catch (InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             deleteIfExists(audio);
             deleteIfExists(info);
             throw ex;
@@ -70,7 +70,7 @@ public final class StepRunner {
         ODemucs options = JsonUtil.readFile(configFile, ODemucs.class, ODemucs::new);
         try {
             Demucs.demucs(runner, workDir.audio(), options, workDir.dir());
-        } catch (InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             deleteIfExists(workDir.vocals());
             deleteIfExists(workDir.noVocals());
             throw ex;
@@ -107,7 +107,7 @@ public final class StepRunner {
         Path lang = workDir.file("lang.json");
         try {
             Align.align(runner, vocals, ranges, lang, workDir.file("tmp"), aligned);
-        } catch (InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             deleteIfExists(aligned);
             throw ex;
         }
@@ -137,7 +137,7 @@ public final class StepRunner {
             VideoFinder finder = workDir.video();
             try {
                 MakeVideo.prepareVideo(runner, finder);
-            } catch (InterruptedException ex) {
+            } catch (IOException | InterruptedException ex) {
                 Path preparedVideo = finder.getVideo(MakeVideo.PREPARED, false);
                 if (preparedVideo != null) {
                     deleteIfExists(preparedVideo);
@@ -155,7 +155,7 @@ public final class StepRunner {
         Path video = options.useOriginalVideo() ? MakeVideo.getVideo(workDir.video()) : null;
         try {
             MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
-        } catch (InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             deleteIfExists(karaokeVideo);
             throw ex;
         }
