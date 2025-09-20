@@ -16,7 +16,9 @@ public final class MakeVideo {
 
     public static final String PREPARED = "prepared.";
 
-    private static void addCodecs(List<String> args) {
+    private static void addCodecs(Path video, List<String> args) {
+        if (video != null && video.getFileName().toString().endsWith(".webm"))
+            return;
         args.addAll(List.of(
             "-c:v", "libx264",
             "-c:a", "aac",
@@ -32,7 +34,7 @@ public final class MakeVideo {
             "-y", "-stats",
             "-s", newSize
         ));
-        addCodecs(ffmpeg);
+        addCodecs(video, ffmpeg);
         ffmpeg.add(largeVideo.toString());
         runner.runFFMPEG(ffmpeg);
     }
@@ -120,7 +122,7 @@ public final class MakeVideo {
             "-map", "1:a:0", // audio from input 1
             "-shortest"
         ));
-        addCodecs(ffmpeg);
+        addCodecs(video, ffmpeg);
         ffmpeg.add(outputVideo.toString());
         runner.runFFMPEG(ffmpeg);
     }
