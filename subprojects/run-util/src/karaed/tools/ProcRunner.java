@@ -6,7 +6,6 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public final class ProcRunner {
@@ -34,10 +33,6 @@ public final class ProcRunner {
         log(false, line + System.lineSeparator());
     }
 
-    private static Path exe(Path dir, String name) {
-        return dir == null ? Path.of(name) : dir.resolve(name);
-    }
-
     private <T> T capture(Reader rdr, boolean stderr) throws IOException {
         char[] buf = new char[16_384];
         while (true) {
@@ -51,12 +46,7 @@ public final class ProcRunner {
     }
 
     private <T> T runCommand(String what, Path exe, List<String> args, OutputProcessor<T> out) throws IOException, InterruptedException {
-        List<Path> pathDirs;
-        if (tools.ffmpegDir != null) {
-            pathDirs = Collections.singletonList(tools.ffmpegDir);
-        } else {
-            pathDirs = Collections.emptyList();
-        }
+        List<Path> pathDirs = tools.ffmpegDirs();
         OutputProcessor<T> stdout;
         OutputProcessor<Object> stderr;
         if (out != null) {
@@ -83,7 +73,7 @@ public final class ProcRunner {
         } else {
             out = stream -> null;
         }
-        return runCommand("script " + script, exe(tools.pythonDir, "python"), list, out);
+        return runCommand("script " + script, tools.python(), list, out);
     }
 
     public void runPythonScript(String script, String... args) throws IOException, InterruptedException {
@@ -91,14 +81,14 @@ public final class ProcRunner {
     }
 
     public void runPythonExe(String exe, String... args) throws IOException, InterruptedException {
-        runCommand(exe, exe(tools.pythonExeDir, exe), List.of(args), null);
+        runCommand(exe, tools.pythonTool(exe), List.of(args), null);
     }
 
     private <T> T runFF(String ff, List<String> args, OutputProcessor<T> out) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
         list.addAll(List.of("-v", "quiet"));
         list.addAll(args);
-        return runCommand(ff, exe(tools.ffmpegDir, ff), list, out);
+        return runCommand(ff, tools.ffmpegTool(ff), list, out);
     }
 
     public void runFFMPEG(List<String> args) throws IOException, InterruptedException {
