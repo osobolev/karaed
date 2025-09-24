@@ -102,20 +102,7 @@ public final class Main {
     }
 
     private static Workdir start(ErrorLogger logger, Args pargs, Runnable noArgs) {
-        if (!pargs.paths.isEmpty()) {
-            Workdir argsDir = pargs.getProjectDir();
-            DirStatus status = DirStatus.test(argsDir);
-            if (status == DirStatus.DOES_NOT_EXIST || status == DirStatus.NOT_A_PROJECT) {
-                int ans = JOptionPane.showConfirmDialog(
-                    null, "Project does not exist. Create new one?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE
-                );
-                if (ans != JOptionPane.YES_OPTION)
-                    return null;
-                return newProject(logger, argsDir, pargs);
-            } else {
-                return argsDir;
-            }
-        } else if (pargs.create || !pargs.uris.isEmpty()) {
+        if (pargs.create || !pargs.uris.isEmpty()) {
             Workdir existingWorkDir = pargs.getProjectDir();
             boolean openExisting;
             if (DirStatus.test(existingWorkDir) == DirStatus.OK) {
@@ -136,6 +123,19 @@ public final class Main {
                 return existingWorkDir;
             } else {
                 return newProject(logger, existingWorkDir, pargs);
+            }
+        } else if (!pargs.paths.isEmpty()) {
+            Workdir argsDir = pargs.getProjectDir();
+            DirStatus status = DirStatus.test(argsDir);
+            if (status == DirStatus.DOES_NOT_EXIST || status == DirStatus.NOT_A_PROJECT) {
+                int ans = JOptionPane.showConfirmDialog(
+                    null, "Project does not exist. Create new one?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE
+                );
+                if (ans != JOptionPane.YES_OPTION)
+                    return null;
+                return newProject(logger, argsDir, pargs);
+            } else {
+                return argsDir;
             }
         } else {
             noArgs.run();
