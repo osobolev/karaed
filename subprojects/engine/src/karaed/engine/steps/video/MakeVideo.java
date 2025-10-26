@@ -27,15 +27,12 @@ public final class MakeVideo {
     }
 
     private static void enlargeVideo(ProcRunner runner, Path video, Path largeVideo, int origWidth, int origHeight) throws IOException, InterruptedException {
-        int scale = (int) Math.ceil(1280.0 / origWidth);
-        int width = scale * origWidth;
-        int height = scale * origHeight;
-        String newSize = width + "x" + height;
-        runner.println(String.format("Enlarging small video to %s...", newSize));
+        ScalePad scale = ScalePad.create(origWidth, origHeight);
+        runner.println(String.format("Enlarging small video to %s...", scale));
         List<String> ffmpeg = new ArrayList<>(List.of(
             "-i", video.toString(),
             "-y", "-stats",
-            "-s", newSize
+            "-vf", scale.getFormat()
         ));
         addCodecs(video, ffmpeg);
         ffmpeg.add(largeVideo.toString());
