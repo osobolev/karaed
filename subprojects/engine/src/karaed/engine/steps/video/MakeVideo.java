@@ -42,10 +42,7 @@ public final class MakeVideo {
         runner.runFFMPEG(ffmpeg);
     }
 
-    public static void prepareVideo(ProcRunner runner, VideoFinder finder) throws IOException, InterruptedException {
-        Path video = finder.getVideo("", false);
-        if (video == null || !Files.exists(video))
-            return;
+    public static void doPrepareVideo(ProcRunner runner, Path video, Path preparedVideo) throws IOException, InterruptedException {
         FFStreams streams = runner.runFFProbe(
             List.of(
                 "-print_format", "json",
@@ -55,7 +52,6 @@ public final class MakeVideo {
             ),
             stdout -> JsonUtil.parse(stdout, FFStreams.class)
         );
-        Path preparedVideo = finder.getVideo(PREPARED, true);
         FFStream stream = streams.streams().getFirst();
         int width = stream.width();
         int height = stream.height();
@@ -64,6 +60,14 @@ public final class MakeVideo {
         } else {
             Files.write(preparedVideo, new byte[0]);
         }
+    }
+
+    public static void prepareVideo(ProcRunner runner, VideoFinder finder) throws IOException, InterruptedException {
+        Path video = finder.getVideo("", false);
+        if (video == null || !Files.exists(video))
+            return;
+        Path preparedVideo = finder.getVideo(PREPARED, true);
+        doPrepareVideo(runner, video, preparedVideo);
     }
 
     private static String escapeFilter(String path) {
