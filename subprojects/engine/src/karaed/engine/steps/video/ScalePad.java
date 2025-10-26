@@ -9,26 +9,30 @@ public record ScalePad(
 
     private static final int PREF_WIDTH = 1280;
     private static final int PREF_HEIGHT = 720;
+    private static final double PREF_RATIO = (double) PREF_WIDTH / PREF_HEIGHT;
 
-    // todo: never scale down???
     public static ScalePad create(int origWidth, int origHeight) {
         double wscale = (double) PREF_WIDTH / origWidth;
         double hscale = (double) PREF_HEIGHT / origHeight;
-        if (wscale <= hscale) {
-            // scale to width=1280, pad vertically to 720
-            int sheight = (int) Math.round(wscale * origHeight);
-            return new ScalePad(
-                PREF_WIDTH, sheight,
-                PREF_WIDTH, PREF_HEIGHT
-            );
+        double scale = Math.max(1.0, Math.min(wscale, hscale));
+        int scaleWidth = (int) Math.ceil(origWidth * scale);
+        int scaleHeight = (int) Math.ceil(origHeight * scale);
+        double ratio = (double) scaleWidth / scaleHeight;
+        int resultWidth;
+        int resultHeight;
+        if (ratio <= PREF_RATIO) {
+            // x-padding
+            resultWidth = (int) Math.ceil(scaleHeight * PREF_RATIO);
+            resultHeight = scaleHeight;
         } else {
-            // scale to height=720, pad horizontally to 1280
-            int swidth = (int) Math.round(hscale * origWidth);
-            return new ScalePad(
-                swidth, PREF_HEIGHT,
-                PREF_WIDTH, PREF_HEIGHT
-            );
+            // y-padding
+            resultWidth = scaleWidth;
+            resultHeight = (int) Math.ceil(scaleWidth / PREF_RATIO);
         }
+        return new ScalePad(
+            scaleWidth, scaleHeight,
+            resultWidth, resultHeight
+        );
     }
 
     @Override
