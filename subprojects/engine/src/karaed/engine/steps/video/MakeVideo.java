@@ -26,7 +26,10 @@ public final class MakeVideo {
         ));
     }
 
-    private static void enlargeVideo(ProcRunner runner, Path video, Path largeVideo, int width, int height) throws IOException, InterruptedException {
+    private static void enlargeVideo(ProcRunner runner, Path video, Path largeVideo, int origWidth, int origHeight) throws IOException, InterruptedException {
+        int scale = (int) Math.ceil(1280.0 / origWidth);
+        int width = scale * origWidth;
+        int height = scale * origHeight;
         String newSize = width + "x" + height;
         runner.println(String.format("Enlarging small video to %s...", newSize));
         List<String> ffmpeg = new ArrayList<>(List.of(
@@ -57,10 +60,7 @@ public final class MakeVideo {
         int width = stream.width();
         int height = stream.height();
         if (width < 1280) {
-            int scale = (int) Math.ceil(1280.0 / width);
-            int newWidth = scale * width;
-            int newHeight = scale * height;
-            enlargeVideo(runner, video, preparedVideo, newWidth, newHeight);
+            enlargeVideo(runner, video, preparedVideo, width, height);
         } else {
             Files.write(preparedVideo, new byte[0]);
         }
