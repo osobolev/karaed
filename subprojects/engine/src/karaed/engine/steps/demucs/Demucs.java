@@ -11,7 +11,7 @@ public final class Demucs {
     public static void demucs(ProcRunner runner, Path audio, ODemucs options, Path outputDir) throws IOException, InterruptedException {
         runner.println("Separating vocals and instrumental");
         runner.runPythonExe(
-            "demucs",
+            "demucs", null,
             "--two-stems=vocals",
             "--shifts=" + options.shifts(),
             "--out=" + outputDir,

@@ -71,8 +71,8 @@ public final class ProcRunner {
         return runCommand("script " + script, tools.python(), list, out);
     }
 
-    public void runPythonExe(String exe, String... args) throws IOException, InterruptedException {
-        runCommand(exe, tools.pythonTool(exe), List.of(args), null);
+    public <T> T runPythonExe(String exe, OutputProcessor<T> parseStdout, String... args) throws IOException, InterruptedException {
+        return runCommand(exe, tools.pythonTool(exe), List.of(args), parseStdout);
     }
 
     private <T> T runFF(String ff, List<String> args, OutputProcessor<T> parseStdout) throws IOException, InterruptedException {

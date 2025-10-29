@@ -33,7 +33,7 @@ public final class Youtube {
         String basePath = finder.getDir() + File.separator + finder.getBaseName();
         String infoBasePath = infoFile.getParent() + File.separator + getBaseName(infoFile, ".info.json");
         runner.runPythonExe(
-            "yt-dlp",
+            "yt-dlp", null,
             "--no-mtime",
             "--write-info-json",
             "--output", basePath + "." + suffix + "%(ext)s",
