@@ -66,8 +66,12 @@ public final class ProcRunner<T> {
         return python("script " + script, list);
     }
 
+    public T pythonTool(String exe, List<String> args) throws IOException, InterruptedException {
+        return runCommand(exe, tools.pythonTool(exe), args);
+    }
+
     public T pythonTool(String exe, String... args) throws IOException, InterruptedException {
-        return runCommand(exe, tools.pythonTool(exe), List.of(args));
+        return pythonTool(exe, List.of(args));
     }
 
     private T runFF(String ff, List<String> args) throws IOException, InterruptedException {
