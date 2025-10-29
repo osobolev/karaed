@@ -8,12 +8,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public final class ProcUtil {
+final class ProcUtil {
 
     private static final Set<Process> running = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public static <O, E> Pair<O, E> runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
-                                               OutputProcessor<O> stdout, OutputProcessor<E> stderr, Consumer<String> log) throws IOException, InterruptedException {
+    static <O, E> Pair<O, E> runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
+                                        OutputProcessor<O> stdout, OutputProcessor<E> stderr, Consumer<String> log) throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add(exe.toString());
         command.addAll(args);

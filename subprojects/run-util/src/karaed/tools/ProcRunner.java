@@ -58,17 +58,21 @@ public final class ProcRunner {
         return pair.stdout();
     }
 
-    public <T> T runPythonScript(String script, OutputProcessor<T> parseStdout, String... args) throws IOException, InterruptedException {
-        List<String> list = new ArrayList<>();
-        list.add(rootDir.resolve(script).toString());
-        list.addAll(Arrays.asList(args));
+    public <T> T runPython(String what, List<String> args, OutputProcessor<T> parseStdout) throws IOException, InterruptedException {
         OutputProcessor<T> out;
         if (parseStdout != null) {
             out = parseStdout;
         } else {
             out = stream -> null;
         }
-        return runCommand("script " + script, tools.python(), list, out);
+        return runCommand(what, tools.python(), args, out);
+    }
+
+    public <T> T runPythonScript(String script, OutputProcessor<T> parseStdout, String... args) throws IOException, InterruptedException {
+        List<String> list = new ArrayList<>();
+        list.add(rootDir.resolve(script).toString());
+        list.addAll(Arrays.asList(args));
+        return runPython("script " + script, list, parseStdout);
     }
 
     public <T> T runPythonExe(String exe, OutputProcessor<T> parseStdout, String... args) throws IOException, InterruptedException {
