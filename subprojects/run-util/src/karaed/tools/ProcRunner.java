@@ -95,11 +95,7 @@ public final class ProcRunner {
         runFF("ffmpeg", args, null);
     }
 
-    public <T> T runFFProbeStreaming(List<String> args, OutputProcessor<T> out) throws IOException, InterruptedException {
+    public <T> T runFFProbe(List<String> args, OutputProcessor<T> out) throws IOException, InterruptedException {
         return runFF("ffprobe", args, out);
-    }
-
-    public <T> T runFFProbe(List<String> args, OutputProcessor<T> parseStdout) throws IOException, InterruptedException {
-        return runFFProbeStreaming(args, parseStdout);
     }
 }

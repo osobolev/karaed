@@ -98,7 +98,7 @@ final class KeyRangeDetector {
             duration = Double.parseDouble(format.duration());
         }
         {
-            return runner.runFFProbeStreaming(
+            return runner.runFFProbe(
                 List.of(
                     "-print_format", "json",
                     "-select_streams", "v",
