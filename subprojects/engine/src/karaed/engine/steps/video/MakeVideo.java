@@ -4,7 +4,7 @@ import karaed.engine.formats.ffprobe.FFStream;
 import karaed.engine.formats.ffprobe.FFStreams;
 import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,7 +26,7 @@ public final class MakeVideo {
         ));
     }
 
-    private static void enlargeVideo(ProcRunner runner, Path video, Path largeVideo, int origWidth, int origHeight) throws IOException, InterruptedException {
+    private static void enlargeVideo(ToolRunner runner, Path video, Path largeVideo, int origWidth, int origHeight) throws IOException, InterruptedException {
         ScalePad scale = ScalePad.create(origWidth, origHeight);
         runner.println(String.format("Enlarging small video to %s...", scale));
         List<String> ffmpeg = new ArrayList<>(List.of(
@@ -39,7 +39,7 @@ public final class MakeVideo {
         runner.runFFMPEG(ffmpeg);
     }
 
-    public static void doPrepareVideo(ProcRunner runner, Path video, Path preparedVideo) throws IOException, InterruptedException {
+    public static void doPrepareVideo(ToolRunner runner, Path video, Path preparedVideo) throws IOException, InterruptedException {
         FFStreams streams = runner.runFFProbe(
             List.of(
                 "-print_format", "json",
@@ -59,7 +59,7 @@ public final class MakeVideo {
         }
     }
 
-    public static void prepareVideo(ProcRunner runner, VideoFinder finder) throws IOException, InterruptedException {
+    public static void prepareVideo(ToolRunner runner, VideoFinder finder) throws IOException, InterruptedException {
         Path video = finder.getVideo("", false);
         if (video == null || !Files.exists(video))
             return;
@@ -92,7 +92,7 @@ public final class MakeVideo {
         return null;
     }
 
-    public static void karaokeVideo(ProcRunner runner,
+    public static void karaokeVideo(ToolRunner runner,
                                     Path video, Path noVocals, Path assFile,
                                     Path outputVideo) throws IOException, InterruptedException {
         runner.println("Adding subtitles...");

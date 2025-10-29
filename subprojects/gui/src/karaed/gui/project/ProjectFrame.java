@@ -14,7 +14,7 @@ import karaed.gui.util.InputUtil;
 import karaed.gui.util.TitleUtil;
 import karaed.project.*;
 import karaed.tools.CommandException;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 import karaed.tools.Tools;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public final class ProjectFrame extends BaseFrame {
 
     private final Workdir workDir;
-    private final ProcRunner runner;
+    private final ToolRunner runner;
     private final Runnable afterClose;
 
     private final JTextField tfTitle = new JTextField(40);
@@ -72,7 +72,7 @@ public final class ProjectFrame extends BaseFrame {
     private ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir, boolean reopenStart) {
         super(logger, "KaraEd");
         this.workDir = workDir;
-        this.runner = new ProcRunner(tools, rootDir, taLog::append);
+        this.runner = new ToolRunner(tools, rootDir, taLog::append);
         this.afterClose = () -> {
             if (reopenStart) {
                 new StartFrame(logger, tools, rootDir);

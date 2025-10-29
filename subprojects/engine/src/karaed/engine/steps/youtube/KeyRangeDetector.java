@@ -5,7 +5,7 @@ import com.google.gson.stream.JsonToken;
 import karaed.engine.formats.ffprobe.FFFormat;
 import karaed.engine.formats.ffprobe.FFFrame;
 import karaed.json.JsonUtil;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -16,11 +16,11 @@ import java.util.function.Function;
 
 final class KeyRangeDetector {
 
-    private final ProcRunner runner;
+    private final ToolRunner runner;
     private final Double start;
     private final Double end;
 
-    KeyRangeDetector(ProcRunner runner, CutRange range) {
+    KeyRangeDetector(ToolRunner runner, CutRange range) {
         this.runner = runner;
         this.start = range.start;
         this.end = range.end;

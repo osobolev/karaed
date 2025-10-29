@@ -12,7 +12,7 @@ import karaed.engine.formats.ranges.Ranges;
 import karaed.engine.formats.transcription.TransSegment;
 import karaed.engine.formats.transcription.Transcription;
 import karaed.json.JsonUtil;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
@@ -27,7 +27,7 @@ public final class Align {
         return tmpDir.resolve("piece" + i + ".wav");
     }
 
-    private static Aligned alignRange(ProcRunner runner, Path tmpDir, float frameRate,
+    private static Aligned alignRange(ToolRunner runner, Path tmpDir, float frameRate,
                                       String language,
                                       int i, Range range, String line) throws IOException, InterruptedException {
         Path voice = voice(tmpDir, i);
@@ -49,7 +49,7 @@ public final class Align {
         return JsonUtil.readFile(aligned, Aligned.class);
     }
 
-    private static String detectLanguage(ProcRunner runner, Path tmpDir, List<Range> ranges) throws IOException, InterruptedException {
+    private static String detectLanguage(ToolRunner runner, Path tmpDir, List<Range> ranges) throws IOException, InterruptedException {
         LinkedHashMap<String, Double> langs = new LinkedHashMap<>();
         for (int i = 0; i < Math.min(ranges.size(), 3); i++) {
             Path voice = voice(tmpDir, i);
@@ -101,7 +101,7 @@ public final class Align {
         String getLanguage(List<Range> ranges) throws IOException, InterruptedException;
     }
 
-    public static void align(ProcRunner runner, Path vocals, Path rangesFile, Path tmpDir, Path alignedFile,
+    public static void align(ToolRunner runner, Path vocals, Path rangesFile, Path tmpDir, Path alignedFile,
                              GetLanguage getLanguage) throws IOException, UnsupportedAudioFileException, InterruptedException {
         Ranges allRanges = JsonUtil.readFile(rangesFile, Ranges.class);
         FilteredRanges data = filterRanges(allRanges);
@@ -149,7 +149,7 @@ public final class Align {
         JsonUtil.writeFile(langFile, new Lang(language));
     }
 
-    public static void align(ProcRunner runner, Path vocals, Path rangesFile, Path langFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
+    public static void align(ToolRunner runner, Path vocals, Path rangesFile, Path langFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
         align(runner, vocals, rangesFile, tmpDir, alignedFile, ranges -> {
             String lang = readLanguage(langFile);
             String language;

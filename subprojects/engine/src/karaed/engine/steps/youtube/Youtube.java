@@ -8,7 +8,7 @@ import karaed.engine.opts.OCut;
 import karaed.engine.opts.OInput;
 import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public final class Youtube {
         return fileName.substring(0, fileName.length() - extension.length());
     }
 
-    private static Path downloadTo(ProcRunner runner, OInput input, Path infoFile, VideoFinder finder,
+    private static Path downloadTo(ToolRunner runner, OInput input, Path infoFile, VideoFinder finder,
                                    String suffix) throws IOException, InterruptedException {
         String basePath = finder.getDir() + File.separator + finder.getBaseName();
         String infoBasePath = infoFile.getParent() + File.separator + getBaseName(infoFile, ".info.json");
@@ -43,7 +43,7 @@ public final class Youtube {
         return finder.getVideo(suffix, true);
     }
 
-    public static void download(ProcRunner runner, OInput input, OCut cut, Path audio, Path infoFile, VideoFinder finder) throws IOException, InterruptedException {
+    public static void download(ToolRunner runner, OInput input, OCut cut, Path audio, Path infoFile, VideoFinder finder) throws IOException, InterruptedException {
         CutRange range = CutRange.create(cut);
         if (input.url() != null) {
             runner.println(String.format("Downloading from Youtube%s...", range == null ? "" : " (range " + range + ")"));

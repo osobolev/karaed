@@ -9,7 +9,7 @@ import karaed.engine.steps.video.MakeVideo;
 import karaed.engine.steps.youtube.Youtube;
 import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -26,11 +26,11 @@ public final class StepRunner {
     }
 
     private final Workdir workDir;
-    private final ProcRunner runner;
+    private final ToolRunner runner;
     private final Runnable showTitle;
     private final EditRanges editRanges;
 
-    public StepRunner(Workdir workDir, ProcRunner runner, Runnable showTitle, EditRanges editRanges) {
+    public StepRunner(Workdir workDir, ToolRunner runner, Runnable showTitle, EditRanges editRanges) {
         this.workDir = workDir;
         this.runner = runner;
         this.showTitle = showTitle;

@@ -3,7 +3,7 @@ package karaed.engine.steps.youtube;
 import karaed.engine.formats.ffprobe.FFFormat;
 import karaed.engine.formats.ffprobe.FFFormatOutput;
 import karaed.json.JsonUtil;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ import java.util.List;
 
 final class FileFormatUtil {
 
-    static FFFormat getFormat(ProcRunner runner, Path file) throws IOException, InterruptedException {
+    static FFFormat getFormat(ToolRunner runner, Path file) throws IOException, InterruptedException {
         FFFormatOutput format = runner.runFFProbe(
             List.of(
                 "-print_format", "json",

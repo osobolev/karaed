@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public final class ProcRunner {
+public final class ToolRunner {
 
     private final Tools tools;
     private final Path rootDir;
     private final OutputCapture output;
 
-    public ProcRunner(Tools tools, Path rootDir, OutputCapture output) {
+    public ToolRunner(Tools tools, Path rootDir, OutputCapture output) {
         this.tools = tools;
         this.rootDir = rootDir;
         this.output = output;

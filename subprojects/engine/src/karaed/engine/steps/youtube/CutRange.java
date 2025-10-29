@@ -2,7 +2,7 @@ package karaed.engine.steps.youtube;
 
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.opts.OCut;
-import karaed.tools.ProcRunner;
+import karaed.tools.ToolRunner;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,7 +39,7 @@ final class CutRange {
         return new CutRange(secStart, secEnd);
     }
 
-    void cutFile(ProcRunner runner, Path file, Path outFile) throws IOException, InterruptedException {
+    void cutFile(ToolRunner runner, Path file, Path outFile) throws IOException, InterruptedException {
         List<String> args = new ArrayList<>(List.of(
             "-y",
             "-i", file.toString()
