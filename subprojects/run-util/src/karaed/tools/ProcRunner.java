@@ -75,19 +75,19 @@ public final class ProcRunner {
         runCommand(exe, tools.pythonTool(exe), List.of(args), null);
     }
 
-    private <T> T runFF(String ff, List<String> args, OutputProcessor<T> out) throws IOException, InterruptedException {
+    private <T> T runFF(String ff, List<String> args, OutputProcessor<T> parseStdout) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
         list.addAll(List.of("-v", "quiet"));
         list.addAll(args);
-        return runCommand(ff, tools.ffmpegTool(ff), list, out);
+        return runCommand(ff, tools.ffmpegTool(ff), list, parseStdout);
     }
 
     public void runFFMPEG(List<String> args) throws IOException, InterruptedException {
         runFF("ffmpeg", args, null);
     }
 
-    public <T> T runFFProbe(List<String> args, OutputProcessor<T> out) throws IOException, InterruptedException {
-        return runFF("ffprobe", args, out);
+    public <T> T runFFProbe(List<String> args, OutputProcessor<T> parseStdout) throws IOException, InterruptedException {
+        return runFF("ffprobe", args, parseStdout);
     }
 
     public static void registerShutdown() {
