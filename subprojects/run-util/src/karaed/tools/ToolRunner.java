@@ -59,13 +59,7 @@ public final class ToolRunner {
     }
 
     public <T> T runPython(String what, List<String> args, OutputProcessor<T> parseStdout) throws IOException, InterruptedException {
-        OutputProcessor<T> out;
-        if (parseStdout != null) {
-            out = parseStdout;
-        } else {
-            out = stream -> null;
-        }
-        return runCommand(what, tools.python(), args, out);
+        return runCommand(what, tools.python(), args, parseStdout);
     }
 
     public <T> T runPythonScript(String script, OutputProcessor<T> parseStdout, String... args) throws IOException, InterruptedException {
