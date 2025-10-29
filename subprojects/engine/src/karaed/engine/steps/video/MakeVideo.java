@@ -36,18 +36,15 @@ public final class MakeVideo {
         ));
         addCodecs(video, ffmpeg);
         ffmpeg.add(largeVideo.toString());
-        runner.runFFMPEG(ffmpeg);
+        runner.run().ffmpeg(ffmpeg);
     }
 
     public static void doPrepareVideo(ToolRunner runner, Path video, Path preparedVideo) throws IOException, InterruptedException {
-        FFStreams streams = runner.runFFProbe(
-            List.of(
-                "-print_format", "json",
-                "-select_streams", "v:0",
-                "-show_entries", "stream=width,height",
-                video.toString()
-            ),
-            stdout -> JsonUtil.parse(stdout, FFStreams.class)
+        FFStreams streams = runner.run(stdout -> JsonUtil.parse(stdout, FFStreams.class)).ffprobe(
+            "-print_format", "json",
+            "-select_streams", "v:0",
+            "-show_entries", "stream=width,height",
+            video.toString()
         );
         FFStream stream = streams.streams().getFirst();
         int width = stream.width();
@@ -125,6 +122,6 @@ public final class MakeVideo {
         ));
         addCodecs(video, ffmpeg);
         ffmpeg.add(outputVideo.toString());
-        runner.runFFMPEG(ffmpeg);
+        runner.run().ffmpeg(ffmpeg);
     }
 }

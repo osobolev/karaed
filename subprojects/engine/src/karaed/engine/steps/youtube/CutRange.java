@@ -60,7 +60,7 @@ final class CutRange {
             "-avoid_negative_ts", "make_zero",
             outFile.toString()
         ));
-        runner.runFFMPEG(args);
+        runner.run().ffmpeg(args);
     }
 
     @Override

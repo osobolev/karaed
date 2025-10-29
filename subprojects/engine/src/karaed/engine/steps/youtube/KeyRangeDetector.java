@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.function.Function;
 
 final class KeyRangeDetector {
@@ -98,16 +97,13 @@ final class KeyRangeDetector {
             duration = Double.parseDouble(format.duration());
         }
         {
-            return runner.runFFProbe(
-                List.of(
-                    "-print_format", "json",
-                    "-select_streams", "v",
-                    "-skip_frame", "nokey",
-                    "-show_frames",
-                    "-show_entries", "frame=best_effort_timestamp_time,pict_type",
-                    file.toString()
-                ),
-                stdout -> parseFrameStream(duration, stdout)
+            return runner.run(stdout -> parseFrameStream(duration, stdout)).ffprobe(
+                "-print_format", "json",
+                "-select_streams", "v",
+                "-skip_frame", "nokey",
+                "-show_frames",
+                "-show_entries", "frame=best_effort_timestamp_time,pict_type",
+                file.toString()
             );
         }
     }

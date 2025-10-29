@@ -32,8 +32,8 @@ public final class Youtube {
                                    String suffix) throws IOException, InterruptedException {
         String basePath = finder.getDir() + File.separator + finder.getBaseName();
         String infoBasePath = infoFile.getParent() + File.separator + getBaseName(infoFile, ".info.json");
-        runner.runPythonExe(
-            "yt-dlp", null,
+        runner.run().pythonTool(
+            "yt-dlp",
             "--no-mtime",
             "--write-info-json",
             "--output", basePath + "." + suffix + "%(ext)s",
@@ -62,7 +62,7 @@ public final class Youtube {
                 video = cutVideo;
             }
             runner.println("Extracting audio.mp3...");
-            runner.runFFMPEG(List.of(
+            runner.run().ffmpeg(List.of(
                 "-y", "-stats",
                 "-i", video.toString(),
                 "-vn",
