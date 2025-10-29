@@ -86,7 +86,7 @@ public final class ProcUtil {
         running.forEach(p -> kill(p, System.out::println));
     }
 
-    public static void registerShutdown() {
+    static void registerShutdown() {
         Runtime.getRuntime().addShutdownHook(new Thread(ProcUtil::killRunning));
     }
 }

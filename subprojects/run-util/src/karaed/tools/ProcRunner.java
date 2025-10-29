@@ -89,4 +89,8 @@ public final class ProcRunner {
     public <T> T runFFProbe(List<String> args, OutputProcessor<T> out) throws IOException, InterruptedException {
         return runFF("ffprobe", args, out);
     }
+
+    public static void registerShutdown() {
+        ProcUtil.registerShutdown();
+    }
 }

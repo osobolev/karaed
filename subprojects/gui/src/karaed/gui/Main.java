@@ -6,7 +6,7 @@ import karaed.gui.start.DirStatus;
 import karaed.gui.start.StartFrame;
 import karaed.gui.util.ShowMessage;
 import karaed.project.Workdir;
-import karaed.tools.ProcUtil;
+import karaed.tools.ProcRunner;
 import karaed.tools.Tools;
 
 import javax.swing.*;
@@ -161,7 +161,7 @@ public final class Main {
     }
 
     public static void main(String[] args) {
-        ProcUtil.registerShutdown();
+        ProcRunner.registerShutdown();
 
         ErrorLogger logger = new FileLogger("karaed.log");
         // todo:
