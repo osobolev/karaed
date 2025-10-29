@@ -165,10 +165,7 @@ public final class Main {
 
         ErrorLogger logger = new FileLogger("karaed.log");
         // todo:
-        Tools tools = new Tools(
-            Path.of("C:\\Users\\sobol\\.jkara\\python"),
-            Path.of("C:\\Users\\sobol\\.jkara\\ffmpeg\\bin")
-        );
+        Tools tools = Tools.create(Path.of("C:\\temp\\install_test"));
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {

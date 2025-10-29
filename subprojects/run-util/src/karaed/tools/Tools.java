@@ -16,6 +16,13 @@ public final class Tools {
         this.ffmpegDir = ffmpegDir;
     }
 
+    public static Tools create(Path installDir) {
+        return new Tools(
+            installDir.resolve("python"),
+            installDir.resolve("ffmpeg/bin")
+        );
+    }
+
     private static Path exe(Path dir, String name) {
         return dir == null ? Path.of(name) : dir.resolve(name);
     }
