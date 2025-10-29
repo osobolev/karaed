@@ -10,11 +10,6 @@ import java.util.List;
 
 public final class ProcRunner {
 
-    public interface OutputCapture {
-
-        void output(boolean stderr, String text);
-    }
-
     private final Tools tools;
     private final Path rootDir;
     private final OutputCapture output;
