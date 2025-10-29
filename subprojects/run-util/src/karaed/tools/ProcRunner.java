@@ -14,7 +14,7 @@ public final class ProcRunner<T> {
     private final OutputCapture output;
     private final OutputProcessor<T> parseStdout;
 
-    public ProcRunner(Tools tools, Path rootDir, OutputCapture output, OutputProcessor<T> parseStdout) {
+    ProcRunner(Tools tools, Path rootDir, OutputCapture output, OutputProcessor<T> parseStdout) {
         this.tools = tools;
         this.rootDir = rootDir;
         this.output = output;
