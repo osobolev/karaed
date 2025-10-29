@@ -9,17 +9,19 @@ public final class Tools {
     private final Path pythonDir;
     private final Path pythonExeDir;
     private final Path ffmpegDir;
+    private final Path ffmpegBinDir;
 
     public Tools(Path pythonDir, Path ffmpegDir) {
         this.pythonDir = pythonDir;
         this.pythonExeDir = pythonDir == null ? null : pythonDir.resolve("Scripts");
         this.ffmpegDir = ffmpegDir;
+        this.ffmpegBinDir = ffmpegDir == null ? null : ffmpegDir.resolve("bin");
     }
 
     public static Tools create(Path installDir) {
         return new Tools(
             installDir.resolve("python"),
-            installDir.resolve("ffmpeg/bin")
+            installDir.resolve("ffmpeg")
         );
     }
 
@@ -35,13 +37,17 @@ public final class Tools {
         return exe(pythonExeDir, tool);
     }
 
+    public Path ffmpegDir() {
+        return ffmpegDir;
+    }
+
     public Path ffmpegTool(String tool) {
-        return exe(ffmpegDir, tool);
+        return exe(ffmpegBinDir, tool);
     }
 
     public List<Path> ffmpegDirs() {
-        if (ffmpegDir != null) {
-            return Collections.singletonList(ffmpegDir);
+        if (ffmpegBinDir != null) {
+            return Collections.singletonList(ffmpegBinDir);
         } else {
             return Collections.emptyList();
         }
