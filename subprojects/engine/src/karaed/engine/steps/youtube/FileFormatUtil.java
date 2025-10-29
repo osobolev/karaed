@@ -11,7 +11,7 @@ import java.nio.file.Path;
 final class FileFormatUtil {
 
     static FFFormat getFormat(ToolRunner runner, Path file) throws IOException, InterruptedException {
-        FFFormatOutput format = runner.run(stdout -> JsonUtil.parse(stdout, FFFormatOutput.class)).ffprobe(
+        FFFormatOutput format = runner.run(JsonUtil.parser(FFFormatOutput.class)).ffprobe(
             "-print_format", "json",
             "-show_entries", "format",
             file.toString()

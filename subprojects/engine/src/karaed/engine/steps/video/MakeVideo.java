@@ -40,7 +40,7 @@ public final class MakeVideo {
     }
 
     public static void doPrepareVideo(ToolRunner runner, Path video, Path preparedVideo) throws IOException, InterruptedException {
-        FFStreams streams = runner.run(stdout -> JsonUtil.parse(stdout, FFStreams.class)).ffprobe(
+        FFStreams streams = runner.run(JsonUtil.parser(FFStreams.class)).ffprobe(
             "-print_format", "json",
             "-select_streams", "v:0",
             "-show_entries", "stream=width,height",

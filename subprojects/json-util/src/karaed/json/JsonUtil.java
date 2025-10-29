@@ -2,6 +2,7 @@ package karaed.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import karaed.tools.OutputProcessor;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,6 +22,10 @@ public final class JsonUtil {
 
     public static <T> T parse(Reader rdr, Class<T> cls) {
         return GSON.fromJson(rdr, cls);
+    }
+
+    public static <T> OutputProcessor<T> parser(Class<T> cls) {
+        return rdr -> parse(rdr, cls);
     }
 
     public static <T> T readFile(Path file, Class<T> cls) throws IOException {

@@ -53,7 +53,7 @@ public final class Align {
         LinkedHashMap<String, Double> langs = new LinkedHashMap<>();
         for (int i = 0; i < Math.min(ranges.size(), 3); i++) {
             Path voice = voice(tmpDir, i);
-            LangDetect ld = runner.run(stdout -> JsonUtil.parse(stdout, LangDetect.class)).pythonScript(
+            LangDetect ld = runner.run(JsonUtil.parser(LangDetect.class)).pythonScript(
                 "scripts/language.py",
                 voice.toAbsolutePath().toString()
             );
