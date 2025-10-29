@@ -41,7 +41,7 @@ public final class Align {
         Path aligned = tmpDir.resolve("aligned" + i + ".json");
         // todo: possibly run transcription first for better voice range detection???
         runner.runPythonScript(
-            "scripts/align.py",
+            "scripts/align.py", null,
             voice.toAbsolutePath().toString(),
             fast.toAbsolutePath().toString(),
             aligned.toAbsolutePath().toString()
