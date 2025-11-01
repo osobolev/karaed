@@ -3,6 +3,7 @@ package karaed.gui.tools;
 import karaed.gui.ErrorLogger;
 import karaed.gui.tools.formats.pip.PipVersions;
 import karaed.json.JsonUtil;
+import karaed.tools.OutputCapture;
 import karaed.tools.ToolRunner;
 
 import java.io.IOException;
@@ -17,10 +18,10 @@ final class ToolActions {
     private final SetupTools tools;
     private final ToolRunner runner;
 
-    ToolActions(ErrorLogger logger, SetupTools tools, ToolRunner runner) {
+    ToolActions(ErrorLogger logger, SetupTools tools, OutputCapture output) {
         this.logger = logger;
         this.tools = tools;
-        this.runner = runner;
+        this.runner = new ToolRunner(tools, null, output);
     }
 
     private void error(Throwable ex) {

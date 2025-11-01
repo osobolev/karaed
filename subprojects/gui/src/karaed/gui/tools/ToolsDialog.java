@@ -2,7 +2,6 @@ package karaed.gui.tools;
 
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.BaseDialog;
-import karaed.tools.ToolRunner;
 import karaed.tools.Tools;
 
 import javax.swing.*;
@@ -18,7 +17,6 @@ import java.util.function.Function;
 public final class ToolsDialog extends BaseDialog {
 
     private final SetupTools tools;
-    private final ToolRunner runner;
 
     private final JButton btnInstall = new  JButton(new AbstractAction("Install") {
         @Override
@@ -57,11 +55,7 @@ public final class ToolsDialog extends BaseDialog {
 
     public ToolsDialog(ErrorLogger logger, Window owner, Tools tools) {
         super(owner, logger, "Tools setup");
-        this.tools = new SetupTools(tools, new SoftSources()); // todo: suurces???
-        this.runner = new ToolRunner(
-            tools, null,
-            (stderr, text) -> (stderr ? System.err : System.out).print(text) // todo!!!
-        );
+        this.tools = new SetupTools(tools, new SoftSources()); // todo: sources???
 
         JPanel top = new JPanel();
         top.add(btnInstall);
@@ -129,14 +123,16 @@ public final class ToolsDialog extends BaseDialog {
         disableAll();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         new Thread(() -> {
+            LazyLogDialog log = new LazyLogDialog(this, Thread.currentThread());
             try {
                 T maybeResult = null;
                 try {
-                    ToolActions actions = new ToolActions(getLogger(), tools, runner); // todo: use log dialog!!!
+                    ToolActions actions = new ToolActions(getLogger(), tools, log);
                     maybeResult = action.apply(actions);
                 } finally {
                     T result = maybeResult;
                     SwingUtilities.invokeLater(() -> {
+                        log.close();
                         if (result != null) {
                             onSuccess.accept(result);
                         }
