@@ -16,6 +16,6 @@ interface SoftSources {
     }
 
     default String ffmpegUrl() {
-        return "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip";
+        return "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip";
     }
 }
