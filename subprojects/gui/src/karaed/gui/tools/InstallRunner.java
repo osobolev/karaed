@@ -2,11 +2,14 @@ package karaed.gui.tools;
 
 import karaed.tools.ToolRunner;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -44,9 +47,14 @@ final class InstallRunner {
         }
     }
 
+    private interface SpecialHandling {
+
+        boolean handle(Path dest, InputStream content) throws IOException;
+    }
+
     private static void downloadZip(String url,
                                     Function<String, Path> getDest,
-                                    Function<Path, List<String>> replace) throws IOException {
+                                    SpecialHandling specialHandling) throws IOException {
         download(url, is -> {
             try (ZipInputStream zis = new ZipInputStream(is)) {
                 while (true) {
@@ -59,31 +67,50 @@ final class InstallRunner {
                     if (dest == null)
                         continue;
                     Files.createDirectories(dest.getParent());
-                    List<String> lines = replace.apply(dest);
-                    if (lines != null) {
-                        Files.write(dest, lines);
-                    } else {
-                        Files.copy(zis, dest, StandardCopyOption.REPLACE_EXISTING);
-                    }
+                    if (specialHandling.handle(dest, zis))
+                        continue;
+                    Files.copy(zis, dest, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
         });
+    }
+
+    private static List<String> uncommentSite(InputStream is) throws IOException {
+        // Do not close BufferedReader, since we need to keep InputStream open:
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        String importSite = "import site";
+        List<String> newLines = new ArrayList<>();
+        while (true) {
+            String line = br.readLine();
+            if (line == null)
+                break;
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("#"))
+                continue;
+            if (trimmed.equals(importSite)) {
+                // Already contents "import site"
+                return null;
+            }
+            newLines.add(line);
+        }
+        newLines.add(importSite);
+        return newLines;
     }
 
     private void installPython() throws IOException {
         log("Downloading Python...");
         downloadZip(
             tools.sources.pythonUrl(), tools.pythonDir()::resolve,
-            file -> {
+            (file, content) -> {
                 String fileName = file.getFileName().toString();
                 if (fileName.endsWith("._pth")) {
-                    return List.of(
-                        "python310.zip", // todo!!!
-                        ".",
-                        "import site"
-                    );
+                    List<String> newLines = uncommentSite(content);
+                    if (newLines != null) {
+                        Files.write(file, newLines);
+                        return true;
+                    }
                 }
-                return null;
+                return false;
             }
         );
     }
@@ -114,7 +141,7 @@ final class InstallRunner {
                     return null;
                 return tools.ffmpegDir().resolve(sub.subpath(1, len));
             },
-            file -> null
+            (file, content) -> false
         );
     }
 
