@@ -58,7 +58,6 @@ final class ToolActions {
         Map<Tool, String> newVersions = new EnumMap<>(Tool.class);
         for (Tool tool : List.of(Tool.FFMPEG, Tool.PIP, Tool.YT_DLP, Tool.DEMUCS, Tool.WHISPERX)) {
             try {
-                runner.println("Checking for update of " + tool + "...");
                 String newVersion = updateCheck.checkForUpdate(tool);
                 if (newVersion != null) {
                     newVersions.put(tool, newVersion);
