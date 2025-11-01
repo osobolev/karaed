@@ -72,9 +72,12 @@ public final class StartFrame extends BaseFrame {
                 openProject(new Workdir(file.toPath().getParent()));
             }
         });
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        top.add(btnNew);
-        top.add(btnOpen);
+        JPanel topc = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        topc.add(btnNew);
+        topc.add(btnOpen);
+        JPanel top = new JPanel(new TopLayout());
+        top.add(topc);
+        top.add(ProjectFrame.createToolsButton(this, tools));
         add(top, BorderLayout.NORTH);
 
         List<Path> recent = RecentItems.loadRecentItems(logger);

@@ -7,8 +7,6 @@ import karaed.tools.Tools;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -152,11 +150,5 @@ public final class ToolsDialog extends BaseDialog {
             String currentVersion = entry.getValue();
             rows.get(tool).setCurrentVersion(currentVersion);
         }
-    }
-
-    public static void main(String[] args) throws IOException {
-        // todo:
-        Tools tools = Tools.create(Path.of("C:\\Users\\sobol\\.jkara"));
-        new ToolsDialog(Throwable::printStackTrace, null, tools);
     }
 }

@@ -9,10 +9,8 @@ import karaed.gui.options.OptionsDialog;
 import karaed.gui.start.DirStatus;
 import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
-import karaed.gui.util.BaseFrame;
-import karaed.gui.util.InputUtil;
-import karaed.gui.util.LogArea;
-import karaed.gui.util.TitleUtil;
+import karaed.gui.tools.ToolsDialog;
+import karaed.gui.util.*;
 import karaed.project.*;
 import karaed.tools.CommandException;
 import karaed.tools.ToolRunner;
@@ -22,7 +20,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
-import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -59,6 +57,14 @@ public final class ProjectFrame extends BaseFrame {
         }
     };
 
+    public static JButton createToolsButton(BaseWindow owner, Tools tools) {
+        JButton btnTools = new JButton(InputUtil.getIcon("/tools.png"));
+        btnTools.addActionListener(e -> new ToolsDialog(owner.getLogger(), owner.toWindow(), tools));
+        btnTools.setToolTipText("Tools setup");
+        btnTools.setMargin(new Insets(0, 3, 0, 3));
+        return btnTools;
+    }
+
     public static ProjectFrame create(ErrorLogger logger, boolean reopenStart, Tools tools, Path rootDir, Workdir workDir,
                                       Consumer<String> onError) {
         DirStatus status = DirStatus.test(workDir);
@@ -80,7 +86,9 @@ public final class ProjectFrame extends BaseFrame {
             }
         };
 
-        JPanel toolBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel toolBar = new JPanel();
+        toolBar.setLayout(new BoxLayout(toolBar, BoxLayout.X_AXIS));
+        toolBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         toolBar.add(new JButton(new AbstractAction("Options") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -94,9 +102,12 @@ public final class ProjectFrame extends BaseFrame {
                 }
             }
         }));
-        toolBar.add(Box.createHorizontalStrut(5));
+        toolBar.add(Box.createHorizontalStrut(10));
         toolBar.add(new JButton(runAction));
+        toolBar.add(Box.createHorizontalStrut(5));
         toolBar.add(new JButton(stopAction));
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(createToolsButton(this, tools));
         add(toolBar, BorderLayout.NORTH);
 
         JPanel main = new JPanel(new BorderLayout());
