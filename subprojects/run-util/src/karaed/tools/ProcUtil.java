@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 final class ProcUtil {
@@ -13,7 +14,8 @@ final class ProcUtil {
     private static final Set<Process> running = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     static <O, E> Pair<O, E> runCommand(String what, Path exe, List<String> args, List<Path> pathDirs,
-                                        OutputProcessor<O> stdout, OutputProcessor<E> stderr, Consumer<String> log) throws IOException, InterruptedException {
+                                        OutputProcessor<O> stdout, OutputProcessor<E> stderr,
+                                        Consumer<String> log, IntPredicate isOK) throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add(exe.toString());
         command.addAll(args);
@@ -56,7 +58,7 @@ final class ProcUtil {
         } finally {
             running.remove(p);
         }
-        boolean ok = exitCode == 0;
+        boolean ok = isOK.test(exitCode);
         if (!ok) {
             throw new CommandException("Error running " + what + ": " + exitCode, command);
         }

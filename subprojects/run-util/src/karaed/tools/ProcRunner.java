@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntPredicate;
 
 public final class ProcRunner<T> {
 
@@ -13,12 +14,14 @@ public final class ProcRunner<T> {
     private final Path rootDir;
     private final OutputCapture output;
     private final OutputProcessor<T> parseStdout;
+    private final IntPredicate isOK;
 
-    ProcRunner(Tools tools, Path rootDir, OutputCapture output, OutputProcessor<T> parseStdout) {
+    ProcRunner(Tools tools, Path rootDir, OutputCapture output, OutputProcessor<T> parseStdout, IntPredicate isOK) {
         this.tools = tools;
         this.rootDir = rootDir;
         this.output = output;
         this.parseStdout = parseStdout;
+        this.isOK = isOK;
     }
 
     private T capture(Reader rdr, boolean stderr) throws IOException {
@@ -46,7 +49,8 @@ public final class ProcRunner<T> {
         }
         Pair<T, Object> pair = ProcUtil.runCommand(
             what, exe, args, pathDirs,
-            stdout, stderr, str -> output.output(true, "\n" + str + "\n")
+            stdout, stderr, str -> output.output(true, "\n" + str + "\n"),
+            isOK
         );
         return pair.stdout();
     }

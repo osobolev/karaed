@@ -65,7 +65,7 @@ final class GetVersions {
             }
             return version;
         };
-        return runner.run(parseVersion).pythonTool("pip", "show", tool.packName());
+        return runner.run(parseVersion, exitCode -> true).pythonTool("pip", "show", tool.packName());
     }
 
     private String ffmpegVersion() throws IOException, InterruptedException {
