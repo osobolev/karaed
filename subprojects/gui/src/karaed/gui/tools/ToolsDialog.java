@@ -152,4 +152,12 @@ public final class ToolsDialog extends BaseDialog {
             rows.get(tool).setCurrentVersion(currentVersion);
         }
     }
+
+    public static void fastCheckIfInstalled(ErrorLogger logger, Tools tools) {
+        SetupTools setupTools = SetupTools.create(tools);
+        if (setupTools.installed(Tool.PYTHON) && setupTools.installed(Tool.PIP) && setupTools.installed(Tool.FFMPEG)) {
+            return;
+        }
+        new ToolsDialog(logger, null, setupTools);
+    }
 }

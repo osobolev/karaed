@@ -4,6 +4,7 @@ import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
 import karaed.gui.start.DirStatus;
 import karaed.gui.start.StartFrame;
+import karaed.gui.tools.ToolsDialog;
 import karaed.gui.util.ShowMessage;
 import karaed.project.Workdir;
 import karaed.tools.ToolRunner;
@@ -164,8 +165,8 @@ public final class Main {
         ToolRunner.registerShutdown();
 
         ErrorLogger logger = new FileLogger("karaed.log");
-        // todo:
-        Tools tools = Tools.create();
+        Tools tools = Tools.create(".jkara");
+        ToolsDialog.fastCheckIfInstalled(logger, tools);
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
