@@ -6,6 +6,7 @@ import karaed.gui.util.LogArea;
 import karaed.tools.OutputCapture;
 
 import javax.swing.*;
+import java.awt.BorderLayout;
 
 final class LazyLogDialog implements OutputCapture {
 
@@ -53,7 +54,7 @@ final class LazyLogDialog implements OutputCapture {
             super(owner.toWindow(), owner.getLogger(), "Log");
             this.thread = thread;
 
-            add(logArea.getVisual());
+            add(new JScrollPane(logArea.getVisual()), BorderLayout.CENTER);
 
             pack();
             setLocationRelativeTo(null);
