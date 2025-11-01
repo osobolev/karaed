@@ -125,7 +125,7 @@ final class InstallRunner {
 
     private void installPackages(Collection<Tool> toInstall) throws IOException, InterruptedException {
         log("Installing required packages...");
-        List<String> args = new ArrayList<>(List.of("-v", "--no-warn-script-location", "install"));
+        List<String> args = new ArrayList<>(List.of("-v", "install", "--no-warn-script-location"));
         toInstall.stream().map(Tool::packName).forEach(args::add);
         runner.run().pythonTool("pip", args);
     }
