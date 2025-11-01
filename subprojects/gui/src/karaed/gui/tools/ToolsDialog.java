@@ -1,9 +1,7 @@
 package karaed.gui.tools;
 
 import karaed.gui.ErrorLogger;
-import karaed.gui.tools.formats.pip.PipVersions;
 import karaed.gui.util.BaseDialog;
-import karaed.json.JsonUtil;
 import karaed.tools.ToolRunner;
 import karaed.tools.Tools;
 
@@ -15,7 +13,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public final class ToolsDialog extends BaseDialog {
 
@@ -33,19 +31,25 @@ public final class ToolsDialog extends BaseDialog {
                     missing.add(tool);
                 }
             }
-            runAction(() -> installMissing(missing), ToolsDialog.this::updateInstalledVersions);
+            runAction(
+                actions -> actions.installMissing(missing),
+                ToolsDialog.this::updateInstalledVersions
+            );
         }
     });
     private final JButton btnCheckUpdates = new JButton(new AbstractAction("Check for updates") {
         @Override
         public void actionPerformed(ActionEvent e) {
-            runAction(ToolsDialog.this::checkForUpdates, map -> {
-                for (Map.Entry<Tool, String> entry : map.entrySet()) {
-                    Tool tool = entry.getKey();
-                    String newVersion = entry.getValue();
-                    rows.get(tool).setNewVersion(newVersion);
+            runAction(
+                ToolActions::checkForUpdates,
+                newVersions -> {
+                    for (Map.Entry<Tool, String> entry : newVersions.entrySet()) {
+                        Tool tool = entry.getKey();
+                        String newVersion = entry.getValue();
+                        rows.get(tool).setNewVersion(newVersion);
+                    }
                 }
-            });
+            );
         }
     });
 
@@ -79,12 +83,18 @@ public final class ToolsDialog extends BaseDialog {
                 2, i, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
             ));
             rows.put(tool, row);
-            row.btnUpdate.addActionListener(e -> runAction(() -> update(tool), this::updateInstalledVersions));
+            row.btnUpdate.addActionListener(e -> runAction(
+                actions -> actions.update(tool),
+                this::updateInstalledVersions)
+            );
         }
         main.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
         add(main, BorderLayout.CENTER);
 
-        runAction(() -> getInstalledVersions(List.of(Tool.values())), this::updateInstalledVersions);
+        runAction(
+            actions -> actions.getInstalledVersions(List.of(Tool.values())),
+            this::updateInstalledVersions
+        );
 
         pack();
         setLocationRelativeTo(null);
@@ -115,14 +125,15 @@ public final class ToolsDialog extends BaseDialog {
         btnCheckUpdates.setEnabled(anyInstalled);
     }
 
-    private <T> void runAction(Supplier<T> action, Consumer<T> onSuccess) {
+    private <T> void runAction(Function<ToolActions, T> action, Consumer<T> onSuccess) {
         disableAll();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         new Thread(() -> {
             try {
                 T maybeResult = null;
                 try {
-                    maybeResult = action.get();
+                    ToolActions actions = new ToolActions(getLogger(), tools, runner); // todo: use log dialog!!!
+                    maybeResult = action.apply(actions);
                 } finally {
                     T result = maybeResult;
                     SwingUtilities.invokeLater(() -> {
@@ -137,66 +148,6 @@ public final class ToolsDialog extends BaseDialog {
                 SwingUtilities.invokeLater(() -> error(ex));
             }
         }).start();
-    }
-
-    private Map<Tool, String> getInstalledVersions(Iterable<Tool> tools) {
-        GetVersions getVersions = new GetVersions(this.tools, runner);
-        Map<Tool, String> versions = new EnumMap<>(Tool.class);
-        for (Tool tool : tools) {
-            runner.println("Get current version for " + tool + "...");
-            String version = null;
-            try {
-                version = getVersions.getVersion(tool);
-            } catch (IOException ex) {
-                getLogger().error(ex);
-            } catch (InterruptedException ex) {
-                break;
-            }
-            versions.put(tool, version);
-        }
-        return versions;
-    }
-
-    private Map<Tool, String> checkForUpdates() {
-        Map<Tool, String> newVersions = new EnumMap<>(Tool.class);
-        for (Tool tool : List.of(Tool.PIP, Tool.YT_DLP, Tool.DEMUCS, Tool.WHISPERX)) {
-            try {
-                runner.println("Checking update for " + tool + "...");
-                PipVersions versions = runner.run(JsonUtil.parser(PipVersions.class)).pythonTool(
-                    "pip",
-                    "index", "versions", tool.packName(), "--json"
-                );
-                newVersions.put(tool, versions.latest());
-            } catch (IOException ex) {
-                getLogger().error(ex);
-            } catch (InterruptedException ex) {
-                break;
-            }
-        }
-        // todo: check for ffmpeg updates??? need essential builds for that!!!
-        return newVersions;
-    }
-
-    private Map<Tool, String> update(Tool tool) {
-        try {
-            new RunUpdate(tools, runner).update(tool);
-        } catch (IOException ex) {
-            getLogger().error(ex);
-        } catch (InterruptedException ex) {
-            return null;
-        }
-        return getInstalledVersions(List.of(tool));
-    }
-
-    private Map<Tool, String> installMissing(Set<Tool> tools) {
-        try {
-            new InstallRunner(this.tools, runner).install(tools);
-        } catch (IOException ex) {
-            getLogger().error(ex);
-        } catch (InterruptedException ex) {
-            return null;
-        }
-        return getInstalledVersions(tools);
     }
 
     private void updateInstalledVersions(Map<Tool, String> versions) {
