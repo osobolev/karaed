@@ -33,7 +33,6 @@ final class ToolActions {
         GetVersions getVersions = new GetVersions(this.tools, runner);
         Map<Tool, String> versions = new EnumMap<>(Tool.class);
         for (Tool tool : tools) {
-            runner.println("Get current version for " + tool + "...");
             String version = null;
             try {
                 version = getVersions.getVersion(tool);

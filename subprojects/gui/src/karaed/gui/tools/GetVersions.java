@@ -28,9 +28,14 @@ final class GetVersions {
         };
     }
 
+    private void checking(Tool tool) {
+        runner.println("Get current version for " + tool + "...");
+    }
+
     private String pythonVersion() throws IOException, InterruptedException {
         if (!tools.installed(Tool.PYTHON))
             return null;
+        checking(Tool.PYTHON);
         OutputProcessor<String> parseVersion = stdout -> {
             String version = null;
             BufferedReader br = new BufferedReader(stdout);
@@ -50,6 +55,7 @@ final class GetVersions {
     private String packageVersion(Tool tool) throws IOException, InterruptedException {
         if (!tools.installed(Tool.PIP))
             return null;
+        checking(tool);
         OutputProcessor<String> parseVersion = stdout -> {
             BufferedReader br = new BufferedReader(stdout);
             String version = null;
@@ -71,6 +77,7 @@ final class GetVersions {
     private String ffmpegVersion() throws IOException, InterruptedException {
         if (!tools.installed(Tool.FFMPEG))
             return null;
+        checking(Tool.FFMPEG);
         FFVersion ff = runner.run(JsonUtil.parser(FFVersion.class)).ffprobe(
             "-v", "quiet",
             "-output_format", "json",
