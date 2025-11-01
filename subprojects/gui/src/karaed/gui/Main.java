@@ -165,7 +165,7 @@ public final class Main {
 
         ErrorLogger logger = new FileLogger("karaed.log");
         // todo:
-        Tools tools = Tools.create(Path.of("C:\\temp\\install_test"));
+        Tools tools = Tools.create();
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {

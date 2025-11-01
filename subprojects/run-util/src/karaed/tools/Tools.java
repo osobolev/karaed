@@ -32,6 +32,11 @@ public class Tools {
         );
     }
 
+    public static Tools create() {
+        String userHome = System.getProperty("user.home");
+        return create(Path.of(userHome, ".jkara"));
+    }
+
     private static Path exe(Path dir, String name) {
         return dir == null ? Path.of(name) : dir.resolve(name);
     }
