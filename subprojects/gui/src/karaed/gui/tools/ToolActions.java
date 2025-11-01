@@ -40,7 +40,7 @@ final class ToolActions {
             } catch (IOException ex) {
                 error(ex);
             } catch (InterruptedException ex) {
-                break;
+                return null;
             }
             versions.put(tool, version);
         }
