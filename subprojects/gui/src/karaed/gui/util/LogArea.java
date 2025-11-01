@@ -1,10 +1,10 @@
-package karaed.gui.project;
+package karaed.gui.util;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import java.util.regex.Pattern;
 
-final class LogArea {
+public final class LogArea {
 
     private static final Pattern ESC_SEQUENCE = Pattern.compile("\u001b\\[\\dm");
 
@@ -12,12 +12,12 @@ final class LogArea {
 
     private boolean lastCR = false;
 
-    LogArea() {
+    public LogArea() {
         taLog.setEditable(false);
         taLog.setLineWrap(true);
     }
 
-    void clear() {
+    public void clear() {
         taLog.setText("");
         lastCR = false;
     }
@@ -73,7 +73,7 @@ final class LogArea {
         }
     }
 
-    void append(boolean stderr, String text) {
+    public void append(boolean stderr, String text) {
         if (SwingUtilities.isEventDispatchThread()) {
             doAppend(stderr, text);
         } else {
@@ -81,7 +81,7 @@ final class LogArea {
         }
     }
 
-    JComponent getVisual() {
+    public JComponent getVisual() {
         return taLog;
     }
 }

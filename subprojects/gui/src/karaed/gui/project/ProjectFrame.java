@@ -11,6 +11,7 @@ import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
 import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
+import karaed.gui.util.LogArea;
 import karaed.gui.util.TitleUtil;
 import karaed.project.*;
 import karaed.tools.CommandException;
