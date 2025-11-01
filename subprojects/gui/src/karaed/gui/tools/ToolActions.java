@@ -18,6 +18,8 @@ final class ToolActions {
     private final SetupTools tools;
     private final ToolRunner runner;
 
+    private boolean hasErrors = false;
+
     ToolActions(ErrorLogger logger, SetupTools tools, OutputCapture output) {
         this.logger = logger;
         this.tools = tools;
@@ -25,8 +27,13 @@ final class ToolActions {
     }
 
     private void error(Throwable ex) {
+        hasErrors = true;
         logger.error(ex);
         runner.println(ex.toString());
+    }
+
+    boolean hasErrors() {
+        return hasErrors;
     }
 
     Map<Tool, String> getInstalledVersions(Iterable<Tool> tools) {

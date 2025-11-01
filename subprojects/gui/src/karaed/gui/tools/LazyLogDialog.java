@@ -39,9 +39,13 @@ final class LazyLogDialog implements OutputCapture {
         SwingUtilities.invokeLater(() -> dialog.logArea.append(stderr, text));
     }
 
-    void close() {
+    void close(boolean hasErrors) {
         if (dialog != null) {
-            dialog.dispose();
+            if (hasErrors) {
+                dialog.canClose = true;
+            } else {
+                dialog.dispose();
+            }
         }
     }
 
@@ -49,6 +53,7 @@ final class LazyLogDialog implements OutputCapture {
 
         private final Thread thread;
         final LogArea logArea = new LogArea();
+        boolean canClose = false;
 
         LogDialog(BaseWindow owner, Thread thread) {
             super(owner.toWindow(), owner.getLogger(), "Log");
@@ -63,7 +68,7 @@ final class LazyLogDialog implements OutputCapture {
         @Override
         public boolean onClosing() {
             thread.interrupt();
-            return false;
+            return canClose;
         }
     }
 }

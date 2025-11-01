@@ -126,13 +126,13 @@ public final class ToolsDialog extends BaseDialog {
             LazyLogDialog log = new LazyLogDialog(this, Thread.currentThread());
             try {
                 T maybeResult = null;
+                ToolActions actions = new ToolActions(getLogger(), tools, log);
                 try {
-                    ToolActions actions = new ToolActions(getLogger(), tools, log);
                     maybeResult = action.apply(actions);
                 } finally {
                     T result = maybeResult;
                     SwingUtilities.invokeLater(() -> {
-                        log.close();
+                        log.close(actions.hasErrors());
                         if (result != null) {
                             onSuccess.accept(result);
                         }
