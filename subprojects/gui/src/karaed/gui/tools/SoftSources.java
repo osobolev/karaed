@@ -1,16 +1,21 @@
 package karaed.gui.tools;
 
-record SoftSources(
-    String pythonUrl,
-    String getPipUrl,
-    String ffmpegUrl
-) {
+interface SoftSources {
 
-    SoftSources() {
-        this(
-            "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip", // todo: update it???
-            "https://bootstrap.pypa.io/get-pip.py",
-            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-        );
+    default String pythonUrl() {
+        // >=3.10, <3.14
+        // 3.10.19 09-Oct-2025
+        // 3.11.14
+        // 3.12.12
+        // 3.13.9
+        return "https://www.python.org/ftp/python/3.10.11/python-3.10.11-embed-amd64.zip"; // todo: update it???!!!
+    }
+
+    default String getPipUrl() {
+        return "https://bootstrap.pypa.io/get-pip.py";
+    }
+
+    default String ffmpegUrl() {
+        return "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip";
     }
 }

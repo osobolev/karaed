@@ -15,7 +15,7 @@ import java.util.function.Function;
 public final class ToolsDialog extends BaseDialog {
 
     private final SetupTools tools;
-    private final SoftSources sources = new SoftSources(); // todo!!!
+    private final SourcesTab sources = new SourcesTab();
 
     private final JButton btnInstall = new  JButton(new AbstractAction("Install") {
         @Override
@@ -56,23 +56,25 @@ public final class ToolsDialog extends BaseDialog {
         super(owner, logger, "Tools setup");
         this.tools = SetupTools.create(tools);
 
+        JPanel main = new JPanel(new BorderLayout());
+
         JPanel top = new JPanel();
         top.add(btnInstall);
         top.add(btnCheckUpdates);
-        add(top, BorderLayout.NORTH);
+        main.add(top, BorderLayout.NORTH);
 
-        JPanel main = new JPanel(new GridBagLayout());
+        JPanel prows = new JPanel(new GridBagLayout());
         Tool[] toolList = Tool.values();
         for (int i = 0; i < toolList.length; i++) {
             Tool tool = toolList[i];
             ToolRow row = new ToolRow(tool);
-            main.add(row.lblName, new GridBagConstraints(
+            prows.add(row.lblName, new GridBagConstraints(
                 0, i, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
             ));
-            main.add(row.tfVersion, new GridBagConstraints(
+            prows.add(row.tfVersion, new GridBagConstraints(
                 1, i, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
             ));
-            main.add(row.btnUpdate, new GridBagConstraints(
+            prows.add(row.btnUpdate, new GridBagConstraints(
                 2, i, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
             ));
             rows.put(tool, row);
@@ -81,8 +83,13 @@ public final class ToolsDialog extends BaseDialog {
                 this::updateInstalledVersions)
             );
         }
-        main.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-        add(main, BorderLayout.CENTER);
+        prows.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+        main.add(prows, BorderLayout.CENTER);
+
+        JTabbedPane tab = new JTabbedPane();
+        tab.add("Tool versions", main);
+        tab.add("Advanced", sources.getVisual());
+        add(tab, BorderLayout.CENTER);
 
         runAction(
             actions -> actions.getInstalledVersions(List.of(Tool.values())),
