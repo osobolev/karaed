@@ -89,6 +89,7 @@ public final class StartFrame extends BaseFrame {
             RecentItems.removeRecentItem(logger, dir);
             rip.remove(item.getVisual());
             rip.revalidate();
+            rip.repaint();
         };
         Consumer<RecentItem> onClick = item -> {
             Workdir workDir = new Workdir(item.dir);
