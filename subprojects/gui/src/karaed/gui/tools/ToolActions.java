@@ -50,7 +50,7 @@ final class ToolActions {
         Map<Tool, String> newVersions = new EnumMap<>(Tool.class);
         for (Tool tool : List.of(Tool.PIP, Tool.YT_DLP, Tool.DEMUCS, Tool.WHISPERX)) {
             try {
-                runner.println("Checking update for " + tool + "...");
+                runner.println("Checking for update of " + tool + "...");
                 PipVersions versions = runner.run(JsonUtil.parser(PipVersions.class)).pythonTool(
                     "pip",
                     "index", "versions", tool.packName(), "--json"
