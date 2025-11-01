@@ -6,9 +6,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +14,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static karaed.gui.tools.Download.download;
 
 final class InstallRunner {
 
@@ -32,21 +31,6 @@ final class InstallRunner {
 
     private void log(String message) {
         runner.println(message);
-    }
-
-    private interface ContentHandler {
-
-        void accept(InputStream is) throws IOException;
-    }
-
-    private static void download(String url, ContentHandler handler) throws IOException {
-        URLConnection conn = URI.create(url).toURL().openConnection();
-        try (InputStream is = conn.getInputStream()) {
-            handler.accept(is);
-        }
-        if (conn instanceof HttpURLConnection http) {
-            http.disconnect();
-        }
     }
 
     private interface SpecialHandling {
