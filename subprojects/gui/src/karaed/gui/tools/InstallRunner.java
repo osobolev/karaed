@@ -156,7 +156,7 @@ final class InstallRunner {
         Set<Tool> packs = EnumSet.noneOf(Tool.class);
         for (Tool tool : tools) {
             String packName = tool.maybePackName();
-            if (packName == null) {
+            if (packName != null) {
                 packs.add(tool);
             }
         }
