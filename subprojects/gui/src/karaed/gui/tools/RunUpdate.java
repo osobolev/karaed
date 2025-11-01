@@ -24,10 +24,17 @@ final class RunUpdate {
         case FFMPEG:
             updateFFMPEG();
             break;
+        case PIP:
+            updatePIP();
+            break;
         default:
             updatePackage(tool);
             break;
         }
+    }
+
+    private void updatePIP() throws IOException, InterruptedException {
+        runner.run().python("pip update", "-m", "pip", "install", "--upgrade", "pip");
     }
 
     private void updatePackage(Tool tool) throws IOException, InterruptedException {
