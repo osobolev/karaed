@@ -1,8 +1,6 @@
 package karaed.gui.tools;
 
 import karaed.gui.ErrorLogger;
-import karaed.gui.tools.formats.pip.PipVersions;
-import karaed.json.JsonUtil;
 import karaed.tools.OutputCapture;
 import karaed.tools.ToolRunner;
 
@@ -56,22 +54,21 @@ final class ToolActions {
     }
 
     Map<Tool, String> checkForUpdates() {
+        UpdateCheck updateCheck = new UpdateCheck(sources, runner);
         Map<Tool, String> newVersions = new EnumMap<>(Tool.class);
-        for (Tool tool : List.of(Tool.PIP, Tool.YT_DLP, Tool.DEMUCS, Tool.WHISPERX)) {
+        for (Tool tool : List.of(Tool.FFMPEG, Tool.PIP, Tool.YT_DLP, Tool.DEMUCS, Tool.WHISPERX)) {
             try {
                 runner.println("Checking for update of " + tool + "...");
-                PipVersions versions = runner.run(JsonUtil.parser(PipVersions.class)).pythonTool(
-                    "pip",
-                    "index", "versions", tool.packName(), "--json"
-                );
-                newVersions.put(tool, versions.latest());
+                String newVersion = updateCheck.checkForUpdate(tool);
+                if (newVersion != null) {
+                    newVersions.put(tool, newVersion);
+                }
             } catch (IOException ex) {
                 error(ex);
             } catch (InterruptedException ex) {
                 break;
             }
         }
-        // todo: check for ffmpeg updates??? need essential builds for that!!!!!!
         return newVersions;
     }
 
