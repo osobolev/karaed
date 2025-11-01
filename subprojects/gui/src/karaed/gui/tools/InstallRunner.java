@@ -21,10 +21,12 @@ import java.util.zip.ZipInputStream;
 final class InstallRunner {
 
     private final SetupTools tools;
+    private final SoftSources sources;
     private final ToolRunner runner;
 
-    InstallRunner(SetupTools tools, ToolRunner runner) {
+    InstallRunner(SetupTools tools, SoftSources sources, ToolRunner runner) {
         this.tools = tools;
+        this.sources = sources;
         this.runner = runner;
     }
 
@@ -100,7 +102,7 @@ final class InstallRunner {
     private void installPython() throws IOException {
         log("Downloading Python...");
         downloadZip(
-            tools.sources.pythonUrl(), tools.pythonDir()::resolve,
+            sources.pythonUrl(), tools.pythonDir()::resolve,
             (file, content) -> {
                 String fileName = file.getFileName().toString();
                 if (fileName.endsWith("._pth")) {
@@ -118,7 +120,7 @@ final class InstallRunner {
     private void installPIP() throws IOException, InterruptedException {
         log("Installing PIP...");
         Path getPip = tools.pythonDir().resolve("get-pip.py");
-        download(tools.sources.getPipUrl(), is -> Files.copy(is, getPip, StandardCopyOption.REPLACE_EXISTING));
+        download(sources.getPipUrl(), is -> Files.copy(is, getPip, StandardCopyOption.REPLACE_EXISTING));
 
         runner.run().python("get-pip", getPip.toString(), "--no-warn-script-location");
     }
@@ -133,7 +135,7 @@ final class InstallRunner {
     void installFFMPEG() throws IOException {
         log("Downloading FFMPEG...");
         downloadZip(
-            tools.sources.ffmpegUrl(),
+            sources.ffmpegUrl(),
             name -> {
                 Path sub = Path.of(name);
                 int len = sub.getNameCount();

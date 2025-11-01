@@ -7,11 +7,12 @@ import java.nio.file.Path;
 
 final class SetupTools extends Tools {
 
-    final SoftSources sources;
-
-    SetupTools(Tools tools, SoftSources sources) {
+    private SetupTools(Tools tools) {
         super(tools);
-        this.sources = sources;
+    }
+
+    static SetupTools create(Tools tools) {
+        return tools instanceof SetupTools ? (SetupTools) tools : new SetupTools(tools);
     }
 
     private static boolean exeExists(Path exe) {

@@ -10,10 +10,12 @@ import java.nio.file.Path;
 final class RunUpdate {
 
     private final SetupTools tools;
+    private final SoftSources sources;
     private final ToolRunner runner;
 
-    RunUpdate(SetupTools tools, ToolRunner runner) {
+    RunUpdate(SetupTools tools, SoftSources sources, ToolRunner runner) {
         this.tools = tools;
+        this.sources = sources;
         this.runner = runner;
     }
 
@@ -58,6 +60,6 @@ final class RunUpdate {
 
     private void updateFFMPEG() throws IOException {
         deleteDir(tools.ffmpegDir());
-        new InstallRunner(tools, runner).installFFMPEG();
+        new InstallRunner(tools, sources, runner).installFFMPEG();
     }
 }

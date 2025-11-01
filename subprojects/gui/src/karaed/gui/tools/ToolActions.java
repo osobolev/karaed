@@ -16,13 +16,15 @@ final class ToolActions {
 
     private final ErrorLogger logger;
     private final SetupTools tools;
+    private final SoftSources sources;
     private final ToolRunner runner;
 
     private boolean hasErrors = false;
 
-    ToolActions(ErrorLogger logger, SetupTools tools, OutputCapture output) {
+    ToolActions(ErrorLogger logger, SetupTools tools, SoftSources sources, OutputCapture output) {
         this.logger = logger;
         this.tools = tools;
+        this.sources = sources;
         this.runner = new ToolRunner(tools, null, output);
     }
 
@@ -75,7 +77,7 @@ final class ToolActions {
 
     Map<Tool, String> update(Tool tool) {
         try {
-            new RunUpdate(tools, runner).update(tool);
+            new RunUpdate(tools, sources, runner).update(tool);
         } catch (IOException ex) {
             error(ex);
         } catch (InterruptedException ex) {
@@ -86,7 +88,7 @@ final class ToolActions {
 
     Map<Tool, String> installMissing(Set<Tool> tools) {
         try {
-            new InstallRunner(this.tools, runner).install(tools);
+            new InstallRunner(this.tools, sources, runner).install(tools);
         } catch (IOException ex) {
             error(ex);
         } catch (InterruptedException ex) {

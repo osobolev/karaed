@@ -15,6 +15,7 @@ import java.util.function.Function;
 public final class ToolsDialog extends BaseDialog {
 
     private final SetupTools tools;
+    private final SoftSources sources = new SoftSources(); // todo!!!
 
     private final JButton btnInstall = new  JButton(new AbstractAction("Install") {
         @Override
@@ -53,7 +54,7 @@ public final class ToolsDialog extends BaseDialog {
 
     public ToolsDialog(ErrorLogger logger, Window owner, Tools tools) {
         super(owner, logger, "Tools setup");
-        this.tools = new SetupTools(tools, new SoftSources()); // todo: sources???
+        this.tools = SetupTools.create(tools);
 
         JPanel top = new JPanel();
         top.add(btnInstall);
@@ -124,7 +125,7 @@ public final class ToolsDialog extends BaseDialog {
             LazyLogDialog log = new LazyLogDialog(this, Thread.currentThread());
             try {
                 T maybeResult = null;
-                ToolActions actions = new ToolActions(getLogger(), tools, log);
+                ToolActions actions = new ToolActions(getLogger(), tools, sources, log);
                 try {
                     maybeResult = action.apply(actions);
                 } finally {
