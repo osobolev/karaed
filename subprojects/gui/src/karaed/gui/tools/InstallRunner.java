@@ -40,10 +40,12 @@ final class InstallRunner {
 
     private static void downloadZip(String url,
                                     Function<String, Path> getDest,
-                                    SpecialHandling specialHandling) throws IOException {
+                                    SpecialHandling specialHandling) throws IOException, InterruptedException {
         download(url, is -> {
             try (ZipInputStream zis = new ZipInputStream(is)) {
                 while (true) {
+                    if (Thread.currentThread().isInterrupted())
+                        throw new InterruptedException();
                     ZipEntry e = zis.getNextEntry();
                     if (e == null)
                         break;
@@ -83,7 +85,7 @@ final class InstallRunner {
         return newLines;
     }
 
-    private void installPython() throws IOException {
+    private void installPython() throws IOException, InterruptedException {
         log("Downloading Python...");
         downloadZip(
             sources.pythonUrl(), tools.pythonDir()::resolve,
@@ -116,7 +118,7 @@ final class InstallRunner {
         runner.run().pythonTool("pip", args);
     }
 
-    void installFFMPEG() throws IOException {
+    void installFFMPEG() throws IOException, InterruptedException {
         log("Downloading FFMPEG...");
         downloadZip(
             sources.ffmpegUrl(),

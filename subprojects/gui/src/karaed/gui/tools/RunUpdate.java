@@ -58,7 +58,7 @@ final class RunUpdate {
         }
     }
 
-    private void updateFFMPEG() throws IOException {
+    private void updateFFMPEG() throws IOException, InterruptedException {
         deleteDir(tools.ffmpegDir());
         new InstallRunner(tools, sources, runner).installFFMPEG();
     }

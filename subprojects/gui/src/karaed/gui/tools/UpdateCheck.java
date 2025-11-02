@@ -7,6 +7,8 @@ import karaed.tools.ToolRunner;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static karaed.gui.tools.Download.download;
+
 final class UpdateCheck {
 
     private final SoftSources sources;
@@ -34,17 +36,15 @@ final class UpdateCheck {
         return versions.latest();
     }
 
-    private String checkFFMPEG(String urlPattern, String versionURL) throws IOException {
+    private String checkFFMPEG(String urlPattern, String versionURL) throws IOException, InterruptedException {
         String[] version = new String[1];
         if (sources.ffmpegUrl().matches(urlPattern)) {
-            Download.download(versionURL, is -> {
-                version[0] = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            });
+            download(versionURL, is -> version[0] = new String(is.readAllBytes(), StandardCharsets.UTF_8));
         }
         return version[0];
     }
 
-    private String checkFFMPEGUpdate() throws IOException {
+    private String checkFFMPEGUpdate() throws IOException, InterruptedException {
         return checkFFMPEG(
             "https?://www\\.gyan\\.dev/ffmpeg/builds/ffmpeg-release-essentials\\.zip",
             "https://www.gyan.dev/ffmpeg/builds/release-version"

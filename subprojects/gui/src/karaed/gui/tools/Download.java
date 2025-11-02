@@ -8,18 +8,21 @@ import java.net.URLConnection;
 
 final class Download {
 
-    static void download(String url, ContentHandler handler) throws IOException {
+    static void download(String url, ContentHandler handler) throws IOException, InterruptedException {
         URLConnection conn = URI.create(url).toURL().openConnection();
-        try (InputStream is = conn.getInputStream()) {
-            handler.accept(is);
-        }
-        if (conn instanceof HttpURLConnection http) {
-            http.disconnect();
+        try {
+            try (InputStream is = conn.getInputStream()) {
+                handler.accept(is);
+            }
+        } finally {
+            if (conn instanceof HttpURLConnection http) {
+                http.disconnect();
+            }
         }
     }
 
     interface ContentHandler {
 
-        void accept(InputStream is) throws IOException;
+        void accept(InputStream is) throws IOException, InterruptedException;
     }
 }
