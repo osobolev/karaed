@@ -59,7 +59,7 @@ public final class ProjectFrame extends BaseFrame {
 
     public static JButton createToolsButton(BaseWindow owner, Tools tools) {
         JButton btnTools = new JButton(InputUtil.getIcon("/tools.png"));
-        btnTools.addActionListener(e -> new ToolsDialog(owner.getLogger(), owner.toWindow(), tools));
+        btnTools.addActionListener(e -> new ToolsDialog(owner.getLogger(), owner.toWindow(), false, tools));
         btnTools.setToolTipText("Tools setup");
         btnTools.setMargin(new Insets(0, 3, 0, 3));
         return btnTools;

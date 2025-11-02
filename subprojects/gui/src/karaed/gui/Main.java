@@ -165,8 +165,9 @@ public final class Main {
         ToolRunner.registerShutdown();
 
         ErrorLogger logger = new FileLogger("karaed.log");
-        Tools tools = Tools.create(".jkara");
-        ToolsDialog.fastCheckIfInstalled(logger, tools);
+        Tools tools = Tools.create(".karaed");
+        if (!ToolsDialog.fastCheckIfInstalled(logger, tools))
+            return;
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {

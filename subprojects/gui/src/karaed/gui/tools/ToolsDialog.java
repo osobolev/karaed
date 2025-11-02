@@ -2,6 +2,7 @@ package karaed.gui.tools;
 
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.BaseDialog;
+import karaed.gui.util.ShowMessage;
 import karaed.tools.Tools;
 
 import javax.swing.*;
@@ -16,6 +17,8 @@ public final class ToolsDialog extends BaseDialog {
 
     private final SetupTools tools;
     private final SourcesTab sources = new SourcesTab();
+
+    private boolean ok = false;
 
     private final JButton btnInstall = new  JButton(new AbstractAction("Install") {
         @Override
@@ -52,7 +55,7 @@ public final class ToolsDialog extends BaseDialog {
 
     private final Map<Tool, ToolRow> rows = new EnumMap<>(Tool.class);
 
-    public ToolsDialog(ErrorLogger logger, Window owner, Tools tools) {
+    public ToolsDialog(ErrorLogger logger, Window owner, boolean onStart, Tools tools) {
         super(owner, logger, "Tools setup");
         this.tools = SetupTools.create(tools);
 
@@ -90,6 +93,24 @@ public final class ToolsDialog extends BaseDialog {
         tab.add("Tool versions", main);
         tab.add("Advanced", sources.getVisual());
         add(tab, BorderLayout.CENTER);
+
+        if (onStart) {
+            JButton btnGo = new JButton(new AbstractAction("Continue") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    boolean allInstalled = rows.values().stream().allMatch(ToolRow::isInstalled);
+                    if (!allInstalled) {
+                        if (!ShowMessage.confirm2(ToolsDialog.this, "Not all tools are installed. Really continue?"))
+                            return;
+                    }
+                    ok = true;
+                    dispose();
+                }
+            });
+            JPanel butt = new  JPanel(new FlowLayout());
+            butt.add(btnGo);
+            add(butt, BorderLayout.SOUTH);
+        }
 
         runAction(
             actions -> actions.getInstalledVersions(List.of(Tool.values())),
@@ -160,11 +181,12 @@ public final class ToolsDialog extends BaseDialog {
         }
     }
 
-    public static void fastCheckIfInstalled(ErrorLogger logger, Tools tools) {
+    public static boolean fastCheckIfInstalled(ErrorLogger logger, Tools tools) {
         SetupTools setupTools = SetupTools.create(tools);
         if (setupTools.installed(Tool.PYTHON) && setupTools.installed(Tool.PIP) && setupTools.installed(Tool.FFMPEG)) {
-            return;
+            return true;
         }
-        new ToolsDialog(logger, null, setupTools);
+        ToolsDialog dlg = new ToolsDialog(logger, null, true, setupTools);
+        return dlg.ok;
     }
 }
