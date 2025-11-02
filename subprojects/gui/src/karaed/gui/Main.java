@@ -166,8 +166,6 @@ public final class Main {
 
         ErrorLogger logger = new FileLogger("karaed.log");
         Tools tools = Tools.create(".karaed");
-        if (!ToolsDialog.fastCheckIfInstalled(logger, tools))
-            return;
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
@@ -180,6 +178,8 @@ public final class Main {
                 ShowMessage.error(null, "No root directory specified");
                 return;
             }
+            if (!ToolsDialog.fastCheckIfInstalled(logger, tools))
+                return;
             Path rootDir = Path.of(pargs.rootDir);
             Workdir workDir = start(logger, pargs, () -> new StartFrame(logger, tools, rootDir));
             if (workDir == null)
