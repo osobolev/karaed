@@ -14,7 +14,7 @@ public class BaseFrame extends JFrame implements BaseWindow {
         this.logger = logger;
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        CloseUtil.listen(this, this::onClosing);
+        WindowUtil.initWindow(this, this::onClosing);
     }
 
     @Override
