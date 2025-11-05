@@ -1,9 +1,6 @@
 package karaed.gui.start;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.LayoutManager;
+import java.awt.*;
 
 final class TopLayout implements LayoutManager {
 
@@ -26,7 +23,8 @@ final class TopLayout implements LayoutManager {
             sumw += size.width;
             maxh = Math.max(maxh, size.height);
         }
-        return new Dimension(sumw, maxh);
+        Insets insets = parent.getInsets();
+        return new Dimension(insets.left + sumw + insets.right, insets.top + maxh + insets.bottom);
     }
 
     @Override
@@ -39,13 +37,17 @@ final class TopLayout implements LayoutManager {
         int count = parent.getComponentCount();
         if (count < 2)
             return;
+
+        int width = parent.getWidth();
+        int height = parent.getHeight();
+        Insets insets = parent.getInsets();
+
         Component c1 = parent.getComponent(0);
         Dimension s1 = c1.getPreferredSize();
-
-        c1.setBounds((parent.getWidth() - s1.width) / 2, (parent.getHeight() - s1.height) / 2, s1.width, s1.height);
+        c1.setBounds((width - s1.width) / 2, (height - s1.height) / 2, s1.width, s1.height);
 
         Component c2 = parent.getComponent(1);
         Dimension s2 = c2.getPreferredSize();
-        c2.setBounds(parent.getWidth() - s2.width - 5, (parent.getHeight() - s2.height) / 2, s2.width, s2.height);
+        c2.setBounds(width - s2.width - 5 - insets.right, (height - s2.height) / 2, s2.width, s2.height);
     }
 }
