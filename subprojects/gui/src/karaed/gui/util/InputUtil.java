@@ -15,7 +15,7 @@ import java.net.URL;
 
 public final class InputUtil {
 
-    public static Icon getIcon(String path) {
+    public static ImageIcon getIcon(String path) {
         URL url = InputUtil.class.getResource(path);
         assert url != null;
         return new ImageIcon(url);
