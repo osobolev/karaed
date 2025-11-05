@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 
 public final class ProjectFrame extends BaseFrame {
 
+    private static final Icon ICON_PLAY = InputUtil.getIcon("/play.png");
+    private static final Icon ICON_STOP = InputUtil.getIcon("/stop.png");
+
     private final Workdir workDir;
     private final ToolRunner runner;
     private final Runnable afterClose;
@@ -42,13 +45,13 @@ public final class ProjectFrame extends BaseFrame {
 
     private volatile Thread runThread = null;
 
-    private final Action runAction = new AbstractAction("Run") { // todo: add icon
+    private final Action runAction = new AbstractAction("Run", ICON_PLAY) {
         @Override
         public void actionPerformed(ActionEvent e) {
             runPipeline();
         }
     };
-    private final Action stopAction = new AbstractAction("Stop") { // todo: add icon
+    private final Action stopAction = new AbstractAction("Stop", ICON_STOP) {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (runThread != null) {
