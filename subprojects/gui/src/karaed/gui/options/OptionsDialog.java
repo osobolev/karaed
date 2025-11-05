@@ -18,14 +18,20 @@ import java.util.List;
 public final class OptionsDialog extends BaseDialog {
 
     private final JTextField tfDir;
-    private final JPanel main = new JPanel();
-    private final JPanel options = new JPanel();
-    private final JPanel advanced = new JPanel();
+    private final JPanel main = box();
+    private final JPanel options = box();
+    private final JPanel advanced = box();
     private final List<BasePanel<?>> panels = new ArrayList<>();
 
     private final OptCtx ctx;
 
     private boolean saved = false;
+
+    private static JPanel box() {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        return p;
+    }
 
     private void add(BasePanel<?> panel, JPanel to) {
         to.add(panel.getVisual());
@@ -36,10 +42,6 @@ public final class OptionsDialog extends BaseDialog {
                           Path defaultDir, String defaultURL) throws IOException {
         super(owner, logger, title);
         this.ctx = new OptCtx(workDir);
-
-        main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
-        options.setLayout(new BoxLayout(options, BoxLayout.Y_AXIS));
-        advanced.setLayout(new BoxLayout(advanced, BoxLayout.Y_AXIS));
 
         if (ctx.workDir == null) {
             tfDir = new JTextField(40);
