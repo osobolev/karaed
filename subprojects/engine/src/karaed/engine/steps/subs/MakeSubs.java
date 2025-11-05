@@ -125,14 +125,7 @@ public final class MakeSubs {
             if (i > space1 && i < line.size()) {
                 double prevWord = lastWord.timestamps.end();
                 double nextWord = line.get(i).timestamps.start();
-                boolean tagSpaces;
-                if (options.words()) {
-                    double pause = nextWord - prevWord;
-                    tagSpaces = pause >= options.tagPause();
-                } else {
-                    tagSpaces = true;
-                }
-                if (tagSpaces) {
+                if (!options.words()) {
                     lastWordEnd = lastWord.timestamps.end();
                     append(spaces, tag, prevWord, nextWord);
                 } else {
