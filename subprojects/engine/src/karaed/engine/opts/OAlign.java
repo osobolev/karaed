@@ -6,6 +6,6 @@ public record OAlign(
 ) {
 
     public OAlign() {
-        this(false, 0.5);
+        this(true, 0.5);
     }
 }
