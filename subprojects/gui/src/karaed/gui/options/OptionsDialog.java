@@ -28,9 +28,7 @@ public final class OptionsDialog extends BaseDialog {
     private boolean saved = false;
 
     private static JPanel box() {
-        JPanel p = new JPanel();
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        return p;
+        return new JPanel(new VerticalLayout());
     }
 
     private void add(BasePanel<?> panel, JPanel to) {
