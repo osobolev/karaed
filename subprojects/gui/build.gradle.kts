@@ -27,3 +27,7 @@ tasks.register("distr", Copy::class) {
     }
     into("$rootDir/distr")
 }
+
+tasks.clean {
+    delete("$rootDir/distr")
+}
