@@ -44,8 +44,6 @@ tasks.withType(JavaCompile::class).configureEach {
     options.compilerArgs.add("-Xlint:deprecation")
 }
 
-tasks.named("clean").configure {
-    doLast {
-        delete("$projectDir/out")
-    }
+tasks.clean {
+    delete("$projectDir/out")
 }
