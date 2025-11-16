@@ -48,6 +48,6 @@ tasks {
 
 tasks.named("clean").configure {
     doLast {
-        project.delete("$projectDir/out")
+        delete("$projectDir/out")
     }
 }
