@@ -38,12 +38,10 @@ dependencies {
     "manualImplementation"(sourceSets["main"].output)
 }
 
-tasks {
-    withType(JavaCompile::class) {
-        options.encoding = "UTF-8"
-        options.release.set(21)
-        options.compilerArgs.add("-Xlint:deprecation")
-    }
+tasks.withType(JavaCompile::class).configureEach {
+    options.encoding = "UTF-8"
+    options.release.set(21)
+    options.compilerArgs.add("-Xlint:deprecation")
 }
 
 tasks.named("clean").configure {
