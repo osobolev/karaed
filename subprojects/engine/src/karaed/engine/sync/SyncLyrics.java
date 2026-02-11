@@ -1,4 +1,4 @@
-package karaed.engine.steps.subs;
+package karaed.engine.sync;
 
 import karaed.engine.KaraException;
 import karaed.engine.formats.aligned.Aligned;
@@ -11,7 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-final class SyncLyrics {
+public final class SyncLyrics {
+
+    public final double lastEnd;
+    private final List<TargetSegment> lyrics;
+
+    private SyncLyrics(double lastEnd, List<TargetSegment> lyrics) {
+        this.lastEnd = lastEnd;
+        this.lyrics = lyrics;
+    }
 
     private static List<TargetSegment> targetWordSegments(List<String> lines,
                                                           Function<String, List<Word>> splitToWords) {
@@ -26,12 +34,16 @@ final class SyncLyrics {
         return lyrics;
     }
 
-    static double sync(Path textFile, Path alignedFile,
-                       Function<Aligned, List<SrcSegment>> getSrcSegments,
-                       Function<String, List<Word>> splitToWords,
-                       List<List<TargetSegment>> lines) throws IOException {
+    public static SyncLyrics create(Path textFile, Path alignedFile, boolean byWords) throws IOException {
         List<TargetSegment> lyrics;
         {
+            Function<String, List<Word>> splitToWords;
+            if (byWords) {
+                splitToWords = SyncWords::splitToWords;
+            } else {
+                splitToWords = SyncChars::splitToWords;
+            }
+
             List<String> textLines = Files.readAllLines(textFile);
             lyrics = targetWordSegments(textLines, splitToWords);
         }
@@ -39,6 +51,13 @@ final class SyncLyrics {
         List<SrcSegment> aligned;
         double lastEnd = 0;
         {
+            Function<Aligned, List<SrcSegment>> getSrcSegments;
+            if (byWords) {
+                getSrcSegments = SyncWords::srcWordSegments;
+            } else {
+                getSrcSegments = SyncChars::srcCharSegments;
+            }
+
             Aligned alignedLyrics = JsonUtil.readFile(alignedFile, Aligned.class);
             aligned = getSrcSegments.apply(alignedLyrics);
             if (!aligned.isEmpty()) {
@@ -71,11 +90,11 @@ final class SyncLyrics {
             ia++;
         }
 
-        splitToLines(lyrics, lines);
-        return lastEnd;
+        return new SyncLyrics(lastEnd, lyrics);
     }
 
-    private static void splitToLines(List<TargetSegment> lyrics, List<List<TargetSegment>> lines) {
+    public List<List<TargetSegment>> getLines() {
+        List<List<TargetSegment>> lines = new ArrayList<>();
         lines.add(new ArrayList<>());
         for (TargetSegment cs : lyrics) {
             String ch = cs.text;
@@ -86,5 +105,6 @@ final class SyncLyrics {
             List<TargetSegment> currentLine = lines.getLast();
             currentLine.add(cs);
         }
+        return lines;
     }
 }

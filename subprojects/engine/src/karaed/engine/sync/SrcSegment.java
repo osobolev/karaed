@@ -1,4 +1,4 @@
-package karaed.engine.steps.subs;
+package karaed.engine.sync;
 
 record SrcSegment(
     String text,

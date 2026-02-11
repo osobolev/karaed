@@ -2,17 +2,17 @@ package karaed.engine.steps.subs;
 
 import ass.model.DialogLine;
 import karaed.engine.ass.AssUtil;
-import karaed.engine.formats.aligned.Aligned;
 import karaed.engine.opts.OAlign;
+import karaed.engine.sync.SyncLyrics;
+import karaed.engine.sync.TargetSegment;
+import karaed.engine.sync.Timestamps;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 public final class MakeSubs {
 
@@ -40,17 +40,9 @@ public final class MakeSubs {
         """;
 
     public static void makeSubs(Path textFile, Path alignedFile, OAlign options, Path subsFile) throws IOException {
-        Function<Aligned, List<SrcSegment>> getSrcSegments;
-        Function<String, List<Word>> splitToWords;
-        if (options.words()) {
-            getSrcSegments = SyncWords::srcWordSegments;
-            splitToWords = SyncWords::splitToWords;
-        } else {
-            getSrcSegments = SyncChars::srcCharSegments;
-            splitToWords = SyncChars::splitToWords;
-        }
-        List<List<TargetSegment>> lines = new ArrayList<>();
-        double lastEnd = SyncLyrics.sync(textFile, alignedFile, getSrcSegments, splitToWords, lines);
+        SyncLyrics synced = SyncLyrics.create(textFile, alignedFile, options.words());
+        List<List<TargetSegment>> lines = synced.getLines();
+        double lastEnd = synced.lastEnd;
 
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
             long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
@@ -72,7 +64,7 @@ public final class MakeSubs {
         double minStart = Double.NaN;
         double maxEnd = Double.NaN;
         for (TargetSegment ch : line) {
-            Timestamps ts = ch.timestamps;
+            Timestamps ts = ch.timestamps();
             if (ts == null)
                 continue;
             if (Double.isNaN(minStart) || ts.start() < minStart) {
@@ -89,7 +81,7 @@ public final class MakeSubs {
         // 1. Skip all leading spaces (really should not happen)
         while (i < line.size()) {
             TargetSegment ch = line.get(i);
-            if (ch.timestamps != null)
+            if (ch.timestamps() != null)
                 break;
             buf.append(ch.text);
             i++;
@@ -100,7 +92,7 @@ public final class MakeSubs {
             int word1 = i;
             while (i < line.size()) {
                 TargetSegment ch = line.get(i);
-                if (ch.timestamps == null)
+                if (ch.timestamps() == null)
                     break;
                 i++;
             }
@@ -108,14 +100,14 @@ public final class MakeSubs {
             int space1 = i;
             while (i < line.size()) {
                 TargetSegment ch = line.get(i);
-                if (ch.timestamps != null)
+                if (ch.timestamps() != null)
                     break;
                 i++;
             }
 
             for (int j = word1; j < space1 - 1; j++) {
                 TargetSegment ch = line.get(j);
-                Timestamps ts = ch.timestamps;
+                Timestamps ts = ch.timestamps();
                 append(buf, tag, ts.start(), ts.end());
                 buf.append(ch.text);
             }
@@ -123,23 +115,23 @@ public final class MakeSubs {
             double lastWordEnd;
             StringBuilder spaces = new StringBuilder();
             if (i > space1 && i < line.size()) {
-                double prevWord = lastWord.timestamps.end();
-                double nextWord = line.get(i).timestamps.start();
+                double prevWord = lastWord.timestamps().end();
+                double nextWord = line.get(i).timestamps().start();
                 if (!options.words()) {
-                    lastWordEnd = lastWord.timestamps.end();
+                    lastWordEnd = lastWord.timestamps().end();
                     append(spaces, tag, prevWord, nextWord);
                 } else {
                     lastWordEnd = nextWord;
                 }
             } else {
-                lastWordEnd = lastWord.timestamps.end();
+                lastWordEnd = lastWord.timestamps().end();
             }
             for (int j = space1; j < i; j++) {
                 TargetSegment ch = line.get(j);
                 spaces.append(ch.text);
             }
             {
-                append(buf, tag, lastWord.timestamps.start(), lastWordEnd);
+                append(buf, tag, lastWord.timestamps().start(), lastWordEnd);
                 buf.append(lastWord.text);
             }
             buf.append(spaces);

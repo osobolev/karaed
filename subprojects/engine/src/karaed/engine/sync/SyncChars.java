@@ -1,4 +1,4 @@
-package karaed.engine.steps.subs;
+package karaed.engine.sync;
 
 import karaed.engine.ass.AssUtil;
 import karaed.engine.formats.aligned.AlignSegment;
