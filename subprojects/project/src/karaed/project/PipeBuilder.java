@@ -34,7 +34,7 @@ public final class PipeBuilder {
 
     public static PipeBuilder create(Workdir workDir) throws IOException {
         OInput input = JsonUtil.readFile(workDir.file("input.json"), OInput.class);
-        OVideo video = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
+        OVideo video = workDir.option("video.json", OVideo.class, OVideo::new);
         return new PipeBuilder(workDir, new Dependencies(input, video));
     }
 

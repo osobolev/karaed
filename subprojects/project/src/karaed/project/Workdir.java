@@ -1,8 +1,11 @@
 package karaed.project;
 
 import karaed.engine.video.VideoFinder;
+import karaed.json.JsonUtil;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public final class Workdir {
 
@@ -24,6 +27,11 @@ public final class Workdir {
 
     public Path option(String name) {
         return file(".options/" + name);
+    }
+
+    public <T> T option(String name, Class<T> cls, Supplier<T> defValue) throws IOException {
+        Path file = option(name);
+        return JsonUtil.readFile(file, cls, defValue);
     }
 
     public Path audio() {

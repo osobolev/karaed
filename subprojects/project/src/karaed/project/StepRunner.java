@@ -54,7 +54,7 @@ public final class StepRunner {
         Path audio = workDir.audio();
         Path info = workDir.info();
         OInput input = JsonUtil.readFile(workDir.file("input.json"), OInput.class);
-        OCut cut = JsonUtil.readFile(workDir.option("cut.json"), OCut.class, OCut::new);
+        OCut cut = workDir.option("cut.json", OCut.class, OCut::new);
         try {
             Youtube.download(runner, input, cut, audio, info, workDir.video());
         } catch (IOException | InterruptedException ex) {
@@ -66,8 +66,7 @@ public final class StepRunner {
     }
 
     private void demucs() throws IOException, InterruptedException {
-        Path configFile = workDir.option("demucs.json");
-        ODemucs options = JsonUtil.readFile(configFile, ODemucs.class, ODemucs::new);
+        ODemucs options = workDir.option("demucs.json", ODemucs.class, ODemucs::new);
         try {
             Demucs.demucs(runner, workDir.audio(), options, workDir.dir());
         } catch (IOException | InterruptedException ex) {
@@ -117,7 +116,7 @@ public final class StepRunner {
         Path subs = workDir.file("subs.ass");
         Path text = workDir.file("text.txt");
         Path aligned = workDir.file("aligned.json");
-        OAlign options = JsonUtil.readFile(workDir.option("align.json"), OAlign.class, OAlign::new);
+        OAlign options = workDir.option("align.json", OAlign.class, OAlign::new);
         runner.println("Making editable subtitles");
         MakeSubs.makeSubs(text, aligned, options, subs);
     }
@@ -126,13 +125,13 @@ public final class StepRunner {
         Path karaoke = workDir.file("karaoke.ass");
         Path subs = workDir.file("subs.ass");
         Path info = workDir.info();
-        OKaraoke options = JsonUtil.readFile(workDir.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
+        OKaraoke options = workDir.option("karaoke.json", OKaraoke.class, OKaraoke::new);
         runner.println("Making karaoke subtitles");
         AssJoiner.join(subs, info, options, karaoke);
     }
 
     private void prepareVideo() throws IOException, InterruptedException {
-        OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
+        OVideo options = workDir.option("video.json", OVideo.class, OVideo::new);
         if (options.useOriginalVideo()) {
             VideoFinder finder = workDir.video();
             try {
@@ -151,7 +150,7 @@ public final class StepRunner {
         Path karaokeVideo = workDir.file("karaoke.mp4");
         Path noVocals = workDir.noVocals();
         Path karaoke = workDir.file("karaoke.ass");
-        OVideo options = JsonUtil.readFile(workDir.option("video.json"), OVideo.class, OVideo::new);
+        OVideo options = workDir.option("video.json", OVideo.class, OVideo::new);
         Path video = options.useOriginalVideo() ? MakeVideo.getVideo(workDir.video()) : null;
         try {
             MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
