@@ -33,14 +33,27 @@ class SyncAny {
         return new Timestamps(from, to);
     }
 
+    private static List<TargetSegment> targetWordSegments(List<String> lines,
+                                                          Function<String, List<Word>> splitToWords) {
+        List<TargetSegment> lyrics = new ArrayList<>();
+        for (String line : lines) {
+            List<Word> words = splitToWords.apply(line);
+            for (Word word : words) {
+                lyrics.add(new TargetSegment(word.text(), word.letters()));
+            }
+            lyrics.add(new TargetSegment("\n", false));
+        }
+        return lyrics;
+    }
+
     static double sync(Path textFile, Path alignedFile,
                        Function<Aligned, List<SrcSegment>> getSrcSegments,
-                       Function<List<String>, List<TargetSegment>> getTargetSegments,
+                       Function<String, List<Word>> splitToWords,
                        List<List<TargetSegment>> lines) throws IOException {
         List<TargetSegment> lyrics;
         {
             List<String> textLines = Files.readAllLines(textFile);
-            lyrics = getTargetSegments.apply(textLines);
+            lyrics = targetWordSegments(textLines, splitToWords);
         }
 
         List<SrcSegment> aligned;

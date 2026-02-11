@@ -10,14 +10,13 @@ import java.util.List;
 
 final class SyncChars extends SyncAny {
 
-    static List<TargetSegment> targetCharSegments(List<String> lines) {
-        String text = String.join("\n", lines);
-        List<TargetSegment> lyrics = new ArrayList<>();
+    static List<Word> splitToWords(String text) {
+        List<Word> words = new ArrayList<>();
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
-            lyrics.add(new TargetSegment(String.valueOf(ch), AssUtil.isLetter(ch)));
+            words.add(new Word(String.valueOf(ch), AssUtil.isLetter(ch)));
         }
-        return lyrics;
+        return words;
     }
 
     static List<SrcSegment> srcCharSegments(Aligned alignedLyrics) {

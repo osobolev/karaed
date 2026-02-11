@@ -11,11 +11,6 @@ import java.util.List;
 
 final class SyncWords extends SyncAny {
 
-    private record Word(
-        String text,
-        boolean letters
-    ) {}
-
     private static final class WordTokenizer {
 
         final List<Word> words = new ArrayList<>();
@@ -58,20 +53,8 @@ final class SyncWords extends SyncAny {
         }
     }
 
-    private static List<Word> splitToWords(String text) {
+    static List<Word> splitToWords(String text) {
         return new WordTokenizer().splitToWords(text);
-    }
-
-    static List<TargetSegment> targetWordSegments(List<String> lines) {
-        List<TargetSegment> lyrics = new ArrayList<>();
-        for (String line : lines) {
-            List<Word> words = splitToWords(line);
-            for (Word word : words) {
-                lyrics.add(new TargetSegment(word.text, word.letters));
-            }
-            lyrics.add(new TargetSegment("\n", false));
-        }
-        return lyrics;
     }
 
     static List<SrcSegment> srcWordSegments(Aligned alignedLyrics) {

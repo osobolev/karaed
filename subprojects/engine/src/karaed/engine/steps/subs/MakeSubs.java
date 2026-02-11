@@ -41,16 +41,16 @@ public final class MakeSubs {
 
     public static void makeSubs(Path textFile, Path alignedFile, OAlign options, Path subsFile) throws IOException {
         Function<Aligned, List<SrcSegment>> getSrcSegments;
-        Function<List<String>, List<TargetSegment>> getTargetSegments;
+        Function<String, List<Word>> splitToWords;
         if (options.words()) {
             getSrcSegments = SyncWords::srcWordSegments;
-            getTargetSegments = SyncWords::targetWordSegments;
+            splitToWords = SyncWords::splitToWords;
         } else {
             getSrcSegments = SyncChars::srcCharSegments;
-            getTargetSegments = SyncChars::targetCharSegments;
+            splitToWords = SyncChars::splitToWords;
         }
         List<List<TargetSegment>> lines = new ArrayList<>();
-        double lastEnd = SyncAny.sync(textFile, alignedFile, getSrcSegments, getTargetSegments, lines);
+        double lastEnd = SyncAny.sync(textFile, alignedFile, getSrcSegments, splitToWords, lines);
 
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
             long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
