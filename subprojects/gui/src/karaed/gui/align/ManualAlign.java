@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -166,6 +167,13 @@ public final class ManualAlign extends BaseDialog {
                 Ranges currData = loadData(rangesFile);
                 if (!Objects.equals(newData, currData)) {
                     JsonUtil.writeFile(rangesFile, newData);
+                } else {
+                    // If text is modified externally, touch ranges file even if it is not changed:
+                    FileTime rangesTime = Files.getLastModifiedTime(rangesFile);
+                    FileTime textTime = Files.getLastModifiedTime(textFile);
+                    if (textTime.compareTo(rangesTime) > 0) {
+                        Files.setLastModifiedTime(rangesFile, textTime);
+                    }
                 }
 
                 String currLang = Align.readLanguage(langFile);
