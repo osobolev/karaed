@@ -158,14 +158,16 @@ public final class ManualAlign extends BaseDialog {
             List<String> newText = syncComponent.getText();
             String newLang = alignComponent.getLanguage();
             try {
-                Ranges currData = loadData(rangesFile);
-                if (!Objects.equals(newData, currData)) {
-                    JsonUtil.writeFile(rangesFile, newData);
-                }
                 List<String> currText = loadText(textFile);
                 if (!Objects.equals(newText, currText)) {
                     Files.write(textFile, newText);
                 }
+
+                Ranges currData = loadData(rangesFile);
+                if (!Objects.equals(newData, currData)) {
+                    JsonUtil.writeFile(rangesFile, newData);
+                }
+
                 String currLang = Align.readLanguage(langFile);
                 if (!Objects.equals(newLang, currLang)) {
                     Align.writeLanguage(langFile, newLang);
