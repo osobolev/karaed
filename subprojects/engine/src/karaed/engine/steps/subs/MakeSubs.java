@@ -50,7 +50,7 @@ public final class MakeSubs {
             splitToWords = SyncChars::splitToWords;
         }
         List<List<TargetSegment>> lines = new ArrayList<>();
-        double lastEnd = SyncAny.sync(textFile, alignedFile, getSrcSegments, splitToWords, lines);
+        double lastEnd = SyncLyrics.sync(textFile, alignedFile, getSrcSegments, splitToWords, lines);
 
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
             long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
