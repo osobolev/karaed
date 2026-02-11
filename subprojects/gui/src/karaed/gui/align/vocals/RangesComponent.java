@@ -84,7 +84,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 stop();
             }
             repaint();
-       });
+        });
 
         addMouseListener(new MouseAdapter() {
 
@@ -516,7 +516,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
         repaint();
     }
 
-    AreaParams getModelParams() {
+    private AreaParams getModelParams() {
         return editingArea == null ? model.getParams() : editingArea.params();
     }
 
