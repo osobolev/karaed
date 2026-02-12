@@ -1,7 +1,7 @@
 package karaed.gui.components.music;
 
 import karaed.engine.formats.ranges.Range;
-import karaed.gui.align.ColorSequence;
+import karaed.gui.components.ColorSequence;
 
 import java.awt.Color;
 import java.awt.FontMetrics;

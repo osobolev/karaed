@@ -1,4 +1,4 @@
-package karaed.gui.align;
+package karaed.gui.components;
 
 import java.awt.Color;
 

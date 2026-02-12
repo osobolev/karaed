@@ -1,8 +1,8 @@
 package karaed.gui.components.music;
 
 import karaed.engine.formats.ranges.Range;
-import karaed.gui.align.ColorSequence;
 import karaed.gui.align.model.EditableRanges;
+import karaed.gui.components.ColorSequence;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.MenuBuilder;
 

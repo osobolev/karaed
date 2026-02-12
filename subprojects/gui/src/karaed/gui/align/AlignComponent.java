@@ -7,37 +7,31 @@ import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.align.model.Language;
 import karaed.gui.align.vocals.RangesComponent;
+import karaed.gui.components.MusicAndLyrics;
 import karaed.gui.components.lyrics.LyricsComponent;
 import karaed.gui.util.BaseWindow;
-import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 final class AlignComponent {
 
-    private static final Icon ICON_STOP = InputUtil.getIcon("/stop.png");
-
-    private final ColorSequence colors = new ColorSequence();
     private final EditableRanges model;
     private final Runnable onChange;
 
+    private final MusicAndLyrics<RangesComponent> ml;
     private final RangesComponent vocals;
+    private final LyricsComponent lyrics;
     private final JComboBox<Language> chLanguage = new JComboBox<>(Language.languages());
-    private final JSlider scaleSlider = new JSlider(2, 50, 30);
     private final JButton btnResplit = new JButton();
     private final ParamsComponent paramsInput = new ParamsComponent();
     private final JButton btnCommit = new JButton("Commit");
     private final JButton btnRollback = new JButton("Rollback");
     private final JPanel main = new JPanel(new BorderLayout());
-    private final LyricsComponent lyrics;
-
-    private final Action actionStop;
 
     private boolean splitModified = false;
 
@@ -45,30 +39,19 @@ final class AlignComponent {
         this.model = model;
         this.onChange = onChange;
 
-        this.lyrics = new LyricsComponent(colors);
-        this.vocals = new RangesComponent(
-            owner, colors, model,
-            this::endSplitting, lyrics::getLineAt
+        this.ml = new MusicAndLyrics<>(
+            model, lines,
+            (colors, lyrics) -> new RangesComponent(
+                owner, colors, model,
+                this::endSplitting, lyrics::getLineAt
+            )
         );
-        lyrics.addLyricsListener(vocals::showRange);
-        vocals.addGoToListener(lyrics::goTo);
-
-        this.actionStop = new AbstractAction("Stop", ICON_STOP) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                vocals.stop();
-            }
-        };
-
-        setScale();
-        scaleSlider.addChangeListener(e -> setScale());
-
-        enableDisableStop();
-        vocals.addPlayChangeListener(this::enableDisableStop);
+        this.vocals = ml.music;
+        this.lyrics = ml.lyrics;
 
         JPanel toolBar = new JPanel(new GridBagLayout());
         toolBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
-        toolBar.add(new JButton(actionStop), new GridBagConstraints(
+        toolBar.add(new JButton(ml.actionStop), new GridBagConstraints(
             0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0
         ));
         toolBar.add(new JLabel("Language:"), new GridBagConstraints(
@@ -80,7 +63,7 @@ final class AlignComponent {
         toolBar.add(new JLabel("Scale:"), new GridBagConstraints(
             3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 15, 0, 0), 0, 0
         ));
-        toolBar.add(scaleSlider, new GridBagConstraints(
+        toolBar.add(ml.scaleSlider, new GridBagConstraints(
             4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 0), 0, 0
         ));
 
@@ -109,8 +92,6 @@ final class AlignComponent {
             }
         });
 
-        lyrics.setLines(lines);
-
         model.addListener(rangesChanged -> {
             if (vocals.isSplitting()) {
                 splitModified = true;
@@ -118,19 +99,13 @@ final class AlignComponent {
                 onChange.run();
             }
             if (rangesChanged) {
-                syncNumbers();
-                lyrics.recolor();
+                ml.recolor(false, true);
             }
         });
         lyrics.addLinesChanged(() -> {
             onChange.run();
-            syncNumbers();
-            vocals.recolor();
+            ml.recolor(true, false);
         });
-
-        syncNumbers();
-        vocals.recolor();
-        lyrics.recolor();
 
         vocals.addParamListener(paramsInput::setParams);
         paramsInput.addListener(vocals::setParams);
@@ -171,8 +146,7 @@ final class AlignComponent {
             }
         } else {
             vocals.rollbackChanges();
-            syncNumbers();
-            lyrics.recolor();
+            ml.recolor(false, true);
         }
         vocals.finishSplitting();
         btnResplit.setEnabled(true);
@@ -180,19 +154,6 @@ final class AlignComponent {
         btnCommit.setEnabled(false);
         btnRollback.setEnabled(false);
         splitModified = false;
-    }
-
-    private void syncNumbers() {
-        int n = Math.min(model.getRangeCount(), lyrics.getLineCount());
-        colors.setNumber(n);
-    }
-
-    private void setScale() {
-        vocals.setScale(scaleSlider.getValue());
-    }
-
-    private void enableDisableStop() {
-        actionStop.setEnabled(vocals.isPlaying());
     }
 
     Document getRangesDocument() {
