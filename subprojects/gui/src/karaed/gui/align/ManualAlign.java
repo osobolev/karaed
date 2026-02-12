@@ -1,11 +1,10 @@
 package karaed.gui.align;
 
-import karaed.engine.audio.PreparedAudioSource;
-import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.engine.steps.align.Align;
 import karaed.gui.ErrorLogger;
 import karaed.gui.components.model.EditableRanges;
+import karaed.gui.components.model.RangesAndLyrics;
 import karaed.gui.util.BaseDialog;
 import karaed.json.JsonUtil;
 
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -86,42 +84,21 @@ public final class ManualAlign extends BaseDialog {
         setLocationRelativeTo(null);
     }
 
-    private static Ranges loadData(Path rangesFile) throws IOException {
-        if (Files.exists(rangesFile)) {
-            return JsonUtil.readFile(rangesFile, Ranges.class);
-        }
-        return null;
-    }
-
     private static List<String> loadText(Path textFile) throws IOException {
         return Files.readAllLines(textFile);
     }
 
     public static ManualAlign create(Window owner, ErrorLogger logger, boolean canContinue,
                                      Path vocals, Path textFile, Path rangesFile, Path langFile) throws IOException, UnsupportedAudioFileException {
-        PreparedAudioSource maxSource = PreparedAudioSource.create(vocals.toFile());
-
         List<String> textLines = loadText(textFile);
 
-        Ranges fileData = loadData(rangesFile);
-
-        EditableRanges model;
-        List<String> rangeLines;
-        if (fileData != null) {
-            model = new EditableRanges(maxSource, fileData.params(), fileData.ranges(), fileData.areas());
-            rangeLines = fileData.lines();
-        } else {
-            AreaParams params = new AreaParams(1, 0.5f, 0.5f);
-            model = new EditableRanges(maxSource, params, Collections.emptyList(), Collections.emptyList());
-            model.splitByParams(null, params);
-            rangeLines = textLines;
-        }
+        RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, textLines);
 
         String languageCode = Align.readLanguage(langFile);
 
         return new ManualAlign(
             owner, logger, canContinue,
-            rangesFile, model, rangeLines, fileData != null,
+            rangesFile, rl.ranges(), rl.rangeLines(), rl.fromFile(),
             textFile, textLines,
             langFile, languageCode
         );
@@ -163,7 +140,7 @@ public final class ManualAlign extends BaseDialog {
                     Files.write(textFile, newText);
                 }
 
-                Ranges currData = loadData(rangesFile);
+                Ranges currData = RangesAndLyrics.loadData(rangesFile);
                 if (!Objects.equals(newData, currData)) {
                     JsonUtil.writeFile(rangesFile, newData);
                 } else {
