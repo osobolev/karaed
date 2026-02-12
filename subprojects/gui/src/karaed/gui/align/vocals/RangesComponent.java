@@ -268,15 +268,15 @@ public final class RangesComponent extends JComponent implements Scrollable {
 
         super.paintComponent(g);
 
-        FontMetrics fm = getFontMetrics(getFont());
         int width = getWidth();
         int height = getHeight();
-        Painter painter = new Painter(g, fm, frameRate, pixPerSec, height, model, editingArea);
+        Sizer s = newSizer();
+        Painter painter = new Painter(g, s, height, model, editingArea);
         painter.paintScale(totalSeconds(), width);
 
         if (editingArea != null) {
-            int x1 = painter.frame2x(editingArea.from());
-            int x2 = painter.frame2x(editingArea.to());
+            int x1 = s.frame2x(editingArea.from());
+            int x2 = s.frame2x(editingArea.to());
 
             g.setColor(NOT_AREA_BG);
             g.fillRect(0, 0, x1, height);

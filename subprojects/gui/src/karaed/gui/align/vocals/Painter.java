@@ -9,7 +9,7 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 
-final class Painter extends Sizer {
+final class Painter {
 
     private static final int[] SECOND_TICKS = {1, 5, 10, 30, 60};
 
@@ -23,30 +23,31 @@ final class Painter extends Sizer {
     private static final Color ACTION_BAND_BG = Color.gray;
 
     private final Graphics g;
+    private final Sizer s;
     private final int height;
     private final EditableRanges model;
     private final EditableArea editingArea;
 
-    Painter(Graphics g, FontMetrics fm, float frameRate, float pixPerSec, int height,
+    Painter(Graphics g, Sizer s, int height,
             EditableRanges model, EditableArea editingArea) {
-        super(fm, frameRate, pixPerSec);
         this.g = g;
+        this.s = s;
         this.height = height;
         this.model = model;
         this.editingArea = editingArea;
     }
 
     void paintPlay(Range range, long millis) {
-        int x1 = frame2x(range.from());
-        int x2 = frame2x(range.to());
-        int y0 = seekY1();
-        int h = SEEK_H;
+        int x1 = s.frame2x(range.from());
+        int x2 = s.frame2x(range.to());
+        int y0 = s.seekY1();
+        int h = Sizer.SEEK_H;
         {
             g.setColor(Color.black);
-            int width = width(x1, x2);
+            int width = Measurer.width(x1, x2);
             g.fillRect(x1, y0, width, h);
         }
-        int xp = x1 + sec2pix(millis / 1000f);
+        int xp = x1 + s.sec2pix(millis / 1000f);
         if (xp < x2) {
             g.setColor(Color.white);
             g.fillRect(xp - 2, y0, 4, h);
@@ -57,7 +58,7 @@ final class Painter extends Sizer {
 
     private int getTick(int minTickWidth, int[] ticks) {
         for (int tickSize : ticks) {
-            int pixels = sec2pix(tickSize);
+            int pixels = s.sec2pix(tickSize);
             if (pixels >= minTickWidth) {
                 return tickSize;
             }
@@ -66,46 +67,47 @@ final class Painter extends Sizer {
     }
 
     void paintScale(int seconds, int width) {
+        FontMetrics fm = s.fm;
         int h = fm.getHeight();
         g.setColor(Color.black);
         g.drawLine(0, h, width, h);
 
         int bigTick = getTick(fm.stringWidth("00:00") * 4, SECOND_TICKS);
         if (bigTick > 0) {
-            for (int s = 0; s <= seconds; s += bigTick) {
-                int x = sec2x(s);
-                String str = Range.formatTime(s);
+            for (int sec = 0; sec <= seconds; sec += bigTick) {
+                int x = s.sec2x(sec);
+                String str = Range.formatTime(sec);
                 g.drawString(str, x - fm.stringWidth(str) / 2, fm.getAscent());
                 g.drawLine(x, h, x, h + 10);
             }
         }
         int smallTick = getTick(10, SECOND_TICKS);
         if (smallTick > 0) {
-            for (int s = 0; s <= seconds; s += smallTick) {
-                int x = sec2x(s);
+            for (int sec = 0; sec <= seconds; sec += smallTick) {
+                int x = s.sec2x(sec);
                 g.drawLine(x, h, x, h + 5);
             }
         }
     }
 
     void paint(ColorSequence colors, RangeIndexes rangeIndexes) {
-        int ya = areaEditY1();
+        int ya = s.areaEditY1();
         for (EditableArea area : model.getAreas()) {
-            int x1 = frame2x(area.from());
-            int x2 = frame2x(area.to());
-            int width = width(x1, x2);
+            int x1 = s.frame2x(area.from());
+            int x2 = s.frame2x(area.to());
+            int width = Measurer.width(x1, x2);
             if (area != editingArea) {
                 g.setColor(AREA_BG);
                 g.fillRect(x1, 0, width, height);
             }
             g.setColor(ACTION_BAND_BG);
-            g.fillRect(x1, ya, width, AREA_EDIT_H);
+            g.fillRect(x1, ya, width, Sizer.AREA_EDIT_H);
             g.setColor(Color.darkGray);
             g.drawLine(x1, ya, x1 + width, ya);
-            g.drawLine(x1, ya + AREA_EDIT_H, x1 + width, ya + AREA_EDIT_H);
+            g.drawLine(x1, ya + Sizer.AREA_EDIT_H, x1 + width, ya + Sizer.AREA_EDIT_H);
         }
 
-        int yr = rangeY1();
+        int yr = s.rangeY1();
         int i = 0;
         for (Range range : model.getRanges()) {
             int colorIndex = i++;
@@ -114,10 +116,10 @@ final class Painter extends Sizer {
             }
             Color color = colors.getColor(colorIndex, true);
             g.setColor(color == null ? Color.black : color);
-            int x1 = frame2x(range.from());
-            int x2 = frame2x(range.to());
-            int width = width(x1, x2);
-            g.fillRect(x1, yr, width, RANGE_H);
+            int x1 = s.frame2x(range.from());
+            int x2 = s.frame2x(range.to());
+            int width = Measurer.width(x1, x2);
+            g.fillRect(x1, yr, width, Sizer.RANGE_H);
         }
     }
 
