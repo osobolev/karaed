@@ -255,7 +255,8 @@ public final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private void doPaint(AreaPainter painter, RangeIndexes rangeIndexes) {
-        painter.paint(colors, rangeIndexes);
+        painter.paintAreas(model, editingArea);
+        painter.paintRanges(colors, model.getRanges(), rangeIndexes);
     }
 
     private boolean canEdit() {
@@ -271,7 +272,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
         int width = getWidth();
         int height = getHeight();
         AreaSizer s = newSizer();
-        AreaPainter painter = new AreaPainter(g, s, height, model, editingArea);
+        AreaPainter painter = new AreaPainter(g, s, height);
         painter.paintScale(totalSeconds(), width);
 
         if (editingArea != null) {
