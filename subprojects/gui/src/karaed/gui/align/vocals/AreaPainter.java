@@ -23,12 +23,12 @@ final class AreaPainter {
     private static final Color ACTION_BAND_BG = Color.gray;
 
     private final Graphics g;
-    private final Sizer s;
+    private final AreaSizer s;
     private final int height;
     private final EditableRanges model;
     private final EditableArea editingArea;
 
-    AreaPainter(Graphics g, Sizer s, int height,
+    AreaPainter(Graphics g, AreaSizer s, int height,
                 EditableRanges model, EditableArea editingArea) {
         this.g = g;
         this.s = s;
@@ -101,10 +101,10 @@ final class AreaPainter {
                 g.fillRect(x1, 0, width, height);
             }
             g.setColor(ACTION_BAND_BG);
-            g.fillRect(x1, ya, width, Sizer.AREA_EDIT_H);
+            g.fillRect(x1, ya, width, AreaSizer.AREA_EDIT_H);
             g.setColor(Color.darkGray);
             g.drawLine(x1, ya, x1 + width, ya);
-            g.drawLine(x1, ya + Sizer.AREA_EDIT_H, x1 + width, ya + Sizer.AREA_EDIT_H);
+            g.drawLine(x1, ya + AreaSizer.AREA_EDIT_H, x1 + width, ya + AreaSizer.AREA_EDIT_H);
         }
 
         int yr = s.rangeY1();

@@ -169,7 +169,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
                     // No areas to show cursor for
                     return null;
                 }
-                Sizer s = newSizer();
+                AreaSizer s = newSizer();
                 int frame = s.x2frame(e.getX());
                 EditableArea area = s.findArea(frame, e.getY(), model);
                 if (isSplitting()) {
@@ -246,8 +246,8 @@ public final class RangesComponent extends JComponent implements Scrollable {
         return new Measurer(frameRate, pixPerSec);
     }
 
-    private Sizer newSizer() {
-        return new Sizer(getFontMetrics(getFont()), frameRate, pixPerSec);
+    private AreaSizer newSizer() {
+        return new AreaSizer(getFontMetrics(getFont()), frameRate, pixPerSec);
     }
 
     private int totalSeconds() {
@@ -270,7 +270,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
 
         int width = getWidth();
         int height = getHeight();
-        Sizer s = newSizer();
+        AreaSizer s = newSizer();
         AreaPainter painter = new AreaPainter(g, s, height, model, editingArea);
         painter.paintScale(totalSeconds(), width);
 
@@ -322,7 +322,7 @@ public final class RangesComponent extends JComponent implements Scrollable {
     }
 
     private void mouseClick(MouseEvent me) {
-        Sizer s = newSizer();
+        AreaSizer s = newSizer();
         int frame = s.x2frame(me.getX());
 
         Range range = s.findRange(frame, me.getY(), model);
