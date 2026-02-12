@@ -5,7 +5,6 @@ import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.engine.steps.align.Align;
 import karaed.gui.ErrorLogger;
-import karaed.gui.align.lyrics.SyncLyrics;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.BaseDialog;
 import karaed.json.JsonUtil;
