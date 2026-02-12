@@ -34,7 +34,7 @@ public abstract class Sizer extends Measurer {
         return delta >= 0 && delta < RANGE_H;
     }
 
-    public final Range findRange(int frame, int y, EditableRanges model) {
+    final Range findRange(int frame, int y, EditableRanges model) {
         if (isRangeY(y)) {
             return model.findRange(frame);
         }

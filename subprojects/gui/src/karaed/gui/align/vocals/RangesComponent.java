@@ -280,11 +280,8 @@ public final class RangesComponent extends MusicComponent {
         AreaSizer s = newSizer();
         int frame = s.x2frame(me.getX());
 
-        Range range = s.findRange(frame, me.getY(), model);
-        if (range != null) {
-            rangeClicked(me, range);
+        if (rangeMouseClick(me, s, frame))
             return;
-        }
 
         EditableArea area = s.findArea(frame, me.getY(), model);
         if (area != null) {

@@ -67,7 +67,16 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         return (int) Math.ceil(model.source.frames() / frameRate);
     }
 
-    protected final void rangeClicked(MouseEvent me, Range range) {
+    protected final boolean rangeMouseClick(MouseEvent me, Sizer s, int frame) {
+        Range range = s.findRange(frame, me.getY(), model);
+        if (range != null) {
+            rangeClicked(me, range);
+            return true;
+        }
+        return false;
+    }
+
+    private void rangeClicked(MouseEvent me, Range range) {
         if (me.getButton() == MouseEvent.BUTTON1) {
             playRange(range);
         } else if (me.getButton() == MouseEvent.BUTTON3) {
