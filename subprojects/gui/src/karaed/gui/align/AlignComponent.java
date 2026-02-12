@@ -40,10 +40,7 @@ final class AlignComponent {
 
         this.ml = new MusicAndLyrics<>(
             model, lines,
-            (colors, lyrics) -> new RangesComponent(
-                owner, colors, model,
-                this::endSplitting, lyrics::getLineAt
-            )
+            colors -> new RangesComponent(owner, colors, model, this::endSplitting)
         );
         this.vocals = ml.music;
         this.lyrics = ml.lyrics;

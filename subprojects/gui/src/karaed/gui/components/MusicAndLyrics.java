@@ -8,6 +8,7 @@ import karaed.gui.util.InputUtil;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.function.Function;
 
 public final class MusicAndLyrics<M extends MusicComponent> {
 
@@ -21,17 +22,14 @@ public final class MusicAndLyrics<M extends MusicComponent> {
     public final JSlider scaleSlider = new JSlider(2, 50, 30);
     public final Action actionStop;
 
-    public interface MusicFactory<M extends MusicComponent> {
-
-        M newMusic(ColorSequence colors, LyricsComponent lyrics);
-    }
-
-    public MusicAndLyrics(EditableRanges model, List<String> lines, MusicFactory<M> musicFactory) {
+    public MusicAndLyrics(EditableRanges model, List<String> lines,
+                          Function<ColorSequence, M> musicFactory) {
         this.model = model;
-        this.music = musicFactory.newMusic(colors, lyrics);
+        this.music = musicFactory.apply(colors);
 
         lyrics.addLyricsListener(music::showRange);
         music.addGoToListener(lyrics::goTo);
+        music.setTooltipSource(lyrics::getLineAt);
 
         this.actionStop = new AbstractAction("Stop", ICON_STOP) {
             @Override

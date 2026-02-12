@@ -19,7 +19,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
@@ -47,8 +46,8 @@ public final class RangesComponent extends MusicComponent {
     private Integer draggingBorder = null;
 
     public RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
-                           Consumer<Boolean> finishSplit, IntFunction<String> getText) {
-        super(owner, colors, model, getText);
+                           Consumer<Boolean> finishSplit) {
+        super(owner, colors, model);
         this.finishSplit = finishSplit;
 
         model.addListener(rangesChanged -> {

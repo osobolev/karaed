@@ -24,7 +24,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
     private final BaseWindow owner;
     private final ColorSequence colors;
     protected final EditableRanges model;
-    private final IntFunction<String> getText;
+    private IntFunction<String> getText;
     protected final float frameRate;
 
     private final List<Runnable> playChangeListeners = new ArrayList<>();
@@ -46,11 +46,10 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
 
     private final RangeIndexes paintedRangeIndex = new RangeIndexes();
 
-    protected MusicComponent(BaseWindow owner, ColorSequence colors, EditableRanges model, IntFunction<String> getText) {
+    protected MusicComponent(BaseWindow owner, ColorSequence colors, EditableRanges model) {
         this.owner = owner;
         this.colors = colors;
         this.model = model;
-        this.getText = getText;
         this.frameRate = model.source.frameRate();
 
         playingTimer.setInitialDelay(0);
@@ -101,8 +100,14 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
     protected void addRangeMenu(MenuBuilder menu, Range range) {
     }
 
+    public final void setTooltipSource(IntFunction<String> getText) {
+        this.getText = getText;
+    }
+
     @Override
     public final String getToolTipText(MouseEvent e) {
+        if (getText == null)
+            return null;
         Sizer s = newSizer();
         int frame = s.x2frame(e.getX());
         Range range = s.findRange(frame, e.getY(), model);
