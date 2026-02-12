@@ -8,6 +8,7 @@ import com.github.difflib.patch.Patch;
 import karaed.engine.ass.AssUtil;
 import karaed.engine.steps.align.Align;
 import karaed.gui.align.ColorSequence;
+import karaed.gui.components.lyrics.MyPainter;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;

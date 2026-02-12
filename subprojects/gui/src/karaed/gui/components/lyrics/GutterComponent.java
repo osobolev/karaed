@@ -1,4 +1,4 @@
-package karaed.gui.align.lyrics;
+package karaed.gui.components.lyrics;
 
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.MenuBuilder;

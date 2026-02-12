@@ -3,11 +3,11 @@ package karaed.gui.align;
 import karaed.engine.formats.ranges.Area;
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.formats.ranges.Ranges;
-import karaed.gui.align.lyrics.LyricsComponent;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
 import karaed.gui.align.model.Language;
 import karaed.gui.align.vocals.RangesComponent;
+import karaed.gui.components.lyrics.LyricsComponent;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
 
