@@ -9,9 +9,6 @@ import karaed.gui.align.model.EditableRanges;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.MenuBuilder;
 
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineEvent;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -19,46 +16,22 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 
 // todo: allow selection of ranges => make area of selected ranges???
 // todo: allow manual edit of ranges??? but how it is compatible with range generation from params???
 // todo: allow manual delete of ranges??? (or better mark area as empty?)
-public final class RangesComponent extends JComponent implements Scrollable {
+public final class RangesComponent extends MusicComponent {
 
     /**
      * Background color for everything outside of edited area
      */
     private static final Color NOT_AREA_BG = new Color(120, 120, 120, 120);
 
-    private final BaseWindow owner;
-    private final ColorSequence colors;
-    private final EditableRanges model;
     private final Consumer<Boolean> finishSplit;
-    private final IntFunction<String> getText;
-    private final float frameRate;
 
-    private final List<Runnable> playChangeListeners = new ArrayList<>();
     private final List<Consumer<AreaParams>> paramListeners = new ArrayList<>();
     private final List<AreaListener> areaListeners = new ArrayList<>();
-    private final List<IntConsumer> goToListeners = new ArrayList<>();
-
-    private float pixPerSec = 30.0f;
-
-    private Range playingRange = null;
-    private Clip playing = null;
-    private long playingStarted;
-    private final Timer playingTimer = new Timer(100, e -> {
-        if (playingRange != null) {
-            Sizer s = newSizer();
-            int x1 = s.frame2x(playingRange.from());
-            int x2 = s.frame2x(playingRange.to());
-            repaint(x1 - 3, s.seekY1() - 1, Sizer.width(x1, x2) + 4, Sizer.SEEK_H + 2);
-        }
-    });
-
-    private final RangeIndexes paintedRangeIndex = new RangeIndexes();
 
     private EditableArea editingArea = null;
 
@@ -72,12 +45,8 @@ public final class RangesComponent extends JComponent implements Scrollable {
 
     public RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
                            Consumer<Boolean> finishSplit, IntFunction<String> getText) {
-        this.owner = owner;
-        this.colors = colors;
-        this.model = model;
+        super(owner, colors, model, getText);
         this.finishSplit = finishSplit;
-        this.getText = getText;
-        this.frameRate = model.source.frameRate();
 
         model.addListener(rangesChanged -> {
             if (rangesChanged) {
@@ -237,43 +206,21 @@ public final class RangesComponent extends JComponent implements Scrollable {
                 repaint();
             }
         });
-
-        playingTimer.setInitialDelay(0);
-        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
-    private Measurer newMeasurer() {
-        return new Measurer(frameRate, pixPerSec);
-    }
-
-    private AreaSizer newSizer() {
+    AreaSizer newSizer() {
         return new AreaSizer(getFontMetrics(getFont()), frameRate, pixPerSec);
     }
 
-    private int totalSeconds() {
-        return (int) Math.ceil(model.source.frames() / frameRate);
-    }
-
-    private void doPaint(AreaPainter painter, RangeIndexes rangeIndexes) {
+    private void doPaint(AreaPainter painter, boolean saveRangeIndexes) {
         painter.paintAreas(model, editingArea);
-        painter.paintRanges(colors, model.getRanges(), rangeIndexes);
-    }
-
-    private boolean canEdit() {
-        return editingArea == null && !isSplitting();
+        paintRanges(painter, saveRangeIndexes);
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        paintedRangeIndex.clear();
-
-        super.paintComponent(g);
-
-        int width = getWidth();
-        int height = getHeight();
+    Painter doPaint(Graphics g, int width, int height) {
         AreaSizer s = newSizer();
         AreaPainter painter = new AreaPainter(g, s, height);
-        painter.paintScale(totalSeconds(), width);
 
         if (editingArea != null) {
             int x1 = s.frame2x(editingArea.from());
@@ -292,27 +239,24 @@ public final class RangesComponent extends JComponent implements Scrollable {
             Shape clip = g2.getClip();
             {
                 g2.clipRect(0, 0, x1, height);
-                doPaint(painter, null);
+                doPaint(painter, false);
                 g2.setClip(clip);
             }
             {
                 g2.clipRect(x2, 0, width - x2, height);
-                doPaint(painter, null);
+                doPaint(painter, false);
                 g2.setClip(clip);
             }
             g2.setComposite(composite);
             {
                 g2.clipRect(x1, 0, x2 - x1, height);
-                doPaint(painter, paintedRangeIndex);
+                doPaint(painter, true);
                 g2.setClip(clip);
             }
         } else {
-            doPaint(painter, paintedRangeIndex);
+            doPaint(painter, true);
         }
 
-        if (playingRange != null) {
-            painter.paintPlay(playingRange, System.currentTimeMillis() - playingStarted);
-        }
         if (dragStart != null && dragEnd != null) {
             painter.paintDrag(dragStart.intValue());
             painter.paintDrag(dragEnd.intValue());
@@ -320,6 +264,12 @@ public final class RangesComponent extends JComponent implements Scrollable {
         if (draggingBorder != null) {
             painter.paintDrag(draggingBorder.intValue());
         }
+
+        return painter;
+    }
+
+    private boolean canEdit() {
+        return editingArea == null && !isSplitting();
     }
 
     private void mouseClick(MouseEvent me) {
@@ -338,56 +288,17 @@ public final class RangesComponent extends JComponent implements Scrollable {
         }
     }
 
-    private void rangeClicked(MouseEvent me, Range range) {
-        if (me.getButton() == MouseEvent.BUTTON1) {
-            playRange(range);
-        } else if (me.getButton() == MouseEvent.BUTTON3) {
-            MenuBuilder menu = new MenuBuilder(me);
-            menu.add("Play", () -> playRange(range));
-            if (range == playingRange) {
-                menu.add("Stop", this::stop);
+    void addRangeMenu(MenuBuilder menu, Range range) {
+        if (canEdit()) {
+            Measurer m = newMeasurer();
+            int delta = m.sec2frame(1);
+            EditableArea area = model.newAreaFromRange(range, delta);
+            if (area != null) {
+                menu.add("Add area & edit", () -> {
+                    model.addArea(area);
+                    selectArea(area, true);
+                });
             }
-            menu.add("Go to lyrics", () -> {
-                Integer index = paintedRangeIndex.getIndex(range);
-                if (index != null) {
-                    for (IntConsumer listener : goToListeners) {
-                        listener.accept(index.intValue());
-                    }
-                }
-            });
-            if (canEdit()) {
-                Measurer m = newMeasurer();
-                int delta = m.sec2frame(1);
-                EditableArea area = model.newAreaFromRange(range, delta);
-                if (area != null) {
-                    menu.add("Add area & edit", () -> {
-                        model.addArea(area);
-                        selectArea(area, true);
-                    });
-                }
-            }
-            menu.showMenu();
-        }
-    }
-
-    private void playRange(Range range) {
-        stop();
-        try {
-            Clip clip = model.source.open(range.from(), range.to());
-            playingRange = range;
-            playing = clip;
-            clip.addLineListener(le -> {
-                if (le.getType() == LineEvent.Type.STOP) {
-                    stop();
-                }
-            });
-            firePlayChanged();
-            playingStarted = System.currentTimeMillis();
-            playingTimer.start();
-            clip.start();
-            repaint();
-        } catch (Exception ex) {
-            owner.error(ex);
         }
     }
 
@@ -440,80 +351,6 @@ public final class RangesComponent extends JComponent implements Scrollable {
         editingArea = area;
         fireParamsChanged();
         fireAreaSelected(forEdit);
-        repaint();
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        Sizer s = newSizer();
-        return new Dimension(s.prefWidth(totalSeconds()), s.prefHeight());
-    }
-
-    @Override
-    public String getToolTipText(MouseEvent e) {
-        Sizer s = newSizer();
-        int frame = s.x2frame(e.getX());
-        Range range = s.findRange(frame, e.getY(), model);
-        Integer index = paintedRangeIndex.getIndex(range);
-        if (index == null)
-            return null;
-        return getText.apply(index.intValue());
-    }
-
-    public void showRange(int lineIndex, boolean play) {
-        Range range = paintedRangeIndex.getRange(lineIndex);
-        if (range == null)
-            return;
-        JViewport vp = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
-        if (vp != null) {
-            Measurer m = newMeasurer();
-            int from = m.frame2x(range.from());
-            int to = m.frame2x(range.to());
-            int width = vp.getExtentSize().width;
-            int x = Math.max((from + to - width) / 2, 0);
-            vp.setViewPosition(new Point(x, 0));
-        }
-        if (play) {
-            playRange(range);
-        }
-    }
-
-    public void addGoToListener(IntConsumer listener) {
-        goToListeners.add(listener);
-    }
-
-    private void firePlayChanged() {
-        for (Runnable listener : playChangeListeners) {
-            listener.run();
-        }
-    }
-
-    public void addPlayChangeListener(Runnable listener) {
-        playChangeListeners.add(listener);
-    }
-
-    public boolean isPlaying() {
-        return playing != null;
-    }
-
-    public void stop() {
-        if (playing != null) {
-            playingTimer.stop();
-            playing.stop();
-            playingRange = null;
-            playing = null;
-            firePlayChanged();
-            repaint();
-        }
-    }
-
-    public void setScale(float pixPerSec) {
-        this.pixPerSec = pixPerSec;
-        revalidate();
-        repaint();
-    }
-
-    public void recolor() {
         repaint();
     }
 
@@ -570,35 +407,5 @@ public final class RangesComponent extends JComponent implements Scrollable {
         model.setRangesSilent(editingArea, beforeSplitting.params(), beforeSplitting.ranges());
         repaint();
         fireParamsChanged();
-    }
-
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-        Sizer s = newSizer();
-        return new Dimension(1000, s.prefHeight());
-    }
-
-    @Override
-    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return 50;
-    }
-
-    @Override
-    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        if (orientation == SwingConstants.VERTICAL) {
-            return 50;
-        } else {
-            return Math.max(visibleRect.width - 50, 50);
-        }
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportWidth() {
-        return false;
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportHeight() {
-        return true;
     }
 }
