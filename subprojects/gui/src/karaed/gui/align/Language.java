@@ -1,11 +1,11 @@
-package karaed.gui.align.model;
+package karaed.gui.align;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public record Language(String code, String name) {
+record Language(String code, String name) {
 
     @Override
     public String toString() {
@@ -133,11 +133,11 @@ public record Language(String code, String name) {
         LANGUAGES.addFirst(AUTO_DETECT);
     }
 
-    public static Language[] languages() {
+    static Language[] languages() {
         return LANGUAGES.toArray(new Language[0]);
     }
 
-    public static Language valueOf(String code) {
+    static Language valueOf(String code) {
         for (Language language : LANGUAGES) {
             if (Objects.equals(language.code(), code))
                 return language;

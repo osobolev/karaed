@@ -1,4 +1,4 @@
-package karaed.gui.align.model;
+package karaed.gui.components.model;
 
 public interface RangeEditListener {
 

@@ -1,4 +1,4 @@
-package karaed.gui.align.model;
+package karaed.gui.components.model;
 
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.RangeLike;

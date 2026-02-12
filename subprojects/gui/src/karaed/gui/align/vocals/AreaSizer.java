@@ -1,7 +1,7 @@
 package karaed.gui.align.vocals;
 
-import karaed.gui.align.model.EditableArea;
-import karaed.gui.align.model.EditableRanges;
+import karaed.gui.components.model.EditableArea;
+import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.music.Sizer;
 
 import java.awt.FontMetrics;

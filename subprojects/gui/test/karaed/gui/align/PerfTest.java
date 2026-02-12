@@ -2,7 +2,7 @@ package karaed.gui.align;
 
 import karaed.engine.audio.PreparedAudioSource;
 import karaed.engine.formats.ranges.AreaParams;
-import karaed.gui.align.model.EditableRanges;
+import karaed.gui.components.model.EditableRanges;
 
 import java.io.File;
 import java.util.Collections;

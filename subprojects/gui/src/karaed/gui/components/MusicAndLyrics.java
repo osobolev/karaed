@@ -1,7 +1,7 @@
 package karaed.gui.components;
 
-import karaed.gui.align.model.EditableRanges;
 import karaed.gui.components.lyrics.LyricsComponent;
+import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.music.MusicComponent;
 import karaed.gui.util.InputUtil;
 
