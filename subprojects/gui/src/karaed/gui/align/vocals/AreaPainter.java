@@ -9,7 +9,7 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 
-final class Painter {
+final class AreaPainter {
 
     private static final int[] SECOND_TICKS = {1, 5, 10, 30, 60};
 
@@ -28,8 +28,8 @@ final class Painter {
     private final EditableRanges model;
     private final EditableArea editingArea;
 
-    Painter(Graphics g, Sizer s, int height,
-            EditableRanges model, EditableArea editingArea) {
+    AreaPainter(Graphics g, Sizer s, int height,
+                EditableRanges model, EditableArea editingArea) {
         this.g = g;
         this.s = s;
         this.height = height;
