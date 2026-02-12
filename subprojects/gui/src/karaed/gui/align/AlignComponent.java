@@ -75,8 +75,7 @@ final class AlignComponent {
 
         JPanel pranges = new JPanel(new BorderLayout());
         pranges.add(params, BorderLayout.NORTH);
-        JScrollPane spv = new JScrollPane(vocals, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        pranges.add(spv, BorderLayout.CENTER);
+        pranges.add(ml.wrapMusic(), BorderLayout.CENTER);
 
         JPanel top = new JPanel(new BorderLayout());
         top.add(toolBar, BorderLayout.NORTH);

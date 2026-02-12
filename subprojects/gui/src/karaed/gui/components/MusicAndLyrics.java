@@ -73,4 +73,8 @@ public final class MusicAndLyrics<M extends MusicComponent> {
     private void enableDisableStop() {
         actionStop.setEnabled(music.isPlaying());
     }
+
+    public JScrollPane wrapMusic() {
+        return new JScrollPane(music, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    }
 }
