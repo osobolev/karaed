@@ -24,11 +24,16 @@ final class Painter extends Sizer {
 
     private final Graphics g;
     private final int height;
+    private final EditableRanges model;
+    private final EditableArea editingArea;
 
-    Painter(Graphics g, FontMetrics fm, float frameRate, float pixPerSec, int height) {
+    Painter(Graphics g, FontMetrics fm, float frameRate, float pixPerSec, int height,
+            EditableRanges model, EditableArea editingArea) {
         super(fm, frameRate, pixPerSec);
         this.g = g;
         this.height = height;
+        this.model = model;
+        this.editingArea = editingArea;
     }
 
     void paintPlay(Range range, long millis) {
@@ -83,8 +88,7 @@ final class Painter extends Sizer {
         }
     }
 
-    void paint(ColorSequence colors, EditableRanges model, EditableArea editingArea,
-               RangeIndexes rangeIndexes) {
+    void paint(ColorSequence colors, RangeIndexes rangeIndexes) {
         int ya = areaEditY1();
         for (EditableArea area : model.getAreas()) {
             int x1 = frame2x(area.from());
