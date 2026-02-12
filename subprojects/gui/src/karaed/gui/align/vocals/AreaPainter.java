@@ -2,6 +2,8 @@ package karaed.gui.align.vocals;
 
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
+import karaed.gui.components.music.Measurer;
+import karaed.gui.components.music.Painter;
 
 import java.awt.Color;
 import java.awt.Graphics;

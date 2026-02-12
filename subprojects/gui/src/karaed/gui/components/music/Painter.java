@@ -1,4 +1,4 @@
-package karaed.gui.align.vocals;
+package karaed.gui.components.music;
 
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.align.ColorSequence;
@@ -7,7 +7,7 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 
-class Painter {
+public class Painter {
 
     private static final int[] SECOND_TICKS = {1, 5, 10, 30, 60};
 
@@ -15,7 +15,7 @@ class Painter {
     private final Sizer s;
     protected final int height;
 
-    Painter(Graphics g, Sizer s, int height) {
+    public Painter(Graphics g, Sizer s, int height) {
         this.g = g;
         this.s = s;
         this.height = height;
@@ -91,7 +91,7 @@ class Painter {
         }
     }
 
-    final void paintDrag(int x) {
+    public final void paintDrag(int x) {
         g.setColor(Color.black);
         g.drawLine(x, 0, x, height);
     }

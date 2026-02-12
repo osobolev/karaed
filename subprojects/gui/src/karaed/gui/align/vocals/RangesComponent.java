@@ -6,6 +6,9 @@ import karaed.gui.align.ColorSequence;
 import karaed.gui.align.model.AreaSide;
 import karaed.gui.align.model.EditableArea;
 import karaed.gui.align.model.EditableRanges;
+import karaed.gui.components.music.Measurer;
+import karaed.gui.components.music.MusicComponent;
+import karaed.gui.components.music.Painter;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.MenuBuilder;
 
@@ -208,7 +211,8 @@ public final class RangesComponent extends MusicComponent {
         });
     }
 
-    AreaSizer newSizer() {
+    @Override
+    protected AreaSizer newSizer() {
         return new AreaSizer(getFontMetrics(getFont()), frameRate, pixPerSec);
     }
 
@@ -218,7 +222,7 @@ public final class RangesComponent extends MusicComponent {
     }
 
     @Override
-    Painter doPaint(Graphics g, int width, int height) {
+    protected Painter doPaint(Graphics g, int width, int height) {
         AreaSizer s = newSizer();
         AreaPainter painter = new AreaPainter(g, s, height);
 
@@ -288,7 +292,8 @@ public final class RangesComponent extends MusicComponent {
         }
     }
 
-    void addRangeMenu(MenuBuilder menu, Range range) {
+    @Override
+    protected void addRangeMenu(MenuBuilder menu, Range range) {
         if (canEdit()) {
             Measurer m = newMeasurer();
             int delta = m.sec2frame(1);

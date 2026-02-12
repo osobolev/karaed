@@ -1,6 +1,6 @@
-package karaed.gui.align.vocals;
+package karaed.gui.components.music;
 
-class Measurer {
+public class Measurer {
 
     private static final int LPAD = 10;
     private static final int RPAD = 10;
@@ -21,21 +21,21 @@ class Measurer {
         return LPAD + sec2pix(seconds);
     }
 
-    final int frame2x(int frame) {
+    public final int frame2x(int frame) {
         float seconds = frame / frameRate;
         return sec2x(seconds);
     }
 
-    final int sec2frame(float seconds) {
+    public final int sec2frame(float seconds) {
         return Math.round(seconds * frameRate);
     }
 
-    final int pix2frame(int pixels) {
+    public final int pix2frame(int pixels) {
         float seconds = pixels / pixPerSec;
         return sec2frame(seconds);
     }
 
-    final int x2frame(int x) {
+    public final int x2frame(int x) {
         return pix2frame(x - LPAD);
     }
 
@@ -44,7 +44,7 @@ class Measurer {
         return LPAD + pixels + RPAD;
     }
 
-    static int width(int x1, int x2) {
+    public static int width(int x1, int x2) {
         return Math.max(x2 - x1, 1);
     }
 }

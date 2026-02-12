@@ -1,4 +1,4 @@
-package karaed.gui.align.vocals;
+package karaed.gui.components.music;
 
 import karaed.engine.formats.ranges.Range;
 

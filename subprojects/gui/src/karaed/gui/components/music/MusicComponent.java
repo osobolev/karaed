@@ -1,4 +1,4 @@
-package karaed.gui.align.vocals;
+package karaed.gui.components.music;
 
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.align.ColorSequence;
@@ -57,17 +57,17 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         ToolTipManager.sharedInstance().registerComponent(this);
     }
 
-    final Measurer newMeasurer() {
+    protected final Measurer newMeasurer() {
         return new Measurer(frameRate, pixPerSec);
     }
 
-    abstract Sizer newSizer();
+    protected abstract Sizer newSizer();
 
     private int totalSeconds() {
         return (int) Math.ceil(model.source.frames() / frameRate);
     }
 
-    final void rangeClicked(MouseEvent me, Range range) {
+    protected final void rangeClicked(MouseEvent me, Range range) {
         if (me.getButton() == MouseEvent.BUTTON1) {
             playRange(range);
         } else if (me.getButton() == MouseEvent.BUTTON3) {
@@ -89,7 +89,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         }
     }
 
-    void addRangeMenu(MenuBuilder menu, Range range) {
+    protected void addRangeMenu(MenuBuilder menu, Range range) {
     }
 
     @Override
@@ -201,9 +201,9 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         }
     }
 
-    abstract Painter doPaint(Graphics g, int width, int height);
+    protected abstract Painter doPaint(Graphics g, int width, int height);
 
-    final void paintRanges(Painter painter, boolean saveRangeIndexes) {
+    protected final void paintRanges(Painter painter, boolean saveRangeIndexes) {
         painter.paintRanges(colors, model.getRanges(), saveRangeIndexes ? paintedRangeIndex : null);
     }
 
