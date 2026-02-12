@@ -58,7 +58,6 @@ public final class EditableRanges {
         return true;
     }
 
-
     private void resplit(boolean fireNotChanged) {
         List<Range> ranges = source.detectVoice(getRangeParams());
         boolean changed = differs(ranges, this.ranges.values());
