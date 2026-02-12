@@ -62,7 +62,7 @@ final class RangeList<R extends RangeLike> {
         return null;
     }
 
-    AreaSide isOnBorder(int frame, int delta, R[] area) {
+    RangeSide isOnBorder(int frame, int delta, R[] area) {
         R areaBefore;
         int dx1;
         int dx2;
@@ -91,21 +91,21 @@ final class RangeList<R extends RangeLike> {
                 if (area != null) {
                     area[0] = areaBefore;
                 }
-                return AreaSide.LEFT;
+                return RangeSide.LEFT;
             }
         } else if (dx2 <= dx1 && dx2 <= dx3) {
             if (dx2 < delta) {
                 if (area != null) {
                     area[0] = areaBefore;
                 }
-                return AreaSide.RIGHT;
+                return RangeSide.RIGHT;
             }
         } else {
             if (dx3 < delta) {
                 if (area != null) {
                     area[0] = areaAfter;
                 }
-                return AreaSide.LEFT;
+                return RangeSide.LEFT;
             }
         }
         return null;

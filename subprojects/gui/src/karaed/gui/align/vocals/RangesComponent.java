@@ -3,9 +3,9 @@ package karaed.gui.align.vocals;
 import karaed.engine.formats.ranges.AreaParams;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.components.ColorSequence;
-import karaed.gui.components.model.AreaSide;
 import karaed.gui.components.model.EditableArea;
 import karaed.gui.components.model.EditableRanges;
+import karaed.gui.components.model.RangeSide;
 import karaed.gui.components.music.Measurer;
 import karaed.gui.components.music.MusicComponent;
 import karaed.gui.components.music.Painter;
@@ -43,7 +43,7 @@ public final class RangesComponent extends MusicComponent {
     private Integer dragStart = null;
     private Integer dragEnd = null;
     private EditableArea resizingArea = null;
-    private AreaSide resizeSide = null;
+    private RangeSide resizeSide = null;
     private Integer draggingBorder = null;
 
     public RangesComponent(BaseWindow owner, ColorSequence colors, EditableRanges model,
@@ -92,7 +92,7 @@ public final class RangesComponent extends MusicComponent {
                 int newBorder = m.x2frame(draggingBorder.intValue());
                 int from;
                 int to;
-                if (resizeSide == AreaSide.LEFT) {
+                if (resizeSide == RangeSide.LEFT) {
                     from = newBorder;
                     to = resizingArea.to();
                 } else {
@@ -162,10 +162,10 @@ public final class RangesComponent extends MusicComponent {
                 }
                 if (canEdit()) {
                     int delta = s.pix2frame(NEAR_BORDER);
-                    AreaSide side = model.isOnAreaBorder(frame, delta, null);
+                    RangeSide side = model.isOnAreaBorder(frame, delta, null);
                     if (side != null) {
                         // Can resize area
-                        return Cursor.getPredefinedCursor(side == AreaSide.LEFT ? Cursor.W_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR);
+                        return Cursor.getPredefinedCursor(side == RangeSide.LEFT ? Cursor.W_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR);
                     }
                 }
                 return null;
@@ -197,7 +197,7 @@ public final class RangesComponent extends MusicComponent {
                     int frame = m.x2frame(e.getX());
                     int delta = m.pix2frame(NEAR_BORDER);
                     EditableArea[] area = new EditableArea[1];
-                    AreaSide side = model.isOnAreaBorder(frame, delta, area);
+                    RangeSide side = model.isOnAreaBorder(frame, delta, area);
                     if (side != null) {
                         resizingArea = area[0];
                         resizeSide = side;

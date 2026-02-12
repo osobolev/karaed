@@ -1,5 +1,5 @@
 package karaed.gui.components.model;
 
-public enum AreaSide {
+public enum RangeSide {
     LEFT, RIGHT
 }

@@ -206,7 +206,7 @@ public final class EditableRanges {
         return areas.findContaining(frame);
     }
 
-    public AreaSide isOnAreaBorder(int frame, int delta, EditableArea[] area) {
+    public RangeSide isOnAreaBorder(int frame, int delta, EditableArea[] area) {
         return areas.isOnBorder(frame, delta, area);
     }
 }
