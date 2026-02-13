@@ -13,13 +13,18 @@ final class SyncWords extends SyncAny {
 
     private static final class WordTokenizer {
 
+        final BackvocalState backvocal;
         final List<Word> words = new ArrayList<>();
         final StringBuilder buf = new StringBuilder();
         boolean inWord = false;
 
+        WordTokenizer(BackvocalState backvocal) {
+            this.backvocal = backvocal;
+        }
+
         private void add() {
             if (!buf.isEmpty()) {
-                words.add(new Word(buf.toString(), inWord));
+                words.add(new Word(buf.toString(), inWord, backvocal.isBackvocal()));
                 buf.setLength(0);
             }
         }
@@ -46,6 +51,10 @@ final class SyncWords extends SyncAny {
                         inWord = false;
                     }
                 }
+                if (ch == '{' || ch == '}') {
+                    backvocal.setBackvocal(ch == '{');
+                    continue;
+                }
                 buf.append(ch);
             }
             add();
@@ -53,8 +62,8 @@ final class SyncWords extends SyncAny {
         }
     }
 
-    static List<Word> splitToWords(String text) {
-        return new WordTokenizer().splitToWords(text);
+    static List<Word> splitToWords(String text, BackvocalState backvocal) {
+        return new WordTokenizer(backvocal).splitToWords(text);
     }
 
     static List<SrcSegment> srcWordSegments(Aligned alignedLyrics) {
@@ -64,7 +73,7 @@ final class SyncWords extends SyncAny {
             String segText = segment.text();
             for (int j = 0; j < segment.words().size(); j++) {
                 WordSegment ws = segment.words().get(j);
-                List<Word> words = splitToWords(ws.word());
+                List<Word> words = splitToWords(ws.word(), BackvocalState.EMPTY);
                 String word1 = null;
                 for (Word word : words) {
                     if (word.letters()) {

@@ -9,35 +9,86 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public final class SyncLyrics {
 
     public final double lastEnd;
     private final List<TargetSegment> lyrics;
+    public final List<Timestamps> backvocalRanges;
 
-    private SyncLyrics(double lastEnd, List<TargetSegment> lyrics) {
+    private SyncLyrics(double lastEnd, List<TargetSegment> lyrics, List<Timestamps> backvocalRanges) {
         this.lastEnd = lastEnd;
         this.lyrics = lyrics;
+        this.backvocalRanges = backvocalRanges;
     }
 
-    private static List<TargetSegment> targetWordSegments(List<String> lines,
-                                                          Function<String, List<Word>> splitToWords) {
-        List<TargetSegment> lyrics = new ArrayList<>();
-        for (String line : lines) {
-            List<Word> words = splitToWords.apply(line);
-            for (Word word : words) {
-                lyrics.add(new TargetSegment(word.text(), word.letters()));
+    private record TargetRange(
+        TargetSegment start,
+        TargetSegment end
+    ) {}
+
+    private static final class ToTarget {
+
+        final List<TargetSegment> lyrics = new ArrayList<>();
+        final List<TargetRange> backvocalRanges = new ArrayList<>();
+        boolean inBackvocal = false;
+        TargetSegment backStart = null;
+        TargetSegment backEnd = null;
+
+        private void addRange() {
+            if (backStart != null && backEnd != null) {
+                backvocalRanges.add(new TargetRange(backStart, backEnd));
             }
-            lyrics.add(new TargetSegment("\n", false));
         }
-        return lyrics;
+
+        private void add(Word word) {
+            TargetSegment target = new TargetSegment(word.text(), word.letters());
+            lyrics.add(target);
+            if (word.inBackvocal()) {
+                inBackvocal = true;
+                if (word.letters()) {
+                    if (backStart == null) {
+                        backStart = target;
+                    }
+                    backEnd = target;
+                }
+            } else {
+                if (inBackvocal) {
+                    addRange();
+                    backStart = null;
+                    backEnd = null;
+                    inBackvocal = false;
+                }
+            }
+        }
+
+        private void finish() {
+            if (inBackvocal) {
+                addRange();
+            }
+        }
+
+        void convert(List<String> lines,
+                     BiFunction<String, BackvocalState, List<Word>> splitToWords) {
+            BackvocalState backvocal = BackvocalState.create();
+            for (String line : lines) {
+                List<Word> words = splitToWords.apply(line, backvocal);
+                for (Word word : words) {
+                    add(word);
+                }
+                lyrics.add(new TargetSegment("\n", false));
+            }
+            finish();
+        }
     }
 
     public static SyncLyrics create(Path textFile, Path alignedFile, boolean byWords) throws IOException {
         List<TargetSegment> lyrics;
+        List<TargetRange> backvocalRanges;
         {
-            Function<String, List<Word>> splitToWords;
+            BiFunction<String, BackvocalState, List<Word>> splitToWords;
             if (byWords) {
                 splitToWords = SyncWords::splitToWords;
             } else {
@@ -45,7 +96,10 @@ public final class SyncLyrics {
             }
 
             List<String> textLines = Files.readAllLines(textFile);
-            lyrics = targetWordSegments(textLines, splitToWords);
+            ToTarget toTarget = new ToTarget();
+            toTarget.convert(textLines, splitToWords);
+            lyrics = toTarget.lyrics;
+            backvocalRanges = toTarget.backvocalRanges;
         }
 
         List<SrcSegment> aligned;
@@ -90,7 +144,16 @@ public final class SyncLyrics {
             ia++;
         }
 
-        return new SyncLyrics(lastEnd, lyrics);
+        List<Timestamps> backvocals = new ArrayList<>();
+        for (TargetRange range : backvocalRanges) {
+            if (range.start.timestamps != null && range.end.timestamps != null) {
+                double start = range.start.timestamps.start();
+                double end = range.end.timestamps.end();
+                backvocals.add(new Timestamps(start, end));
+            }
+        }
+
+        return new SyncLyrics(lastEnd, lyrics, backvocals);
     }
 
     public List<List<TargetSegment>> getLines() {

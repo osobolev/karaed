@@ -10,11 +10,15 @@ import java.util.List;
 
 final class SyncChars extends SyncAny {
 
-    static List<Word> splitToWords(String text) {
+    static List<Word> splitToWords(String text, BackvocalState backvocal) {
         List<Word> words = new ArrayList<>();
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
-            words.add(new Word(String.valueOf(ch), AssUtil.isLetter(ch)));
+            if (ch == '{' || ch == '}') {
+                backvocal.setBackvocal(ch == '{');
+                continue;
+            }
+            words.add(new Word(String.valueOf(ch), AssUtil.isLetter(ch), backvocal.isBackvocal()));
         }
         return words;
     }
