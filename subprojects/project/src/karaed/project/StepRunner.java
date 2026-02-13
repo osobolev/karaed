@@ -20,28 +20,51 @@ import java.nio.file.Path;
 
 public final class StepRunner {
 
-    public interface EditRanges {
+    public interface Editor {
 
-        void editRanges() throws Exception;
+        void openEditor() throws Exception;
     }
 
     private final Workdir workDir;
     private final ToolRunner runner;
     private final Runnable showTitle;
-    private final EditRanges editRanges;
+    private final Editor editRanges;
 
-    public StepRunner(Workdir workDir, ToolRunner runner, Runnable showTitle, EditRanges editRanges) {
+    public StepRunner(Workdir workDir, ToolRunner runner, Runnable showTitle, Editor editRanges) {
         this.workDir = workDir;
         this.runner = runner;
         this.showTitle = showTitle;
         this.editRanges = editRanges;
     }
 
+    private static void runEditor(Editor editor) throws Throwable {
+        if (SwingUtilities.isEventDispatchThread()) {
+            editor.openEditor();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    try {
+                        editor.openEditor();
+                    } catch (Exception ex) {
+                        throw new WrapException(ex);
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                Throwable cause = ex.getCause();
+                if (cause instanceof WrapException we) {
+                    throw we.getCause();
+                } else {
+                    throw cause;
+                }
+            }
+        }
+    }
+
     public void runStep(PipeStep step) throws Throwable {
         switch (step) {
         case DOWNLOAD -> downloadAudio();
         case DEMUCS -> demucs();
-        case RANGES -> ranges();
+        case RANGES -> runEditor(editRanges);
         case ALIGN -> align();
         case SUBS -> subs();
         case KARAOKE -> karaokeSubs();
@@ -73,29 +96,6 @@ public final class StepRunner {
             deleteIfExists(workDir.vocals());
             deleteIfExists(workDir.noVocals());
             throw ex;
-        }
-    }
-
-    private void ranges() throws Throwable {
-        if (SwingUtilities.isEventDispatchThread()) {
-            editRanges.editRanges();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(() -> {
-                    try {
-                        editRanges.editRanges();
-                    } catch (Exception ex) {
-                        throw new WrapException(ex);
-                    }
-                });
-            } catch (InvocationTargetException ex) {
-                Throwable cause = ex.getCause();
-                if (cause instanceof WrapException we) {
-                    throw we.getCause();
-                } else {
-                    throw cause;
-                }
-            }
         }
     }
 
