@@ -172,8 +172,8 @@ public final class EditableRanges {
     }
 
     private void fireChanged(boolean rangesChanged) {
-        for (RangeEditListener runnable : listeners) {
-            runnable.changed(rangesChanged);
+        for (RangeEditListener listener : listeners) {
+            listener.changed(rangesChanged);
         }
     }
 
