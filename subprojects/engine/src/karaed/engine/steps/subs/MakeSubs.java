@@ -2,10 +2,13 @@ package karaed.engine.steps.subs;
 
 import ass.model.DialogLine;
 import karaed.engine.ass.AssUtil;
+import karaed.engine.formats.backvocals.BackRange;
+import karaed.engine.formats.backvocals.Backvocals;
 import karaed.engine.opts.OAlign;
 import karaed.engine.sync.SyncLyrics;
 import karaed.engine.sync.TargetSegment;
 import karaed.engine.sync.Timestamps;
+import karaed.json.JsonUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,7 +42,8 @@ public final class MakeSubs {
         Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         """;
 
-    public static void makeSubs(Path textFile, Path alignedFile, OAlign options, Path subsFile) throws IOException {
+    public static void makeSubs(Path textFile, Path alignedFile, OAlign options,
+                                Path subsFile, Path backvocalsFile) throws IOException {
         SyncLyrics synced = SyncLyrics.create(textFile, alignedFile, options.words());
         List<List<TargetSegment>> lines = synced.getLines();
         double lastEnd = synced.lastEnd;
@@ -53,6 +57,15 @@ public final class MakeSubs {
                 .map(line -> assLine(line, options))
                 .filter(Objects::nonNull)
                 .forEach(pw::println);
+        }
+
+        Backvocals bv = JsonUtil.readFile(backvocalsFile, Backvocals.class, () -> Backvocals.EMPTY);
+        if (!bv.manual()) {
+            List<BackRange> ranges = synced.backvocalRanges
+                .stream()
+                .map(ts -> new BackRange(ts.start(), ts.end()))
+                .toList();
+            JsonUtil.writeFile(backvocalsFile, new Backvocals(false, ranges));
         }
     }
 

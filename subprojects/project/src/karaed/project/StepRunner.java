@@ -114,11 +114,12 @@ public final class StepRunner {
 
     private void subs() throws IOException {
         Path subs = workDir.file("subs.ass");
+        Path backvocals = workDir.file("backvocals.json");
         Path text = workDir.file("text.txt");
         Path aligned = workDir.file("aligned.json");
         OAlign options = workDir.option("align.json", OAlign.class, OAlign::new);
         runner.println("Making editable subtitles");
-        MakeSubs.makeSubs(text, aligned, options, subs);
+        MakeSubs.makeSubs(text, aligned, options, subs, backvocals);
     }
 
     private void karaokeSubs() throws IOException {
