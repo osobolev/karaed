@@ -16,6 +16,8 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 
@@ -33,6 +35,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
     protected float pixPerSec = 30.0f;
 
     private Range playingRange = null;
+    private int playingY;
     private Clip playing = null;
     private long playingStarted;
     private final Timer playingTimer = new Timer(100, e -> {
@@ -40,7 +43,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
             Sizer s = newSizer();
             int x1 = s.frame2x(playingRange.from());
             int x2 = s.frame2x(playingRange.to());
-            repaint(x1 - 3, s.seekY1() - 1, Sizer.width(x1, x2) + 4, Sizer.SEEK_H + 2);
+            repaint(x1 - 3, playingY - 1, Sizer.width(x1, x2) + 4, Sizer.SEEK_H + 2);
         }
     });
 
@@ -66,38 +69,37 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         return (int) Math.ceil(model.source.frames() / frameRate);
     }
 
-    protected final boolean rangeMouseClick(MouseEvent me, Sizer s, int frame) {
+    protected final boolean rangeMouseClick(MouseEvent me, Sizer s, int frame,
+                                            BiConsumer<MenuBuilder, Range> addRangeItems) {
         Range range = s.findRange(frame, me.getY(), model);
         if (range != null) {
-            rangeClicked(me, range);
+            rangeClicked(me, range, s.seekY1(), menu -> addRangeItems.accept(menu, range));
             return true;
         }
         return false;
     }
 
-    private void rangeClicked(MouseEvent me, Range range) {
+    protected final void rangeClicked(MouseEvent me, Range range, int py,
+                                      Consumer<MenuBuilder> addItems) {
         if (me.getButton() == MouseEvent.BUTTON1) {
-            playRange(range);
+            playRange(range, py);
         } else if (me.getButton() == MouseEvent.BUTTON3) {
             MenuBuilder menu = new MenuBuilder(me);
-            menu.add("Play", () -> playRange(range));
+            menu.add("Play", () -> playRange(range, py));
             if (range == playingRange) {
                 menu.add("Stop", this::stop);
             }
-            menu.add("Go to lyrics", () -> {
-                Integer index = paintedRangeIndex.getIndex(range);
-                if (index != null) {
+            Integer index = paintedRangeIndex.getIndex(range);
+            if (index != null) {
+                menu.add("Go to lyrics", () -> {
                     for (IntConsumer listener : goToListeners) {
                         listener.accept(index.intValue());
                     }
-                }
-            });
-            addRangeMenu(menu, range);
+                });
+            }
+            addItems.accept(menu);
             menu.showMenu();
         }
-    }
-
-    protected void addRangeMenu(MenuBuilder menu, Range range) {
     }
 
     public final void setTooltipSource(IntFunction<String> getText) {
@@ -131,7 +133,8 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
             vp.setViewPosition(new Point(x, 0));
         }
         if (play) {
-            playRange(range);
+            Sizer s = newSizer();
+            playRange(range, s.seekY1());
         }
     }
 
@@ -151,11 +154,12 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
 
     // Playing:
 
-    private void playRange(Range range) {
+    private void playRange(Range range, int y) {
         stop();
         try {
             Clip clip = model.source.open(range.from(), range.to());
             playingRange = range;
+            playingY = y;
             playing = clip;
             clip.addLineListener(le -> {
                 if (le.getType() == LineEvent.Type.STOP) {
@@ -211,7 +215,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
 
         painter.paintScale(totalSeconds(), width);
         if (playingRange != null) {
-            painter.paintPlay(playingRange, System.currentTimeMillis() - playingStarted);
+            painter.paintPlay(playingRange, playingY, System.currentTimeMillis() - playingStarted);
         }
     }
 

@@ -18,8 +18,7 @@ public abstract class Sizer extends Measurer {
     }
 
     final int seekY1() {
-        int h = fm.getHeight();
-        return h + 13;
+        return rangeY1() - 7;
     }
 
     protected final int rangeY1() {

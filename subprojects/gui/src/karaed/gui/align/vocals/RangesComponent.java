@@ -279,7 +279,7 @@ public final class RangesComponent extends MusicComponent {
         AreaSizer s = newSizer();
         int frame = s.x2frame(me.getX());
 
-        if (rangeMouseClick(me, s, frame))
+        if (rangeMouseClick(me, s, frame, this::addRangeMenu))
             return;
 
         EditableArea area = s.findArea(frame, me.getY(), model);
@@ -288,8 +288,7 @@ public final class RangesComponent extends MusicComponent {
         }
     }
 
-    @Override
-    protected void addRangeMenu(MenuBuilder menu, Range range) {
+    private void addRangeMenu(MenuBuilder menu, Range range) {
         if (canEdit()) {
             Measurer m = newMeasurer();
             int delta = m.sec2frame(1);

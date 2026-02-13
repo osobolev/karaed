@@ -21,10 +21,9 @@ public class Painter {
         this.height = height;
     }
 
-    final void paintPlay(Range range, long millis) {
+    final void paintPlay(Range range, int y0, long millis) {
         int x1 = s.frame2x(range.from());
         int x2 = s.frame2x(range.to());
-        int y0 = s.seekY1();
         int h = Sizer.SEEK_H;
         {
             g.setColor(Color.black);
