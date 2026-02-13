@@ -229,4 +229,8 @@ public final class LyricsComponent {
     public void addLyricsListener(LyricsClickListener listener) {
         gutter.addListener(listener);
     }
+
+    public void setEditable(boolean on) {
+        taLines.setEditable(on);
+    }
 }

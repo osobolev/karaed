@@ -22,11 +22,12 @@ public final class MusicAndLyrics<M extends MusicComponent> {
     public final JSlider scaleSlider = new JSlider(2, 50, 30);
     public final Action actionStop;
 
-    public MusicAndLyrics(EditableRanges model, List<String> lines,
+    public MusicAndLyrics(EditableRanges model, List<String> lines, boolean editable,
                           Function<ColorSequence, M> musicFactory) {
         this.model = model;
         this.music = musicFactory.apply(colors);
 
+        lyrics.setEditable(editable);
         lyrics.addLyricsListener(music::showRange);
         music.addGoToListener(lyrics::goTo);
         music.setTooltipSource(lyrics::getLineAt);

@@ -39,7 +39,7 @@ final class AlignComponent {
         this.onChange = onChange;
 
         this.ml = new MusicAndLyrics<>(
-            model, lines,
+            model, lines, true,
             colors -> new RangesComponent(owner, colors, model, this::endSplitting)
         );
         this.vocals = ml.music;
