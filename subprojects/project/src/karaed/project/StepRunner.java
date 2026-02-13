@@ -149,12 +149,21 @@ public final class StepRunner {
 
     private void karaokeVideo() throws IOException, InterruptedException {
         Path karaokeVideo = workDir.file("karaoke.mp4");
+
         Path noVocals = workDir.noVocals();
         Path karaoke = workDir.file("karaoke.ass");
         OVideo options = workDir.option("video.json", OVideo.class, OVideo::new);
         Path video = options.useOriginalVideo() ? MakeVideo.getVideo(workDir.video()) : null;
+
+        Path vocals = workDir.vocals();
+        Path backvocals = workDir.file("backvocals.json");
+
         try {
-            MakeVideo.karaokeVideo(runner, video, noVocals, karaoke, karaokeVideo);
+            MakeVideo.karaokeVideo(
+                runner, video, noVocals, karaoke,
+                vocals, backvocals,
+                karaokeVideo
+            );
         } catch (IOException | InterruptedException ex) {
             deleteIfExists(karaokeVideo);
             throw ex;
