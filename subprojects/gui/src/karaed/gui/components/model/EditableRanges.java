@@ -30,9 +30,7 @@ public final class EditableRanges {
 
     private void replaceRanges(List<Range> ranges) {
         this.ranges.clear();
-        for (Range range : ranges) {
-            this.ranges.add(range);
-        }
+        this.ranges.addAll(ranges);
     }
 
     public void setRangesSilent(EditableArea area, AreaParams params, List<Range> ranges) {

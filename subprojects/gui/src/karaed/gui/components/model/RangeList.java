@@ -18,6 +18,12 @@ final class RangeList<R extends RangeLike> {
         this.areas.put(area.from(), area);
     }
 
+    void addAll(Iterable<R> areas) {
+        for (R area : areas) {
+            add(area);
+        }
+    }
+
     boolean remove(R area) {
         return areas.entrySet().removeIf(e -> e.getValue() == area);
     }
