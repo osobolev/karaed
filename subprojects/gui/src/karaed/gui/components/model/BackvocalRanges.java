@@ -3,10 +3,7 @@ package karaed.gui.components.model;
 import karaed.engine.audio.AudioSource;
 import karaed.engine.formats.backvocals.Backvocals;
 import karaed.engine.formats.ranges.Range;
-import karaed.json.JsonUtil;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
