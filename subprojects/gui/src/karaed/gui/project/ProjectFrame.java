@@ -308,7 +308,6 @@ public final class ProjectFrame extends BaseFrame {
     }
 
     private void editBackvocals() throws UnsupportedAudioFileException, IOException {
-        // todo: open only if non-empty???
         if (!editBackvocals(true))
             throw new CancelledException();
     }
@@ -316,6 +315,8 @@ public final class ProjectFrame extends BaseFrame {
     private boolean editBackvocals(boolean canContinue) throws UnsupportedAudioFileException, IOException {
         Path backvocals = workDir.file("backvocals.json");
         EditBackvocals.Prepare prepare = EditBackvocals.prepare(backvocals);
+        if (canContinue && !prepare.hasData())
+            return true;
         Path ranges = workDir.file("ranges.json");
         Path vocals = workDir.vocals();
         EditBackvocals ebv = prepare.create(this, getLogger(), canContinue, vocals, ranges);

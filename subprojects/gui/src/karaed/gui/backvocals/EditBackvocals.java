@@ -93,6 +93,10 @@ public final class EditBackvocals extends BaseDialog {
             this.maybeData = maybeData;
         }
 
+        public boolean hasData() {
+            return maybeData != null && !maybeData.ranges().isEmpty();
+        }
+
         public EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue,
                                      Path vocals, Path rangesFile) throws UnsupportedAudioFileException, IOException {
             RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, Collections.emptyList());
