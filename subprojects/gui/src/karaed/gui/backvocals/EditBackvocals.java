@@ -83,17 +83,32 @@ public final class EditBackvocals extends BaseDialog {
         return JsonUtil.readFile(backvocalsFile, Backvocals.class, () -> null);
     }
 
-    public static EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue,
-                                        Path vocals, Path rangesFile, Path backvocalsFile) throws UnsupportedAudioFileException, IOException {
-        RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, Collections.emptyList());
+    public static final class Prepare {
+
+        private final Path backvocalsFile;
+        private final Backvocals maybeData;
+
+        Prepare(Path backvocalsFile, Backvocals maybeData) {
+            this.backvocalsFile = backvocalsFile;
+            this.maybeData = maybeData;
+        }
+
+        public EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue,
+                                     Path vocals, Path rangesFile) throws UnsupportedAudioFileException, IOException {
+            RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, Collections.emptyList());
+            List<BackRange> backRanges = maybeData == null ? Collections.emptyList() : maybeData.ranges();
+            BackvocalRanges ranges = BackvocalRanges.convert(backRanges, rl.ranges().source.frameRate());
+            return new EditBackvocals(
+                owner, logger, canContinue,
+                rl.ranges(), rl.rangeLines(),
+                backvocalsFile, ranges, maybeData != null
+            );
+        }
+    }
+
+    public static Prepare prepare(Path backvocalsFile) throws IOException {
         Backvocals maybeData = maybeLoad(backvocalsFile);
-        List<BackRange> backRanges = maybeData == null ? Collections.emptyList() : maybeData.ranges();
-        BackvocalRanges ranges = BackvocalRanges.convert(backRanges, rl.ranges().source.frameRate());
-        return new EditBackvocals(
-            owner, logger, canContinue,
-            rl.ranges(), rl.rangeLines(),
-            backvocalsFile, ranges, maybeData != null
-        );
+        return new Prepare(backvocalsFile, maybeData);
     }
 
     private boolean save() {
