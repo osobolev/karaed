@@ -1,7 +1,7 @@
 package karaed.gui.components.model;
 
 import karaed.engine.audio.AudioSource;
-import karaed.engine.formats.backvocals.Backvocals;
+import karaed.engine.formats.backvocals.BackRange;
 import karaed.engine.formats.ranges.Range;
 
 import java.util.ArrayList;
@@ -78,9 +78,8 @@ public final class BackvocalRanges {
         return AudioSource.sec2frame((float) sec, frameRate);
     }
 
-    public static BackvocalRanges convert(Backvocals bv, float frameRate) {
-        List<Range> ranges = bv
-            .ranges()
+    public static BackvocalRanges convert(List<BackRange> backRanges, float frameRate) {
+        List<Range> ranges = backRanges
             .stream()
             .map(r -> new Range(sec2frame(r.from(), frameRate), sec2frame(r.to(), frameRate)))
             .toList();

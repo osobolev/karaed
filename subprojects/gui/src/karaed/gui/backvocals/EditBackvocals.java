@@ -1,5 +1,6 @@
 package karaed.gui.backvocals;
 
+import karaed.engine.formats.backvocals.BackRange;
 import karaed.engine.formats.backvocals.Backvocals;
 import karaed.gui.ErrorLogger;
 import karaed.gui.components.EditorButtons;
@@ -78,19 +79,20 @@ public final class EditBackvocals extends BaseDialog {
         setLocationRelativeTo(null);
     }
 
-    private static Backvocals load(Path backvocalsFile) throws IOException {
-        return JsonUtil.readFile(backvocalsFile, Backvocals.class, () -> Backvocals.EMPTY);
+    private static Backvocals maybeLoad(Path backvocalsFile) throws IOException {
+        return JsonUtil.readFile(backvocalsFile, Backvocals.class, () -> null);
     }
 
     public static EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue,
                                         Path vocals, Path rangesFile, Path backvocalsFile) throws UnsupportedAudioFileException, IOException {
         RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, Collections.emptyList());
-        Backvocals fileData = load(backvocalsFile);
-        BackvocalRanges ranges = BackvocalRanges.convert(fileData, rl.ranges().source.frameRate());
+        Backvocals maybeData = maybeLoad(backvocalsFile);
+        List<BackRange> backRanges = maybeData == null ? Collections.emptyList() : maybeData.ranges();
+        BackvocalRanges ranges = BackvocalRanges.convert(backRanges, rl.ranges().source.frameRate());
         return new EditBackvocals(
             owner, logger, canContinue,
             rl.ranges(), rl.rangeLines(),
-            backvocalsFile, ranges, fileData.manual()
+            backvocalsFile, ranges, maybeData != null
         );
     }
 
@@ -99,8 +101,8 @@ public final class EditBackvocals extends BaseDialog {
         boolean ok = false;
         if (actionSave.isEnabled()) {
             try {
-                Backvocals currData = load(backvocalsFile);
-                if (!Objects.equals(newData.ranges(), currData.ranges())) {
+                Backvocals currData = maybeLoad(backvocalsFile);
+                if (currData == null || !Objects.equals(newData.ranges(), currData.ranges())) {
                     JsonUtil.writeFile(backvocalsFile, newData);
                 }
 
