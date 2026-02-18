@@ -18,4 +18,12 @@ public interface AudioSource {
     static AudioSource create(File file) {
         return new FileAudioSource(file);
     }
+
+    static int sec2frame(float seconds, float frameRate) {
+        return Math.round(seconds * frameRate);
+    }
+
+    static float frame2sec(int frame, float frameRate) {
+        return frame / frameRate;
+    }
 }

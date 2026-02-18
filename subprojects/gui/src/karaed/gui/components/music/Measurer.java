@@ -1,5 +1,7 @@
 package karaed.gui.components.music;
 
+import karaed.engine.audio.AudioSource;
+
 public class Measurer {
 
     private static final int LPAD = 10;
@@ -21,13 +23,17 @@ public class Measurer {
         return LPAD + sec2pix(seconds);
     }
 
+    public final float frame2sec(int frame) {
+        return AudioSource.frame2sec(frame, frameRate);
+    }
+
     public final int frame2x(int frame) {
-        float seconds = frame / frameRate;
+        float seconds = frame2sec(frame);
         return sec2x(seconds);
     }
 
     public final int sec2frame(float seconds) {
-        return Math.round(seconds * frameRate);
+        return AudioSource.sec2frame(seconds, frameRate);
     }
 
     public final int pix2frame(int pixels) {

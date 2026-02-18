@@ -1,5 +1,6 @@
 package karaed.gui.components.music;
 
+import karaed.engine.audio.AudioSource;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.components.ColorSequence;
 import karaed.gui.components.model.EditableRanges;
@@ -66,7 +67,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
     protected abstract Sizer newSizer();
 
     private int totalSeconds() {
-        return (int) Math.ceil(model.source.frames() / frameRate);
+        return (int) Math.ceil(AudioSource.frame2sec(model.source.frames(), frameRate));
     }
 
     protected final boolean rangeMouseClick(MouseEvent me, Sizer s, int frame,

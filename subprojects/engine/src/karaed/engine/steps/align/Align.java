@@ -32,7 +32,7 @@ public final class Align {
                                       int i, Range range, String line) throws IOException, InterruptedException {
         Path voice = voice(tmpDir, i);
 
-        TransSegment segment = new TransSegment(0.0, (range.to() - range.from()) / frameRate, line);
+        TransSegment segment = new TransSegment(0.0, AudioSource.frame2sec(range.to() - range.from(), frameRate), line);
         Transcription transcription = new Transcription(language, Collections.singletonList(segment));
 
         Path fast = tmpDir.resolve("fast" + i + ".json");
@@ -131,7 +131,7 @@ public final class Align {
         for (int i = 0; i < ranges.size(); i++) {
             Range range = ranges.get(i);
             Aligned aligned = alignedRanges.get(i);
-            Aligned shifted = aligned.shift(range.from() / frameRate);
+            Aligned shifted = aligned.shift(AudioSource.frame2sec(range.from(), frameRate));
             segments.addAll(shifted.segments());
             wordSegments.addAll(shifted.wordSegments());
         }
