@@ -5,6 +5,7 @@ import karaed.engine.formats.info.Info;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
+import karaed.gui.backvocals.EditBackvocals;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.start.DirStatus;
 import karaed.gui.start.RecentItems;
@@ -156,6 +157,10 @@ public final class ProjectFrame extends BaseFrame {
                 editRanges(false);
                 return;
             }
+            if (link == LinkType.BACKVOCALS) {
+                editBackvocals(false);
+                return;
+            }
             Path file = switch (link) {
                 case AUDIO -> workDir.audio();
                 case VIDEO -> workDir.video().getVideo("", false);
@@ -221,7 +226,10 @@ public final class ProjectFrame extends BaseFrame {
 
         Thread thread = new Thread(() -> {
             try {
-                StepRunner stepRunner = new StepRunner(workDir, runner, this::showTitle, this::editRanges);
+                StepRunner stepRunner = new StepRunner(
+                    workDir, runner, this::showTitle,
+                    this::editRanges, this::editBackvocals
+                );
                 long t0 = System.currentTimeMillis();
                 boolean ok = true;
                 for (PipeStep step : PipeStep.values()) {
@@ -297,6 +305,21 @@ public final class ProjectFrame extends BaseFrame {
         ManualAlign ma = ManualAlign.create(this, getLogger(), canContinue, vocals, text, ranges, lang);
         ma.setVisible(true);
         return ma.isContinue();
+    }
+
+    private void editBackvocals() throws UnsupportedAudioFileException, IOException {
+        // todo: open only if non-empty???
+        if (!editBackvocals(true))
+            throw new CancelledException();
+    }
+
+    private boolean editBackvocals(boolean canContinue) throws UnsupportedAudioFileException, IOException {
+        Path ranges = workDir.file("ranges.json");
+        Path vocals = workDir.vocals();
+        Path backvocals = workDir.file("backvocals.json");
+        EditBackvocals ebv = EditBackvocals.create(this, getLogger(), canContinue, vocals, ranges, backvocals);
+        ebv.setVisible(true);
+        return ebv.isContinue();
     }
 
     @Override

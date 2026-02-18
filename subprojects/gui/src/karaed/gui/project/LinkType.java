@@ -5,5 +5,6 @@ enum LinkType {
     VIDEO,
     RANGES,
     SUBS,
+    BACKVOCALS,
     KARAOKE
 }

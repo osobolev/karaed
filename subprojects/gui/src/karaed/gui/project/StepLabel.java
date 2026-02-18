@@ -92,6 +92,7 @@ final class StepLabel {
         case RANGES -> "Detecting [ranges]#ranges";
         case ALIGN -> "Aligning vocals with lyrics";
         case SUBS -> "Making [editable subtitles]#subs";
+        case BACKVOCALS -> "Adding [backvocals]#backvocals";
         case KARAOKE -> "Making karaoke subtitles";
         case PREPARE_VIDEO -> "Preparing video";
         case VIDEO -> "Making [karaoke video]#karaoke";
@@ -104,7 +105,7 @@ final class StepLabel {
             String linkText = matcher.group(1);
             String href = matcher.group(2);
             String replacement;
-            if (canLink || step == PipeStep.RANGES) {
+            if (canLink || step == PipeStep.RANGES || step == PipeStep.BACKVOCALS) {
                 replacement = String.format(
                     "<font color='%s'><u><a href='#%s'>%s</a></u></font>",
                     toHtml(linkColor), href, linkText

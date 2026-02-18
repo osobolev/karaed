@@ -29,12 +29,15 @@ public final class StepRunner {
     private final ToolRunner runner;
     private final Runnable showTitle;
     private final Editor editRanges;
+    private final Editor editBackvocals;
 
-    public StepRunner(Workdir workDir, ToolRunner runner, Runnable showTitle, Editor editRanges) {
+    public StepRunner(Workdir workDir, ToolRunner runner, Runnable showTitle,
+                      Editor editRanges, Editor editBackvocals) {
         this.workDir = workDir;
         this.runner = runner;
         this.showTitle = showTitle;
         this.editRanges = editRanges;
+        this.editBackvocals = editBackvocals;
     }
 
     private static void runEditor(Editor editor) throws Throwable {
@@ -67,6 +70,7 @@ public final class StepRunner {
         case RANGES -> runEditor(editRanges);
         case ALIGN -> align();
         case SUBS -> subs();
+        case BACKVOCALS -> runEditor(editBackvocals);
         case KARAOKE -> karaokeSubs();
         case PREPARE_VIDEO -> prepareVideo();
         case VIDEO -> karaokeVideo();

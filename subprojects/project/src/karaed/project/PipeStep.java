@@ -6,6 +6,7 @@ public enum PipeStep {
     RANGES,
     ALIGN,
     SUBS,
+    BACKVOCALS,
     KARAOKE,
     PREPARE_VIDEO,
     VIDEO

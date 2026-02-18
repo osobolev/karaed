@@ -15,6 +15,7 @@ enum ProjectFile {
     LANGUAGE,
     ALIGNED,
     SUBS("align.json"),
+    BACKVOCALS("align.json"),
     KARAOKE_SUBS("karaoke.json"),
     KARAOKE_VIDEO("video.json");
 

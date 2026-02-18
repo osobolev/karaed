@@ -45,6 +45,9 @@ final class Dependencies {
         add(SUBS, TEXT);
         add(SUBS, ALIGNED);
 
+        add(BACKVOCALS, TEXT);
+        add(BACKVOCALS, ALIGNED);
+
         add(KARAOKE_SUBS, INFO, false);
         add(KARAOKE_SUBS, SUBS);
 
@@ -53,6 +56,8 @@ final class Dependencies {
         }
         add(KARAOKE_VIDEO, NO_VOCALS);
         add(KARAOKE_VIDEO, KARAOKE_SUBS);
+        add(KARAOKE_VIDEO, VOCALS, false);
+        add(KARAOKE_VIDEO, BACKVOCALS, false);
     }
 
     private void step(PipeStep step, ProjectFile file) {
@@ -75,6 +80,8 @@ final class Dependencies {
         step(PipeStep.ALIGN, LANGUAGE);
 
         step(PipeStep.SUBS, SUBS);
+
+        step(PipeStep.BACKVOCALS, BACKVOCALS);
 
         step(PipeStep.KARAOKE, KARAOKE_SUBS);
 
