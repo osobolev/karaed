@@ -3,6 +3,7 @@ package karaed.gui.align;
 import karaed.engine.formats.ranges.Ranges;
 import karaed.engine.steps.align.Align;
 import karaed.gui.ErrorLogger;
+import karaed.gui.components.EditorButtons;
 import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.model.RangesAndLyrics;
 import karaed.gui.util.BaseDialog;
@@ -38,7 +39,7 @@ public final class ManualAlign extends BaseDialog {
         }
     };
 
-    private boolean isContinue = false;
+    private final EditorButtons butt;
 
     private ManualAlign(Window owner, ErrorLogger logger, boolean canContinue,
                         Path rangesFile, EditableRanges model, List<String> rangeLines, boolean fromFile,
@@ -59,26 +60,8 @@ public final class ManualAlign extends BaseDialog {
         tabs.addTab("Sync changes with text", syncComponent.getVisual());
         add(tabs, BorderLayout.CENTER);
 
-        JPanel butt = new JPanel();
-        butt.add(new JButton(actionSave));
-        if (canContinue) {
-            butt.add(new JButton(new AbstractAction("Save & continue") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (save(true)) {
-                        isContinue = true;
-                        dispose();
-                    }
-                }
-            }));
-        }
-        butt.add(new JButton(new AbstractAction(canContinue ? "Cancel" : "Close") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        }));
-        add(butt, BorderLayout.SOUTH);
+        this.butt = new EditorButtons(this, canContinue, actionSave, () -> save(true));
+        add(butt.getVisual(), BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(null);
@@ -179,6 +162,6 @@ public final class ManualAlign extends BaseDialog {
     }
 
     public boolean isContinue() {
-        return isContinue;
+        return butt.isContinue();
     }
 }
