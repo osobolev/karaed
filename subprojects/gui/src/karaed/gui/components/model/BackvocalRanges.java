@@ -77,10 +77,6 @@ public final class BackvocalRanges {
         return ranges.isOnBorder(frame, delta, range);
     }
 
-    public static Backvocals loadRaw(Path backvocalsFile) throws IOException {
-        return JsonUtil.readFile(backvocalsFile, Backvocals.class, () -> Backvocals.EMPTY);
-    }
-
     private static int sec2frame(double sec, float frameRate) {
         return AudioSource.sec2frame((float) sec, frameRate);
     }

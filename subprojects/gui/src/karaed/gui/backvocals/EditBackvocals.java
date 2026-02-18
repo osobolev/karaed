@@ -78,10 +78,14 @@ public final class EditBackvocals extends BaseDialog {
         setLocationRelativeTo(null);
     }
 
+    private static Backvocals load(Path backvocalsFile) throws IOException {
+        return JsonUtil.readFile(backvocalsFile, Backvocals.class, () -> Backvocals.EMPTY);
+    }
+
     public static EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue,
                                         Path vocals, Path rangesFile, Path backvocalsFile) throws UnsupportedAudioFileException, IOException {
         RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, Collections.emptyList());
-        Backvocals fileData = BackvocalRanges.loadRaw(backvocalsFile);
+        Backvocals fileData = load(backvocalsFile);
         BackvocalRanges ranges = BackvocalRanges.convert(fileData, rl.ranges().source.frameRate());
         return new EditBackvocals(
             owner, logger, canContinue,
@@ -95,7 +99,7 @@ public final class EditBackvocals extends BaseDialog {
         boolean ok = false;
         if (actionSave.isEnabled()) {
             try {
-                Backvocals currData = BackvocalRanges.loadRaw(backvocalsFile);
+                Backvocals currData = load(backvocalsFile);
                 if (!Objects.equals(newData.ranges(), currData.ranges())) {
                     JsonUtil.writeFile(backvocalsFile, newData);
                 }
