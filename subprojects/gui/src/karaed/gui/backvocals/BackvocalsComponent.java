@@ -219,7 +219,9 @@ final class BackvocalsComponent extends MusicComponent {
         List<BackRange> branges = new ArrayList<>();
         Measurer m = newMeasurer();
         for (EditableBackRange range : ranges.getRanges()) {
-            branges.add(new BackRange(m.frame2sec(range.from()), m.frame2sec(range.to())));
+            branges.add(new BackRange(
+                m.frame2sec(range.from()), m.frame2sec(range.to()), range.getCoeff()
+            ));
         }
         return new Backvocals(true, branges);
     }

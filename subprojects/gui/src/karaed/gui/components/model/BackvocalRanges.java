@@ -35,7 +35,7 @@ public final class BackvocalRanges {
     public void resizeRange(EditableBackRange range, int from, int to) {
         if (!ranges.remove(range))
             return;
-        EditableBackRange newRange = new EditableBackRange(from, to);
+        EditableBackRange newRange = new EditableBackRange(from, to, range.coeff);
         if (ranges.intersects(newRange)) {
             ranges.add(range);
             return;
@@ -44,7 +44,7 @@ public final class BackvocalRanges {
     }
 
     public EditableBackRange newRange(int from, int to) {
-        EditableBackRange range = new EditableBackRange(from, to);
+        EditableBackRange range = new EditableBackRange(from, to, null);
         if (ranges.intersects(range))
             return null;
         return range;
@@ -79,7 +79,9 @@ public final class BackvocalRanges {
     public static BackvocalRanges convert(List<BackRange> backRanges, float frameRate) {
         List<EditableBackRange> ranges = backRanges
             .stream()
-            .map(r -> new EditableBackRange(sec2frame(r.from(), frameRate), sec2frame(r.to(), frameRate)))
+            .map(r -> new EditableBackRange(
+                sec2frame(r.from(), frameRate), sec2frame(r.to(), frameRate), r.coeff()
+            ))
             .toList();
         return new BackvocalRanges(ranges);
     }

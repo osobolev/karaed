@@ -6,10 +6,12 @@ public final class EditableBackRange implements RangeLike {
 
     private final int from;
     private final int to;
+    Double coeff;
 
-    public EditableBackRange(int from, int to) {
+    public EditableBackRange(int from, int to, Double coeff) {
         this.from = from;
         this.to = to;
+        this.coeff = coeff;
     }
 
     @Override
@@ -20,5 +22,9 @@ public final class EditableBackRange implements RangeLike {
     @Override
     public int to() {
         return to;
+    }
+
+    public Double getCoeff() {
+        return coeff;
     }
 }

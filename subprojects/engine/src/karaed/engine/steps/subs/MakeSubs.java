@@ -63,7 +63,7 @@ public final class MakeSubs {
         if (!bv.manual()) {
             List<BackRange> ranges = synced.backvocalRanges
                 .stream()
-                .map(ts -> new BackRange(ts.start(), ts.end()))
+                .map(ts -> new BackRange(ts.start(), ts.end(), null))
                 .toList();
             JsonUtil.writeFile(backvocalsFile, new Backvocals(false, ranges));
         }
