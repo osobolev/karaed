@@ -6,6 +6,7 @@ import karaed.engine.formats.backvocals.BackRange;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public final class BackvocalRanges {
 
@@ -18,6 +19,13 @@ public final class BackvocalRanges {
     }
 
     private void rangesChanged() {
+        fireChanged();
+    }
+
+    public void setCoeff(EditableBackRange range, Double coeff) {
+        if (Objects.equals(range.coeff, coeff))
+            return;
+        range.coeff = coeff;
         fireChanged();
     }
 
