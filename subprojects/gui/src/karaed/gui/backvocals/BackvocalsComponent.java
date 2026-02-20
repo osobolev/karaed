@@ -5,6 +5,7 @@ import karaed.engine.formats.backvocals.Backvocals;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.components.ColorSequence;
 import karaed.gui.components.model.BackvocalRanges;
+import karaed.gui.components.model.EditableBackRange;
 import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.model.RangeSide;
 import karaed.gui.components.music.Measurer;
@@ -27,7 +28,7 @@ final class BackvocalsComponent extends MusicComponent {
 
     private Integer dragStart = null;
     private Integer dragEnd = null;
-    private Range resizingRange = null;
+    private EditableBackRange resizingRange = null;
     private RangeSide resizeSide = null;
     private Integer draggingBorder = null;
 
@@ -64,7 +65,7 @@ final class BackvocalsComponent extends MusicComponent {
                 int to = Math.max(f1, f2);
                 if (rangeTooSmall(m, from, to))
                     return;
-                Range range = ranges.newRange(from, to);
+                EditableBackRange range = ranges.newRange(from, to);
                 if (range != null) {
                     ranges.addRange(range);
                 }
@@ -150,7 +151,7 @@ final class BackvocalsComponent extends MusicComponent {
                     Measurer m = newMeasurer();
                     int frame = m.x2frame(e.getX());
                     int delta = m.pix2frame(NEAR_BORDER);
-                    Range[] range = new Range[1];
+                    EditableBackRange[] range = new EditableBackRange[1];
                     RangeSide side = ranges.isOnRangeBorder(frame, delta, range);
                     if (side != null) {
                         resizingRange = range[0];
@@ -196,7 +197,7 @@ final class BackvocalsComponent extends MusicComponent {
         if (rangeMouseClick(me, s, frame, this::addRangeMenu))
             return;
 
-        Range backRange = s.findBackRange(frame, me.getY(), ranges);
+        EditableBackRange backRange = s.findBackRange(frame, me.getY(), ranges);
         if (backRange != null) {
             rangeClicked(
                 me, backRange, s.backSeekY1(),
@@ -207,7 +208,7 @@ final class BackvocalsComponent extends MusicComponent {
 
     private void addRangeMenu(MenuBuilder menu, Range range) {
         menu.add("Create backvocals for range", () -> {
-            Range newRange = ranges.newRange(range.from(), range.to());
+            EditableBackRange newRange = ranges.newRange(range.from(), range.to());
             if (newRange != null) {
                 ranges.addRange(newRange);
             }
@@ -217,7 +218,7 @@ final class BackvocalsComponent extends MusicComponent {
     Backvocals getData() {
         List<BackRange> branges = new ArrayList<>();
         Measurer m = newMeasurer();
-        for (Range range : ranges.getRanges()) {
+        for (EditableBackRange range : ranges.getRanges()) {
             branges.add(new BackRange(m.frame2sec(range.from()), m.frame2sec(range.to())));
         }
         return new Backvocals(true, branges);

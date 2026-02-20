@@ -2,7 +2,6 @@ package karaed.gui.components.model;
 
 import karaed.engine.audio.AudioSource;
 import karaed.engine.formats.backvocals.BackRange;
-import karaed.engine.formats.ranges.Range;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,11 +9,11 @@ import java.util.List;
 
 public final class BackvocalRanges {
 
-    private final RangeList<Range> ranges = new RangeList<>();
+    private final RangeList<EditableBackRange> ranges = new RangeList<>();
 
     private final List<Runnable> listeners = new ArrayList<>();
 
-    public BackvocalRanges(List<Range> ranges) {
+    public BackvocalRanges(List<EditableBackRange> ranges) {
         this.ranges.addAll(ranges);
     }
 
@@ -22,21 +21,21 @@ public final class BackvocalRanges {
         fireChanged();
     }
 
-    public void addRange(Range range) {
+    public void addRange(EditableBackRange range) {
         ranges.add(range);
         rangesChanged();
     }
 
-    public void removeRange(Range range) {
+    public void removeRange(EditableBackRange range) {
         if (ranges.remove(range)) {
             rangesChanged();
         }
     }
 
-    public void resizeRange(Range range, int from, int to) {
+    public void resizeRange(EditableBackRange range, int from, int to) {
         if (!ranges.remove(range))
             return;
-        Range newRange = new Range(from, to);
+        EditableBackRange newRange = new EditableBackRange(from, to);
         if (ranges.intersects(newRange)) {
             ranges.add(range);
             return;
@@ -44,8 +43,8 @@ public final class BackvocalRanges {
         addRange(newRange);
     }
 
-    public Range newRange(int from, int to) {
-        Range range = new Range(from, to);
+    public EditableBackRange newRange(int from, int to) {
+        EditableBackRange range = new EditableBackRange(from, to);
         if (ranges.intersects(range))
             return null;
         return range;
@@ -61,15 +60,15 @@ public final class BackvocalRanges {
         }
     }
 
-    public Collection<Range> getRanges() {
+    public Collection<EditableBackRange> getRanges() {
         return ranges.values();
     }
 
-    public Range findRange(int frame) {
+    public EditableBackRange findRange(int frame) {
         return ranges.findContaining(frame);
     }
 
-    public RangeSide isOnRangeBorder(int frame, int delta, Range[] range) {
+    public RangeSide isOnRangeBorder(int frame, int delta, EditableBackRange[] range) {
         return ranges.isOnBorder(frame, delta, range);
     }
 
@@ -78,9 +77,9 @@ public final class BackvocalRanges {
     }
 
     public static BackvocalRanges convert(List<BackRange> backRanges, float frameRate) {
-        List<Range> ranges = backRanges
+        List<EditableBackRange> ranges = backRanges
             .stream()
-            .map(r -> new Range(sec2frame(r.from(), frameRate), sec2frame(r.to(), frameRate)))
+            .map(r -> new EditableBackRange(sec2frame(r.from(), frameRate), sec2frame(r.to(), frameRate)))
             .toList();
         return new BackvocalRanges(ranges);
     }

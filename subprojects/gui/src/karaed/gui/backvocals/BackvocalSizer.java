@@ -1,7 +1,7 @@
 package karaed.gui.backvocals;
 
-import karaed.engine.formats.ranges.Range;
 import karaed.gui.components.model.BackvocalRanges;
+import karaed.gui.components.model.EditableBackRange;
 import karaed.gui.components.music.Sizer;
 
 import java.awt.FontMetrics;
@@ -32,7 +32,7 @@ final class BackvocalSizer extends Sizer {
         return delta >= 0 && delta < BV_EDIT_H;
     }
 
-    Range findBackRange(int frame, int y, BackvocalRanges ranges) {
+    EditableBackRange findBackRange(int frame, int y, BackvocalRanges ranges) {
         if (isBackEditY(y)) {
             return ranges.findRange(frame);
         }

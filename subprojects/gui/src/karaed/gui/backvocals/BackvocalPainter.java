@@ -1,7 +1,7 @@
 package karaed.gui.backvocals;
 
-import karaed.engine.formats.ranges.Range;
 import karaed.gui.components.model.BackvocalRanges;
+import karaed.gui.components.model.EditableBackRange;
 import karaed.gui.components.music.Measurer;
 import karaed.gui.components.music.Painter;
 
@@ -21,7 +21,7 @@ final class BackvocalPainter extends Painter {
 
     void paintBackvocals(BackvocalRanges ranges) {
         int ya = s.backEditY1();
-        for (Range range : ranges.getRanges()) {
+        for (EditableBackRange range : ranges.getRanges()) {
             int x1 = s.frame2x(range.from());
             int x2 = s.frame2x(range.to());
             int width = Measurer.width(x1, x2);
