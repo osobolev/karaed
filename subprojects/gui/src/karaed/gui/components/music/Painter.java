@@ -1,6 +1,7 @@
 package karaed.gui.components.music;
 
 import karaed.engine.formats.ranges.Range;
+import karaed.engine.formats.ranges.RangeLike;
 import karaed.gui.components.ColorSequence;
 
 import java.awt.Color;
@@ -21,7 +22,7 @@ public class Painter {
         this.height = height;
     }
 
-    final void paintPlay(Range range, int y0, long millis) {
+    final void paintPlay(RangeLike range, int y0, long millis) {
         int x1 = s.frame2x(range.from());
         int x2 = s.frame2x(range.to());
         int h = Sizer.SEEK_H;

@@ -2,6 +2,7 @@ package karaed.gui.components.music;
 
 import karaed.engine.audio.AudioSource;
 import karaed.engine.formats.ranges.Range;
+import karaed.engine.formats.ranges.RangeLike;
 import karaed.gui.components.ColorSequence;
 import karaed.gui.components.model.EditableRanges;
 import karaed.gui.util.BaseWindow;
@@ -35,7 +36,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
 
     protected float pixPerSec = 30.0f;
 
-    private Range playingRange = null;
+    private RangeLike playingRange = null;
     private int playingY;
     private Clip playing = null;
     private long playingStarted;
@@ -80,7 +81,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         return false;
     }
 
-    protected final void rangeClicked(MouseEvent me, Range range, int py,
+    protected final void rangeClicked(MouseEvent me, RangeLike range, int py,
                                       Consumer<MenuBuilder> addItems) {
         if (me.getButton() == MouseEvent.BUTTON1) {
             playRange(range, py);
@@ -90,7 +91,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
             if (range == playingRange) {
                 menu.add("Stop", this::stop);
             }
-            Integer index = paintedRangeIndex.getIndex(range);
+            Integer index = range instanceof Range r ? paintedRangeIndex.getIndex(r) : null;
             if (index != null) {
                 menu.add("Go to lyrics", () -> {
                     for (IntConsumer listener : goToListeners) {
@@ -155,7 +156,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
 
     // Playing:
 
-    private void playRange(Range range, int y) {
+    private void playRange(RangeLike range, int y) {
         stop();
         try {
             Clip clip = model.source.open(range.from(), range.to());
