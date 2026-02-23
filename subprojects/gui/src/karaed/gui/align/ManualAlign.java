@@ -87,6 +87,19 @@ public final class ManualAlign extends BaseDialog {
         );
     }
 
+    private static void touchIfSourceNewer(Path source, Path target) throws IOException {
+        FileTime targetTime = Files.getLastModifiedTime(target);
+        FileTime sourceTime = Files.getLastModifiedTime(source);
+        if (sourceTime.compareTo(targetTime) > 0) {
+            Files.setLastModifiedTime(target, sourceTime);
+        }
+    }
+
+    private void touchRangesIfTextNewer() throws IOException {
+        // If text is modified externally, touch ranges file even if it is not changed:
+        touchIfSourceNewer(textFile, rangesFile);
+    }
+
     private boolean save(boolean forceSync) {
         Ranges newData = alignComponent.getData();
         if (newData.rangeLines().size() != newData.ranges().size()) {
@@ -127,12 +140,7 @@ public final class ManualAlign extends BaseDialog {
                 if (!Objects.equals(newData, currData)) {
                     JsonUtil.writeFile(rangesFile, newData);
                 } else {
-                    // If text is modified externally, touch ranges file even if it is not changed:
-                    FileTime rangesTime = Files.getLastModifiedTime(rangesFile);
-                    FileTime textTime = Files.getLastModifiedTime(textFile);
-                    if (textTime.compareTo(rangesTime) > 0) {
-                        Files.setLastModifiedTime(rangesFile, textTime);
-                    }
+                    touchRangesIfTextNewer();
                 }
 
                 String currLang = Align.readLanguage(langFile);
@@ -145,7 +153,12 @@ public final class ManualAlign extends BaseDialog {
                 error(ex);
             }
         } else {
-            ok = true;
+            try {
+                touchRangesIfTextNewer();
+                ok = true;
+            } catch (Exception ex) {
+                error(ex);
+            }
         }
         return ok;
     }
