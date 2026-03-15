@@ -15,8 +15,6 @@ import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static karaed.gui.tools.Download.download;
-
 final class InstallRunner {
 
     private final SetupTools tools;
@@ -33,34 +31,58 @@ final class InstallRunner {
         runner.println(message);
     }
 
+    private final class ProgressLogger implements AutoCloseable {
+
+        private final String title;
+
+        ProgressLogger(String title) {
+            this.title = title;
+            runner.log(false, title + "...");
+        }
+
+        void setProgress(int percent) {
+            runner.log(false, "\r" + title + "... " + percent + "%");
+        }
+
+        @Override
+        public void close() {
+            log("\r" + title + "... DONE");
+        }
+    }
+
     private interface SpecialHandling {
 
         boolean handle(Path dest, InputStream content) throws IOException;
     }
 
-    private static void downloadZip(String url,
-                                    Function<String, Path> getDest,
-                                    SpecialHandling specialHandling) throws IOException, InterruptedException {
-        download(url, is -> {
-            try (ZipInputStream zis = new ZipInputStream(is)) {
-                while (true) {
-                    if (Thread.currentThread().isInterrupted())
-                        throw new InterruptedException();
-                    ZipEntry e = zis.getNextEntry();
-                    if (e == null)
-                        break;
-                    if (e.isDirectory())
-                        continue;
-                    Path dest = getDest.apply(e.getName());
-                    if (dest == null)
-                        continue;
-                    Files.createDirectories(dest.getParent());
-                    if (specialHandling.handle(dest, zis))
-                        continue;
-                    Files.copy(zis, dest, StandardCopyOption.REPLACE_EXISTING);
+    private void downloadZip(String name, String url,
+                             Function<String, Path> getDest,
+                             SpecialHandling specialHandling) throws IOException, InterruptedException {
+        try (ProgressLogger progress = new ProgressLogger("Downloading " + name)) {
+            Download.download(
+                url, progress::setProgress,
+                is -> {
+                    try (ZipInputStream zis = new ZipInputStream(is)) {
+                        while (true) {
+                            if (Thread.currentThread().isInterrupted())
+                                throw new InterruptedException();
+                            ZipEntry e = zis.getNextEntry();
+                            if (e == null)
+                                break;
+                            if (e.isDirectory())
+                                continue;
+                            Path dest = getDest.apply(e.getName());
+                            if (dest == null)
+                                continue;
+                            Files.createDirectories(dest.getParent());
+                            if (specialHandling.handle(dest, zis))
+                                continue;
+                            Files.copy(zis, dest, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
                 }
-            }
-        });
+            );
+        }
     }
 
     private static List<String> uncommentSite(InputStream is) throws IOException {
@@ -86,9 +108,8 @@ final class InstallRunner {
     }
 
     private void installPython() throws IOException, InterruptedException {
-        log("Downloading Python...");
         downloadZip(
-            sources.pythonUrl(), tools.pythonDir()::resolve,
+            "Python", sources.pythonUrl(), tools.pythonDir()::resolve,
             (file, content) -> {
                 String fileName = file.getFileName().toString();
                 if (fileName.endsWith("._pth")) {
@@ -104,9 +125,13 @@ final class InstallRunner {
     }
 
     private void installPIP() throws IOException, InterruptedException {
-        log("Installing PIP...");
         Path getPip = tools.pythonDir().resolve("get-pip.py");
-        download(sources.getPipUrl(), is -> Files.copy(is, getPip, StandardCopyOption.REPLACE_EXISTING));
+        try (ProgressLogger progress = new ProgressLogger("Installing PIP")) {
+            Download.download(
+                sources.getPipUrl(), progress::setProgress,
+                is -> Files.copy(is, getPip, StandardCopyOption.REPLACE_EXISTING)
+            );
+        }
 
         runner.run().python("get-pip", getPip.toString(), "--no-warn-script-location");
     }
@@ -119,9 +144,8 @@ final class InstallRunner {
     }
 
     void installFFMPEG() throws IOException, InterruptedException {
-        log("Downloading FFMPEG...");
         downloadZip(
-            sources.ffmpegUrl(),
+            "FFMPEG", sources.ffmpegUrl(),
             name -> {
                 Path sub = Path.of(name);
                 int len = sub.getNameCount();

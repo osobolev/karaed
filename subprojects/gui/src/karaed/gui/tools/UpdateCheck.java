@@ -39,7 +39,7 @@ final class UpdateCheck {
     private String checkFFMPEG(String urlPattern, String versionURL) throws IOException, InterruptedException {
         String[] version = new String[1];
         if (sources.ffmpegUrl().matches(urlPattern)) {
-            download(versionURL, is -> version[0] = new String(is.readAllBytes(), StandardCharsets.UTF_8));
+            download(versionURL, null, is -> version[0] = new String(is.readAllBytes(), StandardCharsets.UTF_8));
         }
         return version[0];
     }
