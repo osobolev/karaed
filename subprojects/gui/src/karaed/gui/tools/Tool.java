@@ -1,5 +1,7 @@
 package karaed.gui.tools;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 enum Tool {
@@ -34,5 +36,13 @@ enum Tool {
     String packName() {
         String packName = maybePackName();
         return Objects.requireNonNull(packName, () -> name() + " is not a Python package");
+    }
+
+    List<String> additionalPacks() {
+        if (this == DEMUCS) {
+            return List.of("soundfile");
+        } else {
+            return Collections.emptyList();
+        }
     }
 }
