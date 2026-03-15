@@ -19,9 +19,7 @@ import karaed.tools.Tools;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
-import java.awt.BorderLayout;
-import java.awt.Desktop;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -272,6 +270,7 @@ public final class ProjectFrame extends BaseFrame {
                 long t1 = System.currentTimeMillis();
                 if (ok) {
                     runner.println(String.format("DONE in %s", Range.formatTime((t1 - t0) / 1000.0f)));
+                    SwingUtilities.invokeLater(this::showSuccessNotification);
                 }
             } finally {
                 runThread = null;
@@ -280,6 +279,26 @@ public final class ProjectFrame extends BaseFrame {
         }, "KaraEd pipe");
         runThread = thread;
         thread.start();
+    }
+
+    private void showSuccessNotification() {
+        if (!SystemTray.isSupported())
+            return;
+        SystemTray tray = SystemTray.getSystemTray();
+        TrayIcon[] trayIcons = tray.getTrayIcons();
+        TrayIcon trayIcon;
+        if (trayIcons.length > 0) {
+            trayIcon = trayIcons[0];
+        } else {
+            Image image = getToolkit().getImage(ProjectFrame.class.getResource("/karaed.png"));
+            trayIcon = new TrayIcon(image, "KaraEd");
+            try {
+                tray.add(trayIcon);
+            } catch (Exception ex) {
+                return;
+            }
+        }
+        trayIcon.displayMessage("SUCCESS", "Karaoke created successfully", TrayIcon.MessageType.INFO);
     }
 
     private void enableDisable(boolean running) {
@@ -324,11 +343,22 @@ public final class ProjectFrame extends BaseFrame {
         return ebv.isContinue();
     }
 
+    private static void hideNotifications() {
+        if (!SystemTray.isSupported())
+            return;
+        SystemTray tray = SystemTray.getSystemTray();
+        TrayIcon[] trayIcons = tray.getTrayIcons();
+        for (TrayIcon trayIcon : trayIcons) {
+            tray.remove(trayIcon);
+        }
+    }
+
     @Override
     public boolean onClosing() {
         if (!runAction.isEnabled())
             return false;
         afterClose.run();
+        hideNotifications();
         return true;
     }
 }
