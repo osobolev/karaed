@@ -9,6 +9,7 @@ import karaed.gui.components.model.BackvocalRanges;
 import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.model.RangesAndLyrics;
 import karaed.gui.util.BaseDialog;
+import karaed.gui.util.TouchUtil;
 import karaed.json.JsonUtil;
 import karaed.project.Workdir;
 
@@ -24,7 +25,18 @@ import java.util.Objects;
 
 public final class EditBackvocals extends BaseDialog {
 
-    private final Path backvocalsFile;
+    private record DataFiles(
+        Path backvocals,
+        Path ranges,
+        Path vocals
+    ) {
+
+        void touchBackvocalsIfSourceNewer() throws IOException {
+            TouchUtil.touchIfSourceNewer(backvocals, ranges, vocals);
+        }
+    }
+
+    private final DataFiles files;
 
     private final MusicAndLyrics<BackvocalsComponent> ml;
 
@@ -39,9 +51,9 @@ public final class EditBackvocals extends BaseDialog {
 
     private EditBackvocals(Window owner, ErrorLogger logger, boolean canContinue,
                            EditableRanges model, List<String> lines,
-                           Path backvocalsFile, BackvocalRanges ranges, boolean fromFile) {
+                           DataFiles files, BackvocalRanges ranges, boolean fromFile) {
         super(owner, logger, "Backvocals");
-        this.backvocalsFile = backvocalsFile;
+        this.files = files;
 
         Runnable onChange = () -> actionSave.setEnabled(true);
         this.ml = new MusicAndLyrics<>(
@@ -86,15 +98,11 @@ public final class EditBackvocals extends BaseDialog {
 
     public static final class Prepare {
 
-        private final Path backvocals;
-        private final Path ranges;
-        private final Path vocals;
+        private final DataFiles files;
         private final Backvocals maybeData;
 
-        Prepare(Path backvocals, Path ranges, Path vocals, Backvocals maybeData) {
-            this.backvocals = backvocals;
-            this.ranges = ranges;
-            this.vocals = vocals;
+        Prepare(DataFiles files, Backvocals maybeData) {
+            this.files = files;
             this.maybeData = maybeData;
         }
 
@@ -103,18 +111,19 @@ public final class EditBackvocals extends BaseDialog {
         }
 
         private EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue) throws UnsupportedAudioFileException, IOException {
-            RangesAndLyrics rl = RangesAndLyrics.load(vocals, ranges, Collections.emptyList());
+            RangesAndLyrics rl = RangesAndLyrics.load(files.vocals, files.ranges, Collections.emptyList());
             List<BackRange> backRanges = maybeData == null ? Collections.emptyList() : maybeData.ranges();
             BackvocalRanges ranges = BackvocalRanges.convert(backRanges, rl.ranges().source.frameRate());
             return new EditBackvocals(
                 owner, logger, canContinue,
                 rl.ranges(), rl.rangeLines(),
-                backvocals, ranges, maybeData != null
+                files, ranges, maybeData != null
             );
         }
 
         public boolean editBackvocals(Window owner, ErrorLogger logger, boolean canContinue) throws UnsupportedAudioFileException, IOException {
             if (canContinue && !hasData()) {
+                files.touchBackvocalsIfSourceNewer();
                 return true;
             }
             EditBackvocals ebv = create(owner, logger, canContinue);
@@ -128,7 +137,7 @@ public final class EditBackvocals extends BaseDialog {
         Path ranges = workDir.file("ranges.json");
         Path vocals = workDir.vocals();
         Backvocals maybeData = maybeLoad(backvocals);
-        return new Prepare(backvocals, ranges, vocals, maybeData);
+        return new Prepare(new DataFiles(backvocals, ranges, vocals), maybeData);
     }
 
     private boolean save() {
@@ -136,9 +145,11 @@ public final class EditBackvocals extends BaseDialog {
         boolean ok = false;
         if (actionSave.isEnabled()) {
             try {
-                Backvocals currData = maybeLoad(backvocalsFile);
+                Backvocals currData = maybeLoad(files.backvocals);
                 if (currData == null || !Objects.equals(newData.ranges(), currData.ranges())) {
-                    JsonUtil.writeFile(backvocalsFile, newData);
+                    JsonUtil.writeFile(files.backvocals, newData);
+                } else {
+                    files.touchBackvocalsIfSourceNewer();
                 }
 
                 actionSave.setEnabled(false);
@@ -147,7 +158,12 @@ public final class EditBackvocals extends BaseDialog {
                 error(ex);
             }
         } else {
-            ok = true;
+            try {
+                files.touchBackvocalsIfSourceNewer();
+                ok = true;
+            } catch (IOException ex) {
+                error(ex);
+            }
         }
         return ok;
     }
