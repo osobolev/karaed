@@ -332,15 +332,8 @@ public final class ProjectFrame extends BaseFrame {
     }
 
     private boolean editBackvocals(boolean canContinue) throws UnsupportedAudioFileException, IOException {
-        Path backvocals = workDir.file("backvocals.json");
-        EditBackvocals.Prepare prepare = EditBackvocals.prepare(backvocals);
-        if (canContinue && !prepare.hasData())
-            return true;
-        Path ranges = workDir.file("ranges.json");
-        Path vocals = workDir.vocals();
-        EditBackvocals ebv = prepare.create(this, getLogger(), canContinue, vocals, ranges);
-        ebv.setVisible(true);
-        return ebv.isContinue();
+        EditBackvocals.Prepare prepare = EditBackvocals.prepare(workDir);
+        return prepare.editBackvocals(this, getLogger(), canContinue);
     }
 
     private static void hideNotifications() {

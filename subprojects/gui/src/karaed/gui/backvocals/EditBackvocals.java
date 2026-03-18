@@ -10,6 +10,7 @@ import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.model.RangesAndLyrics;
 import karaed.gui.util.BaseDialog;
 import karaed.json.JsonUtil;
+import karaed.project.Workdir;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -85,34 +86,49 @@ public final class EditBackvocals extends BaseDialog {
 
     public static final class Prepare {
 
-        private final Path backvocalsFile;
+        private final Path backvocals;
+        private final Path ranges;
+        private final Path vocals;
         private final Backvocals maybeData;
 
-        Prepare(Path backvocalsFile, Backvocals maybeData) {
-            this.backvocalsFile = backvocalsFile;
+        Prepare(Path backvocals, Path ranges, Path vocals, Backvocals maybeData) {
+            this.backvocals = backvocals;
+            this.ranges = ranges;
+            this.vocals = vocals;
             this.maybeData = maybeData;
         }
 
-        public boolean hasData() {
+        private boolean hasData() {
             return maybeData != null && !maybeData.ranges().isEmpty();
         }
 
-        public EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue,
-                                     Path vocals, Path rangesFile) throws UnsupportedAudioFileException, IOException {
-            RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, Collections.emptyList());
+        private EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue) throws UnsupportedAudioFileException, IOException {
+            RangesAndLyrics rl = RangesAndLyrics.load(vocals, ranges, Collections.emptyList());
             List<BackRange> backRanges = maybeData == null ? Collections.emptyList() : maybeData.ranges();
             BackvocalRanges ranges = BackvocalRanges.convert(backRanges, rl.ranges().source.frameRate());
             return new EditBackvocals(
                 owner, logger, canContinue,
                 rl.ranges(), rl.rangeLines(),
-                backvocalsFile, ranges, maybeData != null
+                backvocals, ranges, maybeData != null
             );
+        }
+
+        public boolean editBackvocals(Window owner, ErrorLogger logger, boolean canContinue) throws UnsupportedAudioFileException, IOException {
+            if (canContinue && !hasData()) {
+                return true;
+            }
+            EditBackvocals ebv = create(owner, logger, canContinue);
+            ebv.setVisible(true);
+            return ebv.isContinue();
         }
     }
 
-    public static Prepare prepare(Path backvocalsFile) throws IOException {
-        Backvocals maybeData = maybeLoad(backvocalsFile);
-        return new Prepare(backvocalsFile, maybeData);
+    public static Prepare prepare(Workdir workDir) throws IOException {
+        Path backvocals = workDir.file("backvocals.json");
+        Path ranges = workDir.file("ranges.json");
+        Path vocals = workDir.vocals();
+        Backvocals maybeData = maybeLoad(backvocals);
+        return new Prepare(backvocals, ranges, vocals, maybeData);
     }
 
     private boolean save() {
