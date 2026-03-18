@@ -7,6 +7,7 @@ import karaed.gui.components.EditorButtons;
 import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.model.RangesAndLyrics;
 import karaed.gui.util.BaseDialog;
+import karaed.gui.util.TouchUtil;
 import karaed.json.JsonUtil;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -17,7 +18,6 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -87,17 +87,9 @@ public final class ManualAlign extends BaseDialog {
         );
     }
 
-    private static void touchIfSourceNewer(Path source, Path target) throws IOException {
-        FileTime targetTime = Files.getLastModifiedTime(target);
-        FileTime sourceTime = Files.getLastModifiedTime(source);
-        if (sourceTime.compareTo(targetTime) > 0) {
-            Files.setLastModifiedTime(target, sourceTime);
-        }
-    }
-
     private void touchRangesIfTextNewer() throws IOException {
         // If text is modified externally, touch ranges file even if it is not changed:
-        touchIfSourceNewer(textFile, rangesFile);
+        TouchUtil.touchIfSourceNewer(rangesFile, textFile);
     }
 
     private boolean save(boolean forceSync) {
