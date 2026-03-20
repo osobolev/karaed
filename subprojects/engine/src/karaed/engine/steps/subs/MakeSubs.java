@@ -11,9 +11,9 @@ import karaed.engine.sync.Timestamps;
 import karaed.json.JsonUtil;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,22 +42,48 @@ public final class MakeSubs {
         Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         """;
 
+    private static void writeSubsWithBackup(Path subsFile, List<String> assLines) throws IOException {
+        if (Files.exists(subsFile)) {
+            List<String> oldLines = Files.readAllLines(subsFile);
+            if (!oldLines.equals(assLines)) {
+                String fileName = subsFile.getFileName().toString();
+                int p = fileName.lastIndexOf('.');
+                int n = 1;
+                while (true) {
+                    String backupName;
+                    if (p < 0) {
+                        backupName = fileName + "." + n;
+                    } else {
+                        backupName = fileName.substring(0, p) + "." + n + fileName.substring(p);
+                    }
+                    Path backup = subsFile.resolveSibling(backupName);
+                    if (!Files.exists(backup)) {
+                        Files.move(subsFile, backup);
+                        break;
+                    }
+                    n++;
+                }
+            }
+        }
+        Files.write(subsFile, assLines);
+    }
+
     public static void makeSubs(Path textFile, Path alignedFile, OAlign options,
                                 Path subsFile, Path backvocalsFile) throws IOException {
         SyncLyrics synced = SyncLyrics.create(textFile, alignedFile, options.words());
         List<List<TargetSegment>> lines = synced.getLines();
         double lastEnd = synced.lastEnd;
 
-        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(subsFile))) {
-            long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
-            String header = String.format(HEADER, VIDEO_FRAME_RATE, dummyFrames);
-            header.lines().forEach(pw::println);
-            lines
-                .stream()
-                .map(line -> assLine(line, options))
-                .filter(Objects::nonNull)
-                .forEach(pw::println);
-        }
+        List<String> assLines = new ArrayList<>();
+        long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
+        String header = String.format(HEADER, VIDEO_FRAME_RATE, dummyFrames);
+        header.lines().forEach(assLines::add);
+        lines
+            .stream()
+            .map(line -> assLine(line, options))
+            .filter(Objects::nonNull)
+            .forEach(assLines::add);
+        writeSubsWithBackup(subsFile, assLines);
 
         Backvocals bv = JsonUtil.readFile(backvocalsFile, Backvocals.class, () -> Backvocals.EMPTY);
         if (!bv.manual()) {
