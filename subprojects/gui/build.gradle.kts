@@ -17,17 +17,3 @@ tasks.jar {
         )
     }
 }
-
-tasks.register("distr", Copy::class) {
-    from(configurations.runtimeClasspath)
-    from(tasks.jar)
-    from("$rootDir/config")
-    from("$rootDir") {
-        include("scripts/**")
-    }
-    into("$rootDir/distr")
-}
-
-tasks.clean {
-    delete("$rootDir/distr")
-}

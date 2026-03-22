@@ -1,19 +1,10 @@
 plugins {
+    id("common")
     `java-library`
 }
 
 group = "io.github.osobolev.karaed"
 version = "1.0"
-
-repositories {
-    mavenCentral()
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
 
 sourceSets {
     main {
