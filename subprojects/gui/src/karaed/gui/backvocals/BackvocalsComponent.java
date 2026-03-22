@@ -201,7 +201,17 @@ final class BackvocalsComponent extends MusicComponent {
         if (backRange != null) {
             rangeClicked(
                 me, backRange, s.backSeekY1(),
-                menu -> menu.add("Remove backvocals", () -> ranges.removeRange(backRange))
+                menu -> {
+                    menu.add("Remove backvocals", () -> ranges.removeRange(backRange));
+                    menu.add("Set backvocals volume", () -> {
+                        Double coeff = backRange.getCoeff();
+                        CoeffDialog dlg = new CoeffDialog(owner, coeff);
+                        dlg.setVisible(true);
+                        if (dlg.isOk()) {
+                            ranges.setCoeff(backRange, dlg.getCoeff());
+                        }
+                    });
+                }
             );
         }
     }
