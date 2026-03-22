@@ -21,7 +21,7 @@ import java.util.List;
 
 public final class Main {
 
-    private record Args(String rootDir, boolean create, boolean help, List<String> paths, List<URI> uris) {
+    private record Args(boolean create, boolean help, List<String> paths, List<URI> uris) {
 
         Path getProjectDirRaw() {
             if (paths.isEmpty())
@@ -46,7 +46,6 @@ public final class Main {
     }
 
     private static Args parseArgs(String[] args) {
-        String rootDir = null;
         boolean create = false;
         boolean help = false;
         List<String> paths = new ArrayList<>();
@@ -63,11 +62,7 @@ public final class Main {
                 option = null;
             }
             if (option != null) {
-                if ("r".equals(option)) {
-                    if (i < args.length) {
-                        rootDir = args[i++];
-                    }
-                } else if ("new".equals(option) || "create".equals(option)) {
+                if ("new".equals(option) || "create".equals(option)) {
                     create = true;
                 } else if ("help".equals(option)) {
                     help = true;
@@ -86,7 +81,7 @@ public final class Main {
                 }
             }
         }
-        return new Args(rootDir, create, help, paths, uris);
+        return new Args(create, help, paths, uris);
     }
 
     private static Workdir newProject(ErrorLogger logger, Workdir workDir, Args pargs) {
@@ -174,13 +169,14 @@ public final class Main {
                 help();
                 return;
             }
-            if (pargs.rootDir == null) {
+            String rootDirStr = System.getProperty("app.rootDir");
+            if (rootDirStr == null) {
                 ShowMessage.error(null, "No root directory specified");
                 return;
             }
             if (!ToolsDialog.fastCheckIfInstalled(logger, tools))
                 return;
-            Path rootDir = Path.of(pargs.rootDir);
+            Path rootDir = Path.of(rootDirStr);
             Workdir workDir = start(logger, pargs, () -> new StartFrame(logger, tools, rootDir));
             if (workDir == null)
                 return;
