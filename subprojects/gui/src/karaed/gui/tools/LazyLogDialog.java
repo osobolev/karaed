@@ -56,7 +56,7 @@ final class LazyLogDialog implements OutputCapture {
         boolean canClose = false;
 
         LogDialog(BaseWindow owner, Thread thread) {
-            super(owner.toWindow(), owner.getLogger(), "Log");
+            super(owner, "Log");
             this.thread = thread;
 
             add(new JScrollPane(logArea.getVisual()), BorderLayout.CENTER);

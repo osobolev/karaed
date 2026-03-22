@@ -17,6 +17,10 @@ public class BaseDialog extends JDialog implements BaseWindow {
         WindowUtil.initWindow(this, this::onClosing);
     }
 
+    public BaseDialog(BaseWindow owner, String title) {
+        this(owner.toWindow(), owner.getLogger(), title);
+    }
+
     @Override
     public Window toWindow() {
         return this;
