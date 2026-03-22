@@ -47,6 +47,13 @@ public final class OptionsDialog extends BaseDialog {
             if (defaultDir != null) {
                 InputUtil.setText(tfDir, defaultDir.toAbsolutePath().normalize().toString());
             }
+            FileDnD.allowDrop(tfDir, path -> {
+                if (path.isDirectory()) {
+                    return path;
+                } else {
+                    return path.getParentFile();
+                }
+            });
             JButton btnChoose = InputUtil.getChooseButtonFor(tfDir, "...", () -> {
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

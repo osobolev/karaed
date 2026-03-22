@@ -79,6 +79,14 @@ final class InputPanel extends BasePanel<OInput> {
             InputUtil.setText(tfURL, origData.url());
         }
 
+        FileDnD.allowDrop(tfFile, path -> {
+            if (path.isFile()) {
+                return path;
+            } else {
+                return null;
+            }
+        });
+
         enableDisable();
         rbURL.addActionListener(e -> enableDisable());
         rbFile.addActionListener(e -> enableDisable());
