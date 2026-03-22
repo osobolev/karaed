@@ -165,6 +165,7 @@ public final class Main {
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
             Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
+            ScaleUIDefaults.init();
             if (pargs.help) {
                 help();
                 return;

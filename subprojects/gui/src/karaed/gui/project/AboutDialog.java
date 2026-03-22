@@ -1,5 +1,6 @@
 package karaed.gui.project;
 
+import karaed.gui.ScaleUIDefaults;
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
@@ -19,12 +20,12 @@ final class AboutDialog extends BaseDialog {
         phead.add(new JLabel(InputUtil.getIcon("/karaed.png")));
         JLabel lblHeader = new JLabel("KaraEd" + (version == null ? "" : " " + version));
         Font defFont = lblHeader.getFont();
-        lblHeader.setFont(defFont.deriveFont(16f));
+        lblHeader.setFont(defFont.deriveFont(ScaleUIDefaults.size(16f)));
         phead.add(lblHeader);
 
         JPanel pdesc = new JPanel(new BorderLayout());
         JLabel lblDesc = new JLabel("Karaoke Editor", JLabel.CENTER);
-        lblDesc.setFont(defFont.deriveFont(24f));
+        lblDesc.setFont(defFont.deriveFont(ScaleUIDefaults.size(24f)));
         pdesc.add(lblDesc, BorderLayout.CENTER);
 
         JPanel plink = new JPanel(new BorderLayout());

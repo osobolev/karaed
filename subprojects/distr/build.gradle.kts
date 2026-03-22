@@ -51,7 +51,8 @@ tasks.register("createDistr", Exec::class) {
         "--app-version", release,
         "--icon", "karaed.ico",
         "--java-options", "-Dapp.rootDir=\$APPDIR",
-        "--java-options", "-Xmx512m"
+        "--java-options", "-Xmx512m",
+        "--java-options", "-Dsun.java2d.uiScale=1.0",
     )
 }
 

@@ -1,5 +1,6 @@
 package karaed.gui.project;
 
+import karaed.gui.ScaleUIDefaults;
 import karaed.gui.util.InputUtil;
 import karaed.project.PipeStep;
 
@@ -30,7 +31,7 @@ final class StepLabel {
 
     StepLabel(PipeStep step, Consumer<LinkType> onClick) {
         this.step = step;
-        tpLabel = new LinkLabel(panel, "Dialog", 24, e -> {
+        this.tpLabel = new LinkLabel(panel, "Dialog", ScaleUIDefaults.isize(24), e -> {
             String description = e.getDescription();
             try {
                 LinkType link = LinkType.valueOf(description.substring(1).toUpperCase());
