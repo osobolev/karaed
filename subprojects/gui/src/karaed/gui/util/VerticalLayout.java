@@ -1,9 +1,9 @@
-package karaed.gui.options;
+package karaed.gui.util;
 
 import java.awt.*;
 import java.util.function.Function;
 
-final class VerticalLayout implements LayoutManager {
+public final class VerticalLayout implements LayoutManager {
 
     private static final int DELTA = 5;
 

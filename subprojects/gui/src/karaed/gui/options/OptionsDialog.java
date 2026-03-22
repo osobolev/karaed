@@ -3,6 +3,7 @@ package karaed.gui.options;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.InputUtil;
+import karaed.gui.util.VerticalLayout;
 import karaed.project.Workdir;
 
 import javax.swing.*;
