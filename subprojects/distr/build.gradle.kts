@@ -2,6 +2,8 @@ plugins {
     id("common")
 }
 
+val release = "1.0.0"
+
 val app by configurations.creating
 
 dependencies {
@@ -46,7 +48,7 @@ tasks.register("createDistr", Exec::class) {
         "--main-jar", "gui.jar",
         "--runtime-image", "jre",
         "--description", "Karaoke editor",
-        "--app-version", "1.0",
+        "--app-version", release,
         "--icon", "karaed.ico",
         "--java-options", "-Dapp.rootDir=\$APPDIR"
     )
