@@ -16,6 +16,8 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -108,17 +110,43 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         this.getText = getText;
     }
 
+    private static String formatFrame(Sizer s, int frame) {
+        int millis = Math.round(s.frame2sec(frame) * 1000);
+        Duration duration = Duration.ofMillis(millis);
+        int addMillis = Math.round(duration.toMillisPart() / 100f) * 100;
+        Duration normalized = duration.truncatedTo(ChronoUnit.SECONDS).plusMillis(addMillis);
+        int d1 = normalized.toMillisPart() / 100;
+        String frac;
+        if (d1 > 0) {
+            frac = "." + d1;
+        } else {
+            frac = "";
+        }
+        return Range.formatDuration(normalized) + frac;
+    }
+
     @Override
     public final String getToolTipText(MouseEvent e) {
-        if (getText == null)
-            return null;
         Sizer s = newSizer();
         int frame = s.x2frame(e.getX());
         Range range = s.findRange(frame, e.getY(), model);
-        Integer index = paintedRangeIndex.getIndex(range);
-        if (index == null)
+        if (range == null)
             return null;
-        return getText.apply(index.intValue());
+        String text = null;
+        if (getText != null) {
+            Integer index = paintedRangeIndex.getIndex(range);
+            if (index != null) {
+                text = getText.apply(index.intValue());
+            }
+        }
+        String from = formatFrame(s, range.from());
+        String to = formatFrame(s, range.to());
+        String rangeStr = "[" + from + "-" + to + "]";
+        if (text != null) {
+            return rangeStr + " " + text;
+        } else {
+            return rangeStr;
+        }
     }
 
     public final void showRange(int lineIndex, boolean play) {

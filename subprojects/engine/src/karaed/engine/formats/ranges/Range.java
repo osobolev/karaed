@@ -7,8 +7,7 @@ public record Range(
     int to
 ) implements RangeLike {
 
-    public static String formatTime(float totalSeconds) {
-        Duration duration = Duration.ofSeconds(Math.round(totalSeconds));
+    public static String formatDuration(Duration duration) {
         int hours = duration.toHoursPart();
         int minutes = duration.toMinutesPart();
         int seconds = duration.toSecondsPart();
@@ -17,6 +16,11 @@ public record Range(
         } else {
             return String.format("%s:%02d", minutes, seconds);
         }
+    }
+
+    public static String formatTime(float totalSeconds) {
+        Duration duration = Duration.ofSeconds(Math.round(totalSeconds));
+        return formatDuration(duration);
     }
 
     private static String formatFrame(int frame) {
