@@ -43,7 +43,7 @@ tasks.register("createDistr", Exec::class) {
         "-i", layout.buildDirectory.dir("distr").get(),
         "-d", "$rootDir/distr",
         "-n", "karaed",
-        "--main-jar", "gui-1.0.jar",
+        "--main-jar", "gui.jar",
         "--runtime-image", "jre",
         "--description", "Karaoke editor",
         "--app-version", "1.0",

@@ -4,7 +4,6 @@ plugins {
 }
 
 group = "io.github.osobolev.karaed"
-version = "1.0"
 
 sourceSets {
     main {
