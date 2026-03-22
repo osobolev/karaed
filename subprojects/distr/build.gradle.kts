@@ -40,7 +40,7 @@ tasks.register("jre", Exec::class) {
 tasks.register("createDistr", Exec::class) {
     dependsOn("appdir")
     executable(toolPath("jpackage"))
-    args(
+    val args = mutableListOf<Any>(
         "--type", "app-image",
         "-i", layout.buildDirectory.dir("distr").get(),
         "-d", "$rootDir/distr",
@@ -51,9 +51,12 @@ tasks.register("createDistr", Exec::class) {
         "--app-version", release,
         "--icon", "karaed.ico",
         "--java-options", "-Dapp.rootDir=\$APPDIR",
-        "--java-options", "-Xmx512m",
-        "--java-options", "-Dsun.java2d.uiScale=1.0",
     )
+    file("config/options.args")
+        .readLines()
+        .filter { it.isNotBlank() }
+        .forEach { args.add("--java-options"); args.add(it) }
+    args(args)
 }
 
 tasks.clean {
@@ -73,4 +76,3 @@ tasks.register("releaseZip", Zip::class) {
         into(baseName)
     }
 }
-
