@@ -4,9 +4,6 @@ import karaed.gui.util.InputUtil;
 import karaed.project.PipeStep;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.util.function.Consumer;
@@ -26,62 +23,23 @@ final class StepLabel {
     private static final Color INACTIVE_LINK = new Color(150, 150, 200);
 
     private final PipeStep step;
-    private final JTextPane tpLabel = new JTextPane();
+    private final LinkLabel tpLabel;
     private final JLabel iconLabel = new JLabel();
     private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
     private boolean hasVideo = true;
 
-    private static String toHex(int x) {
-        String str = Integer.toString(x, 16);
-        if (str.length() < 2) {
-            return "0" + str;
-        } else {
-            return str;
-        }
-    }
-
-    private static String toHtml(Color color) {
-        return "#" + toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue());
-    }
-
     StepLabel(PipeStep step, Consumer<LinkType> onClick) {
         this.step = step;
-        tpLabel.setEditable(false);
-        tpLabel.setFocusable(false);
-        tpLabel.setBorder(BorderFactory.createEmptyBorder());
-        tpLabel.setBackground(panel.getBackground());
-        StyleSheet ss = new StyleSheet();
-        String htmlColor = toHtml(panel.getBackground());
-        ss.addRule(
-            String.format(
-                """
-                    body {
-                        font-family: Dialog;
-                        font-size: 24;
-                        background-color: %s;
-                    }
-                    """,
-                htmlColor
-            )
-        );
-        tpLabel.setEditorKit(new HTMLEditorKit() {
-            @Override
-            public StyleSheet getStyleSheet() {
-                return ss;
+        tpLabel = new LinkLabel(panel, "Dialog", 24, e -> {
+            String description = e.getDescription();
+            try {
+                LinkType link = LinkType.valueOf(description.substring(1).toUpperCase());
+                onClick.accept(link);
+            } catch (IllegalArgumentException ex) {
+                // ignore
             }
         });
-        tpLabel.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                String description = e.getDescription();
-                try {
-                    LinkType link = LinkType.valueOf(description.substring(1).toUpperCase());
-                    onClick.accept(link);
-                } catch (IllegalArgumentException ex) {
-                    // ignore
-                }
-            }
-        });
-        panel.add(tpLabel);
+        panel.add(tpLabel.getVisual());
         panel.add(iconLabel);
     }
 
@@ -106,10 +64,7 @@ final class StepLabel {
             String href = matcher.group(2);
             String replacement;
             if (canLink || step == PipeStep.RANGES || step == PipeStep.BACKVOCALS) {
-                replacement = String.format(
-                    "<font color='%s'><u><a href='#%s'>%s</a></u></font>",
-                    toHtml(linkColor), href, linkText
-                );
+                replacement = LinkLabel.linkText(linkColor, "#" + href, linkText);
             } else {
                 replacement = linkText;
             }
@@ -117,7 +72,7 @@ final class StepLabel {
         }
         matcher.appendTail(buf);
         Color color = active ? ACTIVE_COLOR : INACTIVE_COLOR;
-        return "<html><font color='" + toHtml(color) + "'><b>" + buf + "</b></font></html>";
+        return LinkLabel.labelText(color, buf);
     }
 
     private void setText(boolean active, boolean canLink, String tooltip) {
@@ -126,7 +81,7 @@ final class StepLabel {
     }
 
     void setState(RunStepState state) {
-        tpLabel.setToolTipText(null);
+        tpLabel.getVisual().setToolTipText(null);
         if (state instanceof RunStepState.Done) {
             setText(true, true, null);
             iconLabel.setIcon(COMPLETE);
