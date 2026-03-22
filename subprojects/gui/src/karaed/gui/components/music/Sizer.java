@@ -10,7 +10,7 @@ public abstract class Sizer extends Measurer {
     static final int SEEK_H = 4;
     public static final int RANGE_H = 20;
 
-    final FontMetrics fm;
+    public final FontMetrics fm;
 
     protected Sizer(FontMetrics fm, float frameRate, float pixPerSec) {
         super(frameRate, pixPerSec);

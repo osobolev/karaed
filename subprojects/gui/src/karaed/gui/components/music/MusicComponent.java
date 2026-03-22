@@ -25,7 +25,7 @@ import java.util.function.IntFunction;
 
 public abstract class MusicComponent extends JComponent implements Scrollable {
 
-    private final BaseWindow owner;
+    protected final BaseWindow owner;
     private final ColorSequence colors;
     protected final EditableRanges model;
     private IntFunction<String> getText;
