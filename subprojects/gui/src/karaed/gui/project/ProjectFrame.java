@@ -125,18 +125,35 @@ public final class ProjectFrame extends BaseFrame {
         JPanel main = new JPanel(new BorderLayout());
         add(main, BorderLayout.CENTER);
 
-        JPanel top = new JPanel();
-        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
-        top.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         JTextField tfPath = new JTextField(40);
         tfPath.setEditable(false);
         InputUtil.setText(tfPath, workDir.dir().toAbsolutePath().normalize().toString());
+        JButton btnShowDir = InputUtil.getChooseButtonFor(
+            tfPath, "...",
+            () -> {
+                try {
+                    Desktop.getDesktop().open(workDir.dir().toFile());
+                } catch (Exception ex) {
+                    error(ex);
+                }
+            }
+        );
+        btnShowDir.setToolTipText("Open folder");
 
         tfTitle.setEditable(false);
         showTitle();
 
-        top.add(tfPath);
-        top.add(tfTitle);
+        JPanel top = new JPanel(new GridBagLayout());
+        top.add(tfPath, new GridBagConstraints(
+            0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
+        ));
+        top.add(btnShowDir, new GridBagConstraints(
+            1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 0), 0, 0
+        ));
+        top.add(tfTitle, new GridBagConstraints(
+            0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0
+        ));
+        top.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         main.add(top, BorderLayout.NORTH);
 
         JPanel steps = new JPanel();
