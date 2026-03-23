@@ -28,7 +28,6 @@ fun toolPath(tool: String): File {
 tasks.register("jre", Exec::class) {
     executable(toolPath("jlink"))
     args(
-        "--vm", "client", 
         "--no-header-files", "--no-man-pages", "--strip-debug",
         "--compress", "zip-9",
         "--add-modules", "java.desktop,jdk.crypto.ec,jdk.localedata",
@@ -50,7 +49,7 @@ tasks.register("createDistr", Exec::class) {
         "--description", "Karaoke editor",
         "--app-version", release,
         "--icon", "karaed.ico",
-        "--java-options", "-Dapp.rootDir=\$APPDIR",
+        "--java-options", "-Dapp.rootDir=\$APPDIR"
     )
     file("config/options.args")
         .readLines()

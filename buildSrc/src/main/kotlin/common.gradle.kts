@@ -9,6 +9,6 @@ repositories {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.BELLSOFT) 
+        vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
