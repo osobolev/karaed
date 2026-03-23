@@ -42,7 +42,7 @@ public final class ProcRunner<T> {
         OutputProcessor<Object> stderr;
         if (parseStdout != null) {
             stdout = parseStdout;
-            stderr = stream -> stream.transferTo(Writer.nullWriter());
+            stderr = rdr -> rdr.transferTo(Writer.nullWriter());
         } else {
             stdout = rdr -> capture(rdr, false);
             stderr = rdr -> capture(rdr, true);
