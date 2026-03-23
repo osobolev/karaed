@@ -31,16 +31,7 @@ final class SyncWords extends SyncAny {
 
         List<Word> splitToWords(String text) {
             for (int i = 0; i < text.length(); i++) {
-                char ch = text.charAt(i);
-                boolean letter;
-                if (AssUtil.isLetter(ch)) {
-                    letter = true;
-                } else if (ch == '-') {
-                    letter = i > 0 && AssUtil.isLetter(text.charAt(i - 1));
-                } else {
-                    letter = false;
-                }
-                if (letter) {
+                if (AssUtil.isLetter(text, i)) {
                     if (!inWord) {
                         add();
                         inWord = true;
@@ -51,6 +42,7 @@ final class SyncWords extends SyncAny {
                         inWord = false;
                     }
                 }
+                char ch = text.charAt(i);
                 if (ch == '{' || ch == '}') {
                     backvocal.setBackvocal(ch == '{');
                     continue;

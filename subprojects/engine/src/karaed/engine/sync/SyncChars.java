@@ -18,7 +18,7 @@ final class SyncChars extends SyncAny {
                 backvocal.setBackvocal(ch == '{');
                 continue;
             }
-            words.add(new Word(String.valueOf(ch), AssUtil.isLetter(ch), backvocal.isBackvocal()));
+            words.add(new Word(String.valueOf(ch), AssUtil.isLetter(text, i), backvocal.isBackvocal()));
         }
         return words;
     }
@@ -28,11 +28,12 @@ final class SyncChars extends SyncAny {
         for (int i = 0; i < alignedLyrics.segments().size(); i++) {
             AlignSegment segment = alignedLyrics.segments().get(i);
             String segText = segment.text();
-            for (int j = 0; j < segment.chars().size(); j++) {
-                CharSegment cs = segment.chars().get(j);
-                char ch = cs.getChar();
-                if (!AssUtil.isLetter(ch))
+            List<CharSegment> chars = segment.chars();
+            for (int j = 0; j < chars.size(); j++) {
+                if (!AssUtil.isLetter(j, index -> chars.get(index).getChar()))
                     continue;
+                CharSegment cs = chars.get(j);
+                char ch = cs.getChar();
                 Timestamps timestamps = checkTimestamps(cs.start(), cs.end(), i, segText, "char", j);
                 aligned.add(new SrcSegment(String.valueOf(ch), timestamps));
             }

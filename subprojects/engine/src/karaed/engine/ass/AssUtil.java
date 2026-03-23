@@ -2,8 +2,27 @@ package karaed.engine.ass;
 
 public final class AssUtil {
 
-    public static boolean isLetter(char ch) {
-        return Character.isLetterOrDigit(ch) || ch == '\'';
+    public interface CharAt {
+
+        char charAt(int index);
+
+        default boolean isRealLetter(int index) {
+            return Character.isLetterOrDigit(charAt(index));
+        }
+    }
+
+    public static boolean isLetter(int index, CharAt charAt) {
+        if (charAt.isRealLetter(index))
+            return true;
+        char ch = charAt.charAt(index);
+        if (ch == '-' || ch == '\'') {
+            return index > 0 && charAt.isRealLetter(index - 1);
+        }
+        return false;
+    }
+
+    public static boolean isLetter(String string, int index) {
+        return isLetter(index, string::charAt);
     }
 
     public static void appendK(StringBuilder buf, String tag, double len) {

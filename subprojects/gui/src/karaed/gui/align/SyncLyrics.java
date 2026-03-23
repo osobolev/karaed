@@ -148,11 +148,11 @@ final class SyncLyrics {
                     int prevWordEnd = -1;
                     boolean word = false;
                     for (int j = 0; j < line.length(); j++) {
-                        char ch = line.charAt(j);
-                        if (AssUtil.isLetter(ch)) {
+                        if (AssUtil.isLetter(line, j)) {
                             if (!word && prevWordEnd >= 0) {
                                 chars.add(new LinedChar(i, prevWordEnd, ' '));
                             }
+                            char ch = line.charAt(j);
                             chars.add(new LinedChar(i, j, Character.toLowerCase(ch)));
                             word = true;
                         } else {
