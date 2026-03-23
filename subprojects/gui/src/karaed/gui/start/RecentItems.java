@@ -52,9 +52,10 @@ public final class RecentItems {
             return;
         RecentModel model = loadModel(logger, recentFile);
         List<RecentDir> newRecent = new ArrayList<>();
-        newRecent.add(new RecentDir(dir.toAbsolutePath().normalize().toString()));
+        Path newDir = dir.toAbsolutePath().normalize();
+        newRecent.add(new RecentDir(newDir.toString()));
         Set<Path> visited = new HashSet<>();
-        visited.add(dir.normalize());
+        visited.add(newDir);
         for (RecentDir recentDir : model.recent()) {
             Path idir = Path.of(recentDir.dir()).normalize();
             if (!visited.add(idir))
@@ -70,7 +71,7 @@ public final class RecentItems {
             return;
         RecentModel model = loadModel(logger, recentFile);
         List<RecentDir> newRecent = new ArrayList<>();
-        Path ndir = dir.normalize();
+        Path ndir = dir.toAbsolutePath().normalize();
         for (RecentDir recentDir : model.recent()) {
             Path idir = Path.of(recentDir.dir()).normalize();
             if (Objects.equals(idir, ndir))
