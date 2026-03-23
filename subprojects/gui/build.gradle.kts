@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     implementation(libs.diff)
-    implementation(libs.gson)
     implementation(project(":json-util"))
     implementation(project(":project"))
 }

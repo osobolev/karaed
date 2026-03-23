@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
+    api(libs.gson)
     api(project(":run-util"))
-
-    implementation(libs.gson)
 }
