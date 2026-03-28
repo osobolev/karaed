@@ -3,7 +3,6 @@ package karaed.gui.tools;
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.ShowMessage;
-import karaed.tools.Tools;
 
 import javax.swing.*;
 import java.awt.*;
@@ -55,9 +54,9 @@ public final class ToolsDialog extends BaseDialog {
 
     private final Map<Tool, ToolRow> rows = new EnumMap<>(Tool.class);
 
-    public ToolsDialog(ErrorLogger logger, Window owner, boolean onStart, Tools tools) {
+    public ToolsDialog(ErrorLogger logger, Window owner, boolean onStart, SetupTools tools) {
         super(owner, logger, "Tools setup");
-        this.tools = SetupTools.create(tools);
+        this.tools = tools;
 
         JPanel main = new JPanel(new BorderLayout());
 
@@ -181,12 +180,11 @@ public final class ToolsDialog extends BaseDialog {
         }
     }
 
-    public static boolean fastCheckIfInstalled(ErrorLogger logger, Tools tools) {
-        SetupTools setupTools = SetupTools.create(tools);
-        if (setupTools.installed(Tool.PYTHON) && setupTools.installed(Tool.PIP) && setupTools.installed(Tool.FFMPEG)) {
+    public static boolean fastCheckIfInstalled(ErrorLogger logger, SetupTools tools) {
+        if (tools.installed(Tool.PYTHON) && tools.installed(Tool.PIP) && tools.installed(Tool.FFMPEG)) {
             return true;
         }
-        ToolsDialog dlg = new ToolsDialog(logger, null, true, setupTools);
+        ToolsDialog dlg = new ToolsDialog(logger, null, true, tools);
         return dlg.ok;
     }
 }

@@ -4,11 +4,11 @@ import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
 import karaed.gui.start.DirStatus;
 import karaed.gui.start.StartFrame;
+import karaed.gui.tools.SetupTools;
 import karaed.gui.tools.ToolsDialog;
 import karaed.gui.util.ShowMessage;
 import karaed.project.Workdir;
 import karaed.tools.ToolRunner;
-import karaed.tools.Tools;
 
 import javax.swing.*;
 import java.io.PrintWriter;
@@ -160,7 +160,7 @@ public final class Main {
         ToolRunner.registerShutdown();
 
         ErrorLogger logger = new FileLogger("karaed.log");
-        Tools tools = Tools.create(".karaed");
+        SetupTools tools = SetupTools.create();
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {

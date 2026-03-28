@@ -10,12 +10,12 @@ import karaed.gui.options.OptionsDialog;
 import karaed.gui.start.DirStatus;
 import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
+import karaed.gui.tools.SetupTools;
 import karaed.gui.tools.ToolsDialog;
 import karaed.gui.util.*;
 import karaed.project.*;
 import karaed.tools.CommandException;
 import karaed.tools.ToolRunner;
-import karaed.tools.Tools;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
@@ -59,7 +59,7 @@ public final class ProjectFrame extends BaseFrame {
         }
     };
 
-    public static JComponent createToolsButton(BaseWindow owner, Tools tools) {
+    public static JComponent createToolsButton(BaseWindow owner, SetupTools tools) {
         JButton btnTools = new JButton(InputUtil.getIcon("/tools.png"));
         btnTools.addActionListener(e -> new ToolsDialog(owner.getLogger(), owner.toWindow(), false, tools));
         btnTools.setToolTipText("Tools setup");
@@ -77,7 +77,7 @@ public final class ProjectFrame extends BaseFrame {
         return panel;
     }
 
-    public static ProjectFrame create(ErrorLogger logger, boolean reopenStart, Tools tools, Path rootDir, Workdir workDir,
+    public static ProjectFrame create(ErrorLogger logger, boolean reopenStart, SetupTools tools, Path rootDir, Workdir workDir,
                                       Consumer<String> onError) {
         DirStatus status = DirStatus.test(workDir);
         if (status != DirStatus.OK) {
@@ -88,7 +88,7 @@ public final class ProjectFrame extends BaseFrame {
         return new ProjectFrame(logger, tools, rootDir, workDir, reopenStart);
     }
 
-    private ProjectFrame(ErrorLogger logger, Tools tools, Path rootDir, Workdir workDir, boolean reopenStart) {
+    private ProjectFrame(ErrorLogger logger, SetupTools tools, Path rootDir, Workdir workDir, boolean reopenStart) {
         super(logger, "KaraEd");
         this.workDir = workDir;
         this.runner = new ToolRunner(tools, rootDir, taLog::append);

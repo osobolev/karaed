@@ -4,11 +4,11 @@ import karaed.engine.formats.info.Info;
 import karaed.gui.ErrorLogger;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
+import karaed.gui.tools.SetupTools;
 import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.TitleUtil;
 import karaed.project.Workdir;
-import karaed.tools.Tools;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -24,10 +24,10 @@ import java.util.function.Consumer;
 
 public final class StartFrame extends BaseFrame {
 
-    private final Tools tools;
+    private final SetupTools tools;
     private final Path rootDir;
 
-    public StartFrame(ErrorLogger logger, Tools tools, Path rootDir) {
+    public StartFrame(ErrorLogger logger, SetupTools tools, Path rootDir) {
         super(logger, "KaraEd");
         this.tools = tools;
         this.rootDir = rootDir;

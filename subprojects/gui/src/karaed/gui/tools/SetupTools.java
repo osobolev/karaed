@@ -5,14 +5,18 @@ import karaed.tools.Tools;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-final class SetupTools extends Tools {
+public final class SetupTools extends Tools {
 
     private SetupTools(Tools tools) {
         super(tools);
     }
 
-    static SetupTools create(Tools tools) {
+    public static SetupTools create(Tools tools) {
         return tools instanceof SetupTools ? (SetupTools) tools : new SetupTools(tools);
+    }
+
+    public static SetupTools create() {
+        return create(Tools.create(".karaed"));
     }
 
     private static boolean exeExists(Path exe) {
