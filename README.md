@@ -11,6 +11,8 @@ KaraEd is designed to work **locally and offline**.
 * **First Run:** AI models are downloaded upon the first project execution.
 * **Subsequent Runs:** No internet connection is required. Tools are stored in `%USERPROFILE%\.karaed` and AI models are stored in `%USERPROFILE%\.cache`.
 
+Watch [tutorial video](https://www.youtube.com/watch?v=VCAPqE7yk2I) with a step-by-step guide.
+
 ## 🛠 Core Technologies
 
 KaraEd integrates several tools under the hood:
