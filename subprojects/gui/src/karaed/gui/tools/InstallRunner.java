@@ -17,11 +17,11 @@ import java.util.zip.ZipInputStream;
 
 final class InstallRunner {
 
-    private final SetupTools tools;
+    private final WindowsSetupTools tools;
     private final SoftSources sources;
     private final ToolRunner runner;
 
-    InstallRunner(SetupTools tools, SoftSources sources, ToolRunner runner) {
+    InstallRunner(WindowsSetupTools tools, SoftSources sources, ToolRunner runner) {
         this.tools = tools;
         this.sources = sources;
         this.runner = runner;

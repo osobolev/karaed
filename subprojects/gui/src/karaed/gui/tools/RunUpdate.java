@@ -59,7 +59,9 @@ final class RunUpdate {
     }
 
     private void updateFFMPEG() throws IOException, InterruptedException {
-        deleteDir(tools.ffmpegDir());
-        new InstallRunner(tools, sources, runner).installFFMPEG();
+        if (tools instanceof WindowsSetupTools wintools) {
+            deleteDir(wintools.ffmpegDir());
+            new InstallRunner(wintools, sources, runner).installFFMPEG();
+        }
     }
 }
