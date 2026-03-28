@@ -23,7 +23,7 @@ final class ToolActions {
         this.logger = logger;
         this.tools = tools;
         this.sources = sources;
-        this.runner = new ToolRunner(tools, null, output);
+        this.runner = new ToolRunner(tools.toTools(), null, output);
     }
 
     private void error(Throwable ex) {

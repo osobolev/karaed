@@ -91,7 +91,7 @@ public final class ProjectFrame extends BaseFrame {
     private ProjectFrame(ErrorLogger logger, SetupTools tools, Path rootDir, Workdir workDir, boolean reopenStart) {
         super(logger, "KaraEd");
         this.workDir = workDir;
-        this.runner = new ToolRunner(tools, rootDir, taLog::append);
+        this.runner = new ToolRunner(tools.toTools(), rootDir, taLog::append);
         this.afterClose = () -> {
             if (reopenStart) {
                 new StartFrame(logger, tools, rootDir);
