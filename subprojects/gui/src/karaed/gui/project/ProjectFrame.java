@@ -84,12 +84,12 @@ public final class ProjectFrame extends BaseFrame {
             onError.accept(status.getText(workDir));
             return null;
         }
-        RecentItems.addRecentItem(ctx.logger(), workDir.dir());
+        RecentItems.addRecentItem(ctx.mainLogger(), workDir.dir());
         return new ProjectFrame(ctx, workDir, reopenStart);
     }
 
     private ProjectFrame(AppContext ctx, Workdir workDir, boolean reopenStart) {
-        super(ctx.logger(), "KaraEd");
+        super(ctx.mainLogger(), "KaraEd");
         this.workDir = workDir;
         this.runner = new ToolRunner(ctx.tools(), ctx.rootDir(), taLog::append);
         this.afterClose = () -> {
@@ -105,7 +105,7 @@ public final class ProjectFrame extends BaseFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = OptionsDialog.options(ctx.logger(), ctx.tools(), ProjectFrame.this, workDir);
+                    OptionsDialog dlg = OptionsDialog.options(ctx.mainLogger(), ctx.tools(), ProjectFrame.this, workDir);
                     if (dlg.isSaved()) {
                         refreshStepStates();
                     }

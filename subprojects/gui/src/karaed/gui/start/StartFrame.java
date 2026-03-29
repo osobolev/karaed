@@ -26,14 +26,14 @@ public final class StartFrame extends BaseFrame {
     private final AppContext ctx;
 
     public StartFrame(AppContext ctx) {
-        super(ctx.logger(), "KaraEd");
+        super(ctx.mainLogger(), "KaraEd");
         this.ctx = ctx;
 
         JButton btnNew = new JButton(new AbstractAction("New project") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = OptionsDialog.newProject(ctx.logger(), ctx.tools(), StartFrame.this, null, null);
+                    OptionsDialog dlg = OptionsDialog.newProject(ctx.mainLogger(), ctx.tools(), StartFrame.this, null, null);
                     Workdir workDir = dlg.getWorkDir();
                     if (workDir == null)
                         return;
@@ -77,13 +77,13 @@ public final class StartFrame extends BaseFrame {
         top.add(ProjectFrame.createToolsButton(this, ctx.tools()));
         add(top, BorderLayout.NORTH);
 
-        List<Path> recent = RecentItems.loadRecentItems(ctx.logger());
+        List<Path> recent = RecentItems.loadRecentItems(ctx.mainLogger());
 
         JPanel rip = new JPanel();
         rip.setLayout(new BoxLayout(rip, BoxLayout.Y_AXIS));
         Consumer<RecentItem> onDelete = item -> {
             Path dir = item.dir;
-            RecentItems.removeRecentItem(ctx.logger(), dir);
+            RecentItems.removeRecentItem(ctx.mainLogger(), dir);
             rip.remove(item.getVisual());
             rip.revalidate();
             rip.repaint();
