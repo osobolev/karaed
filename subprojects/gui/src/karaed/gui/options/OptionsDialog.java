@@ -82,8 +82,9 @@ public final class OptionsDialog extends BaseDialog {
             tfDir = null;
         }
 
-        add(new InputPanel(ctx, defaultURL), main);
-        add(new LyricsPanel(ctx), main);
+        InputPanel input = new InputPanel(ctx, defaultURL);
+        add(input, main);
+        add(new LyricsPanel(ctx, appCtx.tools(), input), main);
         add(new CutPanel(ctx), options);
         add(new AlignPanel(ctx), options);
         add(new VideoPanel(ctx), options);
