@@ -43,6 +43,20 @@ public final class Youtube {
         return finder.getVideo(suffix, true);
     }
 
+    private static Info fileMeta(ToolRunner runner, Path audio) throws IOException, InterruptedException {
+        FFFormat format = FileFormatUtil.getFormat(runner, audio);
+        FFTags tags = format.tags();
+        String artist;
+        if (tags.artist() != null) {
+            artist = tags.artist();
+        } else {
+            artist = tags.album_artist();
+        }
+        return new Info(
+            artist, tags.title(), null, null, null
+        );
+    }
+
     public static void download(ToolRunner runner, OInput input, OCut cut, Path audio, Path infoFile, VideoFinder finder) throws IOException, InterruptedException {
         CutRange range = CutRange.create(cut);
         if (input.url() != null) {
@@ -78,17 +92,7 @@ public final class Youtube {
             } else {
                 range.cutFile(runner, srcFile, audio);
             }
-            FFFormat format = FileFormatUtil.getFormat(runner, audio);
-            FFTags tags = format.tags();
-            String artist;
-            if (tags.artist() != null) {
-                artist = tags.artist();
-            } else {
-                artist = tags.album_artist();
-            }
-            Info info = new Info(
-                artist, tags.title(), null, null, null
-            );
+            Info info = fileMeta(runner, audio);
             JsonUtil.writeFile(infoFile, info);
         } else {
             throw new KaraException("Either URL or file must be specified");
