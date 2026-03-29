@@ -82,8 +82,8 @@ public final class ToolsDialog extends BaseDialog {
             rows.put(tool, row);
             row.btnUpdate.addActionListener(e -> runAction(
                 actions -> actions.update(tool),
-                this::updateInstalledVersions)
-            );
+                this::updateInstalledVersions
+            ));
         }
         prows.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
         main.add(prows, BorderLayout.CENTER);
