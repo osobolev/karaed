@@ -22,7 +22,7 @@ final class LyricsPanel extends BasePanel<String> {
     private final BaseWindow owner;
     private final SetupTools tools;
     private final InputPanel input;
-    private final JTextArea taLyrics = new JTextArea(20, 60);
+    private final JTextArea taLyrics = new JTextArea(22, 60);
 
     private static String readLyrics(Path file) throws IOException {
         List<String> lines = Files.readAllLines(file);
