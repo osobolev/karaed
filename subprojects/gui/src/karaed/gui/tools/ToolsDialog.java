@@ -22,33 +22,13 @@ public final class ToolsDialog extends BaseDialog {
     private final JButton btnInstall = new  JButton(new AbstractAction("Install") {
         @Override
         public void actionPerformed(ActionEvent e) {
-            Set<Tool> missing = EnumSet.noneOf(Tool.class);
-            for (Map.Entry<Tool, ToolRow> entry : rows.entrySet()) {
-                Tool tool = entry.getKey();
-                ToolRow row = entry.getValue();
-                if (!row.isInstalled()) {
-                    missing.add(tool);
-                }
-            }
-            runAction(
-                actions -> actions.installMissing(missing),
-                ToolsDialog.this::updateInstalledVersions
-            );
+            installMissing();
         }
     });
     private final JButton btnCheckUpdates = new JButton(new AbstractAction("Check for updates") {
         @Override
         public void actionPerformed(ActionEvent e) {
-            runAction(
-                ToolActions::checkForUpdates,
-                newVersions -> {
-                    for (Map.Entry<Tool, String> entry : newVersions.entrySet()) {
-                        Tool tool = entry.getKey();
-                        String newVersion = entry.getValue();
-                        rows.get(tool).setNewVersion(newVersion);
-                    }
-                }
-            );
+            checkForUpdates();
         }
     });
 
@@ -178,6 +158,34 @@ public final class ToolsDialog extends BaseDialog {
                 SwingUtilities.invokeLater(() -> error(ex));
             }
         }).start();
+    }
+
+    private void installMissing() {
+        Set<Tool> missing = EnumSet.noneOf(Tool.class);
+        for (Map.Entry<Tool, ToolRow> entry : rows.entrySet()) {
+            Tool tool = entry.getKey();
+            ToolRow row = entry.getValue();
+            if (!row.isInstalled()) {
+                missing.add(tool);
+            }
+        }
+        runAction(
+            actions -> actions.installMissing(missing),
+            ToolsDialog.this::updateInstalledVersions
+        );
+    }
+
+    private void checkForUpdates() {
+        runAction(
+            ToolActions::checkForUpdates,
+            newVersions -> {
+                for (Map.Entry<Tool, String> entry : newVersions.entrySet()) {
+                    Tool tool = entry.getKey();
+                    String newVersion = entry.getValue();
+                    rows.get(tool).setNewVersion(newVersion);
+                }
+            }
+        );
     }
 
     private void updateInstalledVersions(Map<Tool, String> versions) {
