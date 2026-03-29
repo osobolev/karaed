@@ -10,25 +10,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-final class WindowsInstallRunner {
+final class WindowsInstallRunner extends InstallRunner {
 
     private final WindowsSetupTools tools;
     private final WindowsSoftSources sources;
-    private final ToolRunner runner;
 
     WindowsInstallRunner(WindowsSetupContext ctx, ToolRunner runner) {
+        super(ctx.tools, runner);
         this.tools = ctx.wintools;
         this.sources = ctx.sources;
-        this.runner = runner;
-    }
-
-    private void log(String message) {
-        runner.println(message);
     }
 
     private final class ProgressLogger implements AutoCloseable {
@@ -136,16 +133,6 @@ final class WindowsInstallRunner {
         runner.run().python("get-pip", getPip.toString(), "--no-warn-script-location");
     }
 
-    private void installPackages(Collection<Tool> toInstall) throws IOException, InterruptedException {
-        log("Installing required packages...");
-        List<String> args = new ArrayList<>(List.of("-v", "install", "--no-warn-script-location"));
-        for (Tool tool : toInstall) {
-            args.addAll(tool.additionalPacks());
-            args.add(tool.packName());
-        }
-        runner.run().pythonTool("pip", args);
-    }
-
     void installFFMPEG() throws IOException, InterruptedException {
         downloadZip(
             "FFMPEG", sources.ffmpegUrl(),
@@ -160,21 +147,7 @@ final class WindowsInstallRunner {
         );
     }
 
-    private void require(Tool... tools) {
-        for (Tool tool : tools) {
-            if (!this.tools.installed(tool))
-                throw new IllegalStateException(tool + " is not installed!");
-        }
-    }
-
     void install(Set<Tool> tools) throws IOException, InterruptedException {
-        Set<Tool> packs = EnumSet.noneOf(Tool.class);
-        for (Tool tool : tools) {
-            String packName = tool.maybePackName();
-            if (packName != null) {
-                packs.add(tool);
-            }
-        }
         if (tools.contains(Tool.PYTHON)) {
             installPython();
         }
@@ -185,9 +158,6 @@ final class WindowsInstallRunner {
             require(Tool.PYTHON);
             installPIP();
         }
-        if (!packs.isEmpty()) {
-            require(Tool.PYTHON, Tool.PIP);
-            installPackages(packs);
-        }
+        installMissingPackages(tools);
     }
 }
