@@ -3,6 +3,7 @@ package karaed.gui.tools;
 import karaed.json.JsonUtil;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
 
@@ -71,7 +72,9 @@ public final class LinuxSetupTools extends SetupTools {
             pythonExeDir.toAbsolutePath().toString(),
             ffmpegBinDir.toAbsolutePath().toString()
         );
-        JsonUtil.writeFile(pathsConfig(), config);
+        Path file = pathsConfig();
+        Files.createDirectories(file.getParent());
+        JsonUtil.writeFile(file, config);
 
         this.pythonDir = pythonDir;
         this.pythonExeDir = pythonExeDir;
