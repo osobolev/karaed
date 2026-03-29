@@ -41,29 +41,10 @@ public final class WindowsSetupTools extends SetupTools {
         return new Tools(pythonDir, pythonExeDir, ffmpegBinDir);
     }
 
-    private static boolean exeExists(Path exe) {
-        if (Files.exists(exe))
-            return true;
-        Path win = exe.resolveSibling(exe.getFileName() + ".exe");
-        if (Files.exists(win))
-            return true;
-        return false;
-    }
-
-    private Path toolPath(Tool tool) {
-        Tools tools = toTools();
-        return switch (tool) {
-            case PYTHON -> tools.python();
-            case FFMPEG -> tools.ffmpegTool("ffprobe");
-            case PIP -> tools.pythonTool("pip");
-            default -> throw new IllegalArgumentException("Tool " + tool + " is a Python package");
-        };
-    }
-
     @Override
-    boolean installed(Tool tool) {
-        Path path = toolPath(tool);
-        return exeExists(path);
+    boolean exeExists(Path toolPath) {
+        Path win = toolPath.resolveSibling(toolPath.getFileName() + ".exe");
+        return Files.exists(win);
     }
 
     Path pythonDir() {
