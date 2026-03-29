@@ -5,7 +5,7 @@ import karaed.tools.Tools;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public final class WindowsSetupTools extends SetupTools{
+public final class WindowsSetupTools extends SetupTools {
 
     private final Path pythonDir;
     private final Path pythonExeDir;
