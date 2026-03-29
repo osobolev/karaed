@@ -40,7 +40,7 @@ public final class OptionsDialog extends BaseDialog {
     private OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir,
                           Path defaultDir, String defaultURL) throws IOException {
         super(owner, logger, title);
-        this.ctx = new OptCtx(workDir);
+        this.ctx = new OptCtx(this, workDir);
 
         if (ctx.workDir == null) {
             tfDir = new JTextField(40);
@@ -149,9 +149,7 @@ public final class OptionsDialog extends BaseDialog {
                 savers.add(saver);
             }
         } catch (ValidationException ex) {
-            openTabContaining(ex.component);
-            ex.component.requestFocusInWindow();
-            error(ex.getMessage());
+            ex.show(this);
             return;
         }
         saved = true;
@@ -162,24 +160,6 @@ public final class OptionsDialog extends BaseDialog {
             dispose();
         } catch (Exception ex) {
             error(ex);
-        }
-    }
-
-    private static void openTabContaining(JComponent comp) {
-        if (comp.isShowing())
-            return;
-        Component current = comp;
-        while (current != null) {
-            if (current instanceof JTabbedPane tabs) {
-                for (int i = 0; i < tabs.getTabCount(); i++) {
-                    Component tab = tabs.getComponentAt(i);
-                    if (SwingUtilities.isDescendingFrom(comp, tab)) {
-                        tabs.setSelectedIndex(i);
-                        break;
-                    }
-                }
-            }
-            current = current.getParent();
         }
     }
 
