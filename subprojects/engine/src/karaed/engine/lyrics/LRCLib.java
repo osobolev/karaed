@@ -28,11 +28,16 @@ public final class LRCLib {
                 URLEncoder.encode(artist, StandardCharsets.UTF_8),
                 URLEncoder.encode(track, StandardCharsets.UTF_8)
             );
+            String version = System.getProperty("jpackage.app-version");
+            String userAgent = String.format(
+                "karaed%s (+https://github.com/osobolev/karaed)",
+                version == null ? "" : "/" + version
+            );
             HttpRequest request = HttpRequest
                 .newBuilder()
                 .uri(URI.create(url))
                 .timeout(Duration.ofSeconds(10))
-                .header("User-Agent", "https://github.com/osobolev/karaed")
+                .header("User-Agent", userAgent)
                 .build();
 
             HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
