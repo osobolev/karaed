@@ -11,6 +11,7 @@ import karaed.project.Workdir;
 import karaed.tools.ToolRunner;
 
 import javax.swing.*;
+import java.io.Console;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
@@ -153,7 +154,12 @@ public final class Main {
         pw.println("karaed");
         pw.println("    - opens project list window");
         pw.close();
-        JOptionPane.showMessageDialog(null, sw.toString(), "Help", JOptionPane.INFORMATION_MESSAGE);
+        Console console = System.console();
+        if (console != null) {
+            console.printf("%s", sw);
+        } else {
+            JOptionPane.showMessageDialog(null, sw.toString(), "Help", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public static void main(String[] args) {
