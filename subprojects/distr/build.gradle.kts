@@ -30,7 +30,7 @@ tasks.register("jre", Exec::class) {
     args(
         "--no-header-files", "--no-man-pages", "--strip-debug",
         "--compress", "zip-9",
-        "--add-modules", "java.desktop,jdk.crypto.ec,jdk.localedata",
+        "--add-modules", "java.desktop,java.net.http,jdk.crypto.ec,jdk.localedata",
         "--include-locales", "en",
         "--output", "jre"
     )
