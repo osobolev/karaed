@@ -3,7 +3,6 @@ package karaed.gui.tools;
 import karaed.tools.SimpleTools;
 import karaed.tools.Tools;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class WindowsSetupTools extends SetupTools {
@@ -35,12 +34,6 @@ public final class WindowsSetupTools extends SetupTools {
     public Tools toTools() {
         Path ffmpegBinDir = ffmpegDir == null ? null : ffmpegDir.resolve("bin");
         return new SimpleTools(pythonDir, pythonExeDir, ffmpegBinDir);
-    }
-
-    @Override
-    boolean exeExists(Path toolPath) {
-        Path win = toolPath.resolveSibling(toolPath.getFileName() + ".exe");
-        return Files.exists(win);
     }
 
     Path pythonDir() {
