@@ -15,7 +15,7 @@ import java.util.function.Function;
 public final class ToolsDialog extends BaseDialog {
 
     private final SetupTools tools;
-    private final WindowsSourcesTab sources = new WindowsSourcesTab();
+    private final WindowsSourcesTab sources;
 
     private boolean ok = false;
 
@@ -37,6 +37,12 @@ public final class ToolsDialog extends BaseDialog {
     public ToolsDialog(ErrorLogger logger, Window owner, boolean onStart, SetupTools tools) {
         super(owner, logger, "Tools setup");
         this.tools = tools;
+
+        if (tools instanceof WindowsSetupTools) {
+            this.sources = new WindowsSourcesTab();
+        } else {
+            this.sources = null;
+        }
 
         JPanel main = new JPanel(new BorderLayout());
 
@@ -70,7 +76,9 @@ public final class ToolsDialog extends BaseDialog {
 
         JTabbedPane tab = new JTabbedPane();
         tab.add("Tool versions", main);
-        tab.add("Advanced", sources.getVisual());
+        if (sources != null) {
+            tab.add("Advanced", sources.getVisual());
+        }
         add(tab, BorderLayout.CENTER);
 
         if (onStart) {
