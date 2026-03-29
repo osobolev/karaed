@@ -19,12 +19,7 @@ public final class ToolsDialog extends BaseDialog {
 
     private boolean ok = false;
 
-    private final JButton btnInstall = new  JButton(new AbstractAction("Install") {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            installMissing();
-        }
-    });
+    private final JButton btnInstall;
     private final JButton btnCheckUpdates = new JButton(new AbstractAction("Check for updates") {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -40,14 +35,23 @@ public final class ToolsDialog extends BaseDialog {
 
         if (tools instanceof WindowsSetupTools) {
             this.sources = new WindowsSourcesTab();
+            this.btnInstall = new  JButton(new AbstractAction("Install") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    installMissing();
+                }
+            });
         } else {
             this.sources = null;
+            this.btnInstall = null;
         }
 
         JPanel main = new JPanel(new BorderLayout());
 
         JPanel top = new JPanel();
-        top.add(btnInstall);
+        if (btnInstall != null) {
+            top.add(btnInstall);
+        }
         top.add(btnCheckUpdates);
         main.add(top, BorderLayout.NORTH);
 
@@ -110,7 +114,9 @@ public final class ToolsDialog extends BaseDialog {
     }
 
     private void disableAll() {
-        btnInstall.setEnabled(false);
+        if (btnInstall != null) {
+            btnInstall.setEnabled(false);
+        }
         btnCheckUpdates.setEnabled(false);
         for (ToolRow row : rows.values()) {
             row.btnUpdate.setEnabled(false);
@@ -129,7 +135,9 @@ public final class ToolsDialog extends BaseDialog {
                 anyNotInstalled = true;
             }
         }
-        btnInstall.setEnabled(anyNotInstalled);
+        if (btnInstall != null) {
+            btnInstall.setEnabled(anyNotInstalled);
+        }
         btnCheckUpdates.setEnabled(anyInstalled);
     }
 
