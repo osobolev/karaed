@@ -11,14 +11,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.EnumMap;
+import java.util.Map;
 
 final class LinuxPathsDialog extends BaseDialog {
 
     private final LinuxSetupTools tools;
 
-    private final JTextField tfPython;
-    private final JTextField tfPythonExe;
-    private final JTextField tfFFmpeg;
+    private final Map<Tool, JTextField> dirFields = new EnumMap<>(Tool.class);
 
     private boolean ok = false;
 
@@ -32,9 +32,9 @@ final class LinuxPathsDialog extends BaseDialog {
         super(owner, "Tool paths");
         this.tools = tools;
 
-        this.tfPython = newField(tools.pythonDir());
-        this.tfPythonExe = newField(tools.pythonExeDir());
-        this.tfFFmpeg = newField(tools.ffmpegBinDir());
+        dirFields.put(Tool.PYTHON, newField(tools.pythonDir()));
+        dirFields.put(Tool.PIP, newField(tools.pythonExeDir()));
+        dirFields.put(Tool.FFMPEG, newField(tools.ffmpegBinDir()));
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
         top.add(new JLabel("Paths to:"));
@@ -44,26 +44,17 @@ final class LinuxPathsDialog extends BaseDialog {
         main.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         add(main, BorderLayout.CENTER);
 
-        main.add(new JLabel("Python:"), new GridBagConstraints(
-            0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
-        ));
-        main.add(tfPython, new GridBagConstraints(
-            1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
-        ));
-
-        main.add(new JLabel("Python tools:"), new GridBagConstraints(
-            0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
-        ));
-        main.add(tfPythonExe, new GridBagConstraints(
-            1, 1, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
-        ));
-
-        main.add(new JLabel("ffmpeg:"), new GridBagConstraints(
-            0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
-        ));
-        main.add(tfFFmpeg, new GridBagConstraints(
-            1, 2, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
-        ));
+        int row = 0;
+        for (Map.Entry<Tool, JTextField> entry : dirFields.entrySet()) {
+            Tool tool = entry.getKey();
+            main.add(new JLabel(tool + ":"), new GridBagConstraints(
+                0, row, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
+            ));
+            main.add(entry.getValue(), new GridBagConstraints(
+                1, row, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
+            ));
+            row++;
+        }
 
         JPanel butt = new JPanel();
         butt.add(new JButton(new AbstractAction("OK") {
@@ -122,22 +113,21 @@ final class LinuxPathsDialog extends BaseDialog {
     }
 
     private void savePaths() {
-        Path python = getPath(tfPython);
-        if (python == null)
-            return;
-        Path pythonExe = getPath(tfPythonExe);
-        if (pythonExe == null)
-            return;
-        Path ffmpeg = getPath(tfFFmpeg);
-        if (ffmpeg == null)
-            return;
+        Map<Tool, Path> dirs = new EnumMap<>(Tool.class);
+        for (Map.Entry<Tool, JTextField> entry : dirFields.entrySet()) {
+            Path dir = getPath(entry.getValue());
+            if (dir == null)
+                return;
+            dirs.put(entry.getKey(), dir);
+        }
+        Path python = dirs.get(Tool.PYTHON);
+        Path pythonExe = dirs.get(Tool.PIP);
+        Path ffmpeg = dirs.get(Tool.FFMPEG);
         LinuxSetupTools newTools = new LinuxSetupTools(python, pythonExe, ffmpeg);
-        if (!checkInstalled(newTools, tfPython, Tool.PYTHON))
-            return;
-        if (!checkInstalled(newTools, tfPythonExe, Tool.PIP))
-            return;
-        if (!checkInstalled(newTools, tfFFmpeg, Tool.FFMPEG))
-            return;
+        for (Map.Entry<Tool, JTextField> entry : dirFields.entrySet()) {
+            if (!checkInstalled(newTools, entry.getValue(), entry.getKey()))
+                return;
+        }
         try {
             tools.setPaths(python, pythonExe, ffmpeg);
             ok = true;
