@@ -136,6 +136,8 @@ public final class ToolsDialog extends BaseDialog {
     private SetupContext newContext() {
         if (tools instanceof WindowsSetupTools wintools) {
             return new WindowsSetupContext(wintools, sources);
+        } else if (tools instanceof LinuxSetupTools lintools) {
+            return new LinuxSetupContext(lintools, this);
         } else {
             throw new IllegalStateException();
         }

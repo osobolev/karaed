@@ -13,7 +13,12 @@ public abstract class SetupTools implements Tools {
     }
 
     public static SetupTools create() {
-        return WindowsSetupTools.create();
+        String os = System.getProperty("os.name");
+        if (os != null && os.toLowerCase().contains("win")) {
+            return WindowsSetupTools.create();
+        } else {
+            return LinuxSetupTools.create();
+        }
     }
 
     private Path toolPath(Tool tool) {
