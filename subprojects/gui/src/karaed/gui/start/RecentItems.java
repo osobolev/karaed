@@ -1,6 +1,7 @@
 package karaed.gui.start;
 
 import karaed.gui.ErrorLogger;
+import karaed.gui.tools.SetupTools;
 import karaed.json.JsonUtil;
 
 import java.nio.file.Files;
@@ -10,10 +11,7 @@ import java.util.*;
 public final class RecentItems {
 
     private static Path getRecentFile() {
-        String homeDir = System.getProperty("user.home");
-        if (homeDir == null)
-            return null;
-        return Path.of(homeDir, ".karaed", "recent.json");
+        return SetupTools.appDir().resolve("recent.json");
     }
 
     private static RecentModel loadModel(ErrorLogger logger, Path recentFile) {
@@ -36,8 +34,6 @@ public final class RecentItems {
 
     public static List<Path> loadRecentItems(ErrorLogger logger) {
         Path recentFile = getRecentFile();
-        if (recentFile == null)
-            return Collections.emptyList();
         RecentModel model = loadModel(logger, recentFile);
         List<Path> dirs = new ArrayList<>();
         for (RecentDir dir : model.recent()) {
@@ -48,8 +44,6 @@ public final class RecentItems {
 
     public static void addRecentItem(ErrorLogger logger, Path dir) {
         Path recentFile = getRecentFile();
-        if (recentFile == null)
-            return;
         RecentModel model = loadModel(logger, recentFile);
         List<RecentDir> newRecent = new ArrayList<>();
         Path newDir = dir.toAbsolutePath().normalize();
@@ -67,8 +61,6 @@ public final class RecentItems {
 
     public static void removeRecentItem(ErrorLogger logger, Path dir) {
         Path recentFile = getRecentFile();
-        if (recentFile == null)
-            return;
         RecentModel model = loadModel(logger, recentFile);
         List<RecentDir> newRecent = new ArrayList<>();
         Path ndir = dir.toAbsolutePath().normalize();

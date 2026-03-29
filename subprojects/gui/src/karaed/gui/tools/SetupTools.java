@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 public abstract class SetupTools implements Tools {
 
-    static Path appDir() {
+    public static Path appDir() {
         String userHome = System.getProperty("user.home");
         return Path.of(userHome, ".karaed");
     }
