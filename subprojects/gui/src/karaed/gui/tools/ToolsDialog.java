@@ -145,6 +145,14 @@ public final class ToolsDialog extends BaseDialog {
         btnCheckUpdates.setEnabled(anyInstalled);
     }
 
+    private SetupContext newContext() {
+        if (tools instanceof WindowsSetupTools wintools) {
+            return new WindowsSetupContext(wintools, sources);
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
     private <T> void runAction(Function<ToolActions, T> action, Consumer<T> onSuccess) {
         disableAll();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -152,7 +160,7 @@ public final class ToolsDialog extends BaseDialog {
             LazyLogDialog log = new LazyLogDialog(this, Thread.currentThread());
             try {
                 T maybeResult = null;
-                ToolActions actions = new ToolActions(getLogger(), tools, sources, log);
+                ToolActions actions = new ToolActions(getLogger(), newContext(), log);
                 try {
                     maybeResult = action.apply(actions);
                 } finally {

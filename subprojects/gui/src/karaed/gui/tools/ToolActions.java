@@ -13,17 +13,15 @@ import java.util.Set;
 final class ToolActions {
 
     private final ErrorLogger logger;
-    private final SetupTools tools;
-    private final SoftSources sources;
+    private final SetupContext ctx;
     private final ToolRunner runner;
 
     private boolean hasErrors = false;
 
-    ToolActions(ErrorLogger logger, SetupTools tools, SoftSources sources, OutputCapture output) {
+    ToolActions(ErrorLogger logger, SetupContext ctx, OutputCapture output) {
         this.logger = logger;
-        this.tools = tools;
-        this.sources = sources;
-        this.runner = new ToolRunner(tools.toTools(), null, output);
+        this.ctx = ctx;
+        this.runner = new ToolRunner(ctx.tools.toTools(), null, output);
     }
 
     private void error(Throwable ex) {
@@ -37,7 +35,7 @@ final class ToolActions {
     }
 
     Map<Tool, String> getInstalledVersions(Iterable<Tool> tools) {
-        GetVersions getVersions = new GetVersions(this.tools, runner);
+        GetVersions getVersions = new GetVersions(ctx.tools, runner);
         Map<Tool, String> versions = new EnumMap<>(Tool.class);
         for (Tool tool : tools) {
             String version = null;
@@ -54,7 +52,7 @@ final class ToolActions {
     }
 
     Map<Tool, String> checkForUpdates() {
-        UpdateCheck updateCheck = new UpdateCheck(sources, runner);
+        UpdateCheck updateCheck = new UpdateCheck(ctx, runner);
         Map<Tool, String> newVersions = new EnumMap<>(Tool.class);
         for (Tool tool : List.of(Tool.FFMPEG, Tool.PIP, Tool.YT_DLP, Tool.DEMUCS, Tool.WHISPERX)) {
             try {
@@ -73,7 +71,7 @@ final class ToolActions {
 
     Map<Tool, String> update(Tool tool) {
         try {
-            new RunUpdate(tools, sources, runner).update(tool);
+            new RunUpdate(ctx, runner).update(tool);
         } catch (IOException ex) {
             error(ex);
         } catch (InterruptedException ex) {
@@ -83,9 +81,9 @@ final class ToolActions {
     }
 
     Map<Tool, String> installMissing(Set<Tool> tools) {
-        if (this.tools instanceof WindowsSetupTools wintools) {
+        if (ctx instanceof WindowsSetupContext win) {
             try {
-                new WindowsInstallRunner(wintools, sources, runner).install(tools);
+                new WindowsInstallRunner(win, runner).install(tools);
             } catch (IOException ex) {
                 error(ex);
             } catch (InterruptedException ex) {

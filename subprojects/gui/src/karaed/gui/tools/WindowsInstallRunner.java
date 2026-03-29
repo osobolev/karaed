@@ -21,9 +21,9 @@ final class WindowsInstallRunner {
     private final SoftSources sources;
     private final ToolRunner runner;
 
-    WindowsInstallRunner(WindowsSetupTools tools, SoftSources sources, ToolRunner runner) {
-        this.tools = tools;
-        this.sources = sources;
+    WindowsInstallRunner(WindowsSetupContext ctx, ToolRunner runner) {
+        this.tools = ctx.wintools;
+        this.sources = ctx.sources;
         this.runner = runner;
     }
 

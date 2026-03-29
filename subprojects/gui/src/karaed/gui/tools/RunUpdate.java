@@ -9,13 +9,11 @@ import java.nio.file.Path;
 
 final class RunUpdate {
 
-    private final SetupTools tools;
-    private final SoftSources sources;
+    private final SetupContext ctx;
     private final ToolRunner runner;
 
-    RunUpdate(SetupTools tools, SoftSources sources, ToolRunner runner) {
-        this.tools = tools;
-        this.sources = sources;
+    RunUpdate(SetupContext ctx, ToolRunner runner) {
+        this.ctx = ctx;
         this.runner = runner;
     }
 
@@ -59,9 +57,9 @@ final class RunUpdate {
     }
 
     private void updateFFMPEG() throws IOException, InterruptedException {
-        if (tools instanceof WindowsSetupTools wintools) {
-            deleteDir(wintools.ffmpegDir());
-            new WindowsInstallRunner(wintools, sources, runner).installFFMPEG();
+        if (ctx instanceof WindowsSetupContext win) {
+            deleteDir(win.wintools.ffmpegDir());
+            new WindowsInstallRunner(win, runner).installFFMPEG();
         }
     }
 }
