@@ -98,4 +98,21 @@ public final class Youtube {
             throw new KaraException("Either URL or file must be specified");
         }
     }
+
+    private static Info youtubeMeta(ToolRunner runner, String url) throws IOException, InterruptedException {
+        return runner.run(JsonUtil.parser(Info.class)).pythonTool(
+            "yt-dlp",
+            "--print-json", "-s", url
+        );
+    }
+
+    public static Info metaInfo(ToolRunner runner, OInput input) throws IOException, InterruptedException {
+        if (input.url() != null) {
+            return youtubeMeta(runner, input.url());
+        } else if (input.file() != null) {
+            return fileMeta(runner, Path.of(input.file()));
+        } else {
+            throw new KaraException("Either URL or file must be specified");
+        }
+    }
 }
