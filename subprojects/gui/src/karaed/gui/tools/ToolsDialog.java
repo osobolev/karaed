@@ -15,7 +15,7 @@ import java.util.function.Function;
 public final class ToolsDialog extends BaseDialog {
 
     private final SetupTools tools;
-    private final SourcesTab sources = new SourcesTab();
+    private final WindowsSourcesTab sources = new WindowsSourcesTab();
 
     private boolean ok = false;
 

@@ -18,7 +18,7 @@ import java.util.zip.ZipInputStream;
 final class WindowsInstallRunner {
 
     private final WindowsSetupTools tools;
-    private final SoftSources sources;
+    private final WindowsSoftSources sources;
     private final ToolRunner runner;
 
     WindowsInstallRunner(WindowsSetupContext ctx, ToolRunner runner) {

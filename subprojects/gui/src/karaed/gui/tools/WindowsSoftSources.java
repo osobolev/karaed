@@ -1,6 +1,6 @@
 package karaed.gui.tools;
 
-interface SoftSources {
+interface WindowsSoftSources {
 
     default String pythonUrl() {
         return "https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip";

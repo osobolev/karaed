@@ -8,9 +8,9 @@ import static karaed.gui.tools.Download.download;
 final class WindowsSetupContext extends SetupContext {
 
     final WindowsSetupTools wintools;
-    final SoftSources sources;
+    final WindowsSoftSources sources;
 
-    WindowsSetupContext(WindowsSetupTools tools, SoftSources sources) {
+    WindowsSetupContext(WindowsSetupTools tools, WindowsSoftSources sources) {
         super(tools);
         this.wintools = tools;
         this.sources = sources;

@@ -7,17 +7,17 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
-final class SourcesTab implements SoftSources {
+final class WindowsSourcesTab implements WindowsSoftSources {
 
     private final JTextField tfPytonURL = new JTextField(40);
     private final JTextField tfPipURL = new JTextField(40);
     private final JTextField tfFFURL = new JTextField(40);
     private final JPanel main = new JPanel(new GridBagLayout());
 
-    SourcesTab() {
-        InputUtil.setText(tfPytonURL, SoftSources.super.pythonUrl());
-        InputUtil.setText(tfPipURL, SoftSources.super.getPipUrl());
-        InputUtil.setText(tfFFURL, SoftSources.super.ffmpegUrl());
+    WindowsSourcesTab() {
+        InputUtil.setText(tfPytonURL, WindowsSoftSources.super.pythonUrl());
+        InputUtil.setText(tfPipURL, WindowsSoftSources.super.getPipUrl());
+        InputUtil.setText(tfFFURL, WindowsSoftSources.super.ffmpegUrl());
 
         addRow(0, null, new JLabel("Source URL:"));
         addRow(1, "Python", tfPytonURL);
