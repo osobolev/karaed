@@ -105,7 +105,7 @@ public final class ProjectFrame extends BaseFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = OptionsDialog.options(ctx, ProjectFrame.this, workDir);
+                    OptionsDialog dlg = OptionsDialog.options(ctx.logger(), ctx.tools(), ProjectFrame.this, workDir);
                     if (dlg.isSaved()) {
                         refreshStepStates();
                     }

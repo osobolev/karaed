@@ -1,6 +1,7 @@
 package karaed.gui.options;
 
-import karaed.gui.AppContext;
+import karaed.gui.ErrorLogger;
+import karaed.gui.tools.SetupTools;
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.VerticalLayout;
@@ -37,9 +38,9 @@ public final class OptionsDialog extends BaseDialog {
         panels.add(panel);
     }
 
-    private OptionsDialog(AppContext appCtx, String title, Window owner, Workdir workDir,
+    private OptionsDialog(ErrorLogger logger, SetupTools tools, String title, Window owner, Workdir workDir,
                           Path defaultDir, String defaultURL) throws IOException {
-        super(owner, appCtx.logger(), title);
+        super(owner, logger, title);
         this.ctx = new OptCtx(this, workDir);
 
         if (ctx.workDir == null) {
@@ -84,7 +85,7 @@ public final class OptionsDialog extends BaseDialog {
 
         InputPanel input = new InputPanel(ctx, defaultURL);
         add(input, main);
-        add(new LyricsPanel(ctx, appCtx.tools(), input), main);
+        add(new LyricsPanel(ctx, tools, input), main);
         add(new CutPanel(ctx), options);
         add(new AlignPanel(ctx), options);
         add(new VideoPanel(ctx), options);
@@ -118,12 +119,12 @@ public final class OptionsDialog extends BaseDialog {
         setVisible(true);
     }
 
-    public static OptionsDialog newProject(AppContext ctx, Window owner, Path defaultDir, String defaultURL) throws IOException {
-        return new OptionsDialog(ctx, "New project", owner, null, defaultDir, defaultURL);
+    public static OptionsDialog newProject(ErrorLogger logger, SetupTools tools, Window owner, Path defaultDir, String defaultURL) throws IOException {
+        return new OptionsDialog(logger, tools, "New project", owner, null, defaultDir, defaultURL);
     }
 
-    public static OptionsDialog options(AppContext ctx, Window owner, Workdir workdir) throws IOException {
-        return new OptionsDialog(ctx, "Options", owner, workdir, null, null);
+    public static OptionsDialog options(ErrorLogger logger, SetupTools tools, Window owner, Workdir workdir) throws IOException {
+        return new OptionsDialog(logger, tools, "Options", owner, workdir, null, null);
     }
 
     private void save() {

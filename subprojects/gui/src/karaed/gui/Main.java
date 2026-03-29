@@ -88,7 +88,7 @@ public final class Main {
     private static Workdir newProject(AppContext ctx, Workdir workDir, Args pargs) {
         OptionsDialog dlg;
         try {
-            dlg = OptionsDialog.newProject(ctx, null, workDir.dir(), pargs.getDefaultURL());
+            dlg = OptionsDialog.newProject(ctx.logger(), ctx.tools(), null, workDir.dir(), pargs.getDefaultURL());
         } catch (Exception ex) {
             ShowMessage.error(ctx.logger(), null, ex);
             return null;
