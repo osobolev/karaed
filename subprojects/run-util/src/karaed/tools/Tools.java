@@ -4,37 +4,33 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-public final class Tools {
+public interface Tools {
 
-    private final Path pythonDir;
-    private final Path pythonExeDir;
-    private final Path ffmpegBinDir;
+    Path pythonDir();
 
-    public Tools(Path pythonDir, Path pythonExeDir, Path ffmpegBinDir) {
-        this.pythonDir = pythonDir;
-        this.pythonExeDir = pythonExeDir;
-        this.ffmpegBinDir = ffmpegBinDir;
-    }
+    Path pythonExeDir();
+
+    Path ffmpegBinDir();
 
     private static Path exe(Path dir, String name) {
         return dir == null ? Path.of(name) : dir.resolve(name);
     }
 
-    public Path python() {
-        return exe(pythonDir, "python");
+    default Path python() {
+        return exe(pythonDir(), "python");
     }
 
-    public Path pythonTool(String tool) {
-        return exe(pythonExeDir, tool);
+    default Path pythonTool(String tool) {
+        return exe(pythonExeDir(), tool);
     }
 
-    public Path ffmpegTool(String tool) {
-        return exe(ffmpegBinDir, tool);
+    default Path ffmpegTool(String tool) {
+        return exe(ffmpegBinDir(), tool);
     }
 
-    public List<Path> ffmpegDirs() {
-        if (ffmpegBinDir != null) {
-            return Collections.singletonList(ffmpegBinDir);
+    default List<Path> ffmpegDirs() {
+        if (ffmpegBinDir() != null) {
+            return Collections.singletonList(ffmpegBinDir());
         } else {
             return Collections.emptyList();
         }

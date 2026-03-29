@@ -1,5 +1,6 @@
 package karaed.gui.tools;
 
+import karaed.tools.SimpleTools;
 import karaed.tools.Tools;
 
 import java.nio.file.Files;
@@ -11,7 +12,7 @@ public final class WindowsSetupTools extends SetupTools {
     private final Path pythonExeDir;
     private final Path ffmpegDir;
 
-    private WindowsSetupTools(Path pythonDir, Path pythonExeDir, Path ffmpegDir) {
+    public WindowsSetupTools(Path pythonDir, Path pythonExeDir, Path ffmpegDir) {
         this.pythonDir = pythonDir;
         this.pythonExeDir = pythonExeDir;
         this.ffmpegDir = ffmpegDir;
@@ -33,7 +34,7 @@ public final class WindowsSetupTools extends SetupTools {
     @Override
     public Tools toTools() {
         Path ffmpegBinDir = ffmpegDir == null ? null : ffmpegDir.resolve("bin");
-        return new Tools(pythonDir, pythonExeDir, ffmpegBinDir);
+        return new SimpleTools(pythonDir, pythonExeDir, ffmpegBinDir);
     }
 
     @Override
