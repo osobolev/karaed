@@ -21,7 +21,7 @@ final class ToolActions {
     ToolActions(ErrorLogger logger, SetupContext ctx, OutputCapture output) {
         this.logger = logger;
         this.ctx = ctx;
-        this.runner = new ToolRunner(ctx.tools.toTools(), null, output);
+        this.runner = new ToolRunner(ctx.tools, null, output);
     }
 
     private void error(Throwable ex) {

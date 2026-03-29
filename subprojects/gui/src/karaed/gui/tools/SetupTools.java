@@ -5,7 +5,7 @@ import karaed.tools.Tools;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public abstract class SetupTools {
+public abstract class SetupTools implements Tools {
 
     static Path appDir() {
         String userHome = System.getProperty("user.home");
@@ -16,14 +16,11 @@ public abstract class SetupTools {
         return WindowsSetupTools.create();
     }
 
-    public abstract Tools toTools();
-
     private Path toolPath(Tool tool) {
-        Tools tools = toTools();
         return switch (tool) {
-            case PYTHON -> tools.python();
-            case FFMPEG -> tools.ffmpegTool("ffprobe");
-            case PIP -> tools.pythonTool("pip");
+            case PYTHON -> python();
+            case FFMPEG -> ffmpegTool("ffprobe");
+            case PIP -> pythonTool("pip");
             default -> throw new IllegalArgumentException("Tool " + tool + " is a Python package");
         };
     }
