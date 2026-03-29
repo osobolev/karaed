@@ -3,9 +3,6 @@ package karaed.gui.tools;
 import karaed.tools.ToolRunner;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 final class RunUpdate {
 
@@ -41,25 +38,7 @@ final class RunUpdate {
         runner.run().pythonTool("pip", "-v", "install", "--upgrade", tool.packName());
     }
 
-    private static void deleteDir(Path dir) throws IOException {
-        try (DirectoryStream<Path> paths = Files.newDirectoryStream(dir)) {
-            for (Path path : paths) {
-                if (Files.isDirectory(path)) {
-                    deleteDir(path);
-                }
-                try {
-                    Files.deleteIfExists(path);
-                } catch (IOException ex) {
-                    // ignore
-                }
-            }
-        }
-    }
-
     private void updateFFMPEG() throws IOException, InterruptedException {
-        if (ctx instanceof WindowsSetupContext win) {
-            deleteDir(win.wintools.ffmpegDir());
-            new WindowsInstallRunner(win, runner).installFFMPEG();
-        }
+        ctx.updateFFMPEG(runner);
     }
 }

@@ -1,7 +1,12 @@
 package karaed.gui.tools;
 
+import karaed.tools.ToolRunner;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static karaed.gui.tools.Download.download;
 
@@ -34,5 +39,31 @@ final class WindowsSetupContext extends SetupContext {
 //            "https?://www\\.gyan\\.dev/ffmpeg/builds/ffmpeg-git-essentials\\.7z", // todo: handle 7z!!!
 //            "https://www.gyan.dev/ffmpeg/builds/git-version"
 //        );
+    }
+
+    private static void deleteDir(Path dir) throws IOException {
+        try (DirectoryStream<Path> paths = Files.newDirectoryStream(dir)) {
+            for (Path path : paths) {
+                if (Files.isDirectory(path)) {
+                    deleteDir(path);
+                }
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException ex) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    @Override
+    void updateFFMPEG(ToolRunner runner) throws IOException, InterruptedException {
+        deleteDir(wintools.ffmpegDir());
+        installRunner(runner).installFFMPEG();
+    }
+
+    @Override
+    WindowsInstallRunner installRunner(ToolRunner runner) {
+        return new WindowsInstallRunner(this, runner);
     }
 }

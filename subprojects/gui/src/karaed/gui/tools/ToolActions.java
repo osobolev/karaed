@@ -81,14 +81,12 @@ final class ToolActions {
     }
 
     Map<Tool, String> installMissing(Set<Tool> tools) {
-        if (ctx instanceof WindowsSetupContext win) {
-            try {
-                new WindowsInstallRunner(win, runner).install(tools);
-            } catch (IOException ex) {
-                error(ex);
-            } catch (InterruptedException ex) {
-                return null;
-            }
+        try {
+            ctx.installRunner(runner).install(tools);
+        } catch (IOException ex) {
+            error(ex);
+        } catch (InterruptedException ex) {
+            return null;
         }
         return getInstalledVersions(tools);
     }

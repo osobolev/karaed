@@ -49,4 +49,6 @@ abstract class InstallRunner {
             installPackages(packs);
         }
     }
+
+    abstract void install(Set<Tool> tools) throws IOException, InterruptedException;
 }

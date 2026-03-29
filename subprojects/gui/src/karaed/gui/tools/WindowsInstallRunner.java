@@ -147,6 +147,7 @@ final class WindowsInstallRunner extends InstallRunner {
         );
     }
 
+    @Override
     void install(Set<Tool> tools) throws IOException, InterruptedException {
         if (tools.contains(Tool.PYTHON)) {
             installPython();

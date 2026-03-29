@@ -1,5 +1,7 @@
 package karaed.gui.tools;
 
+import karaed.tools.ToolRunner;
+
 import java.io.IOException;
 
 abstract class SetupContext {
@@ -11,4 +13,8 @@ abstract class SetupContext {
     }
 
     abstract String checkFFMPEGUpdate() throws IOException, InterruptedException;
+
+    abstract void updateFFMPEG(ToolRunner runner) throws IOException, InterruptedException;
+
+    abstract InstallRunner installRunner(ToolRunner runner);
 }
