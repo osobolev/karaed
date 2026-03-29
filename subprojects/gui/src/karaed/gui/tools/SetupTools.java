@@ -6,6 +6,11 @@ import java.nio.file.Path;
 
 public abstract class SetupTools {
 
+    static Path appDir() {
+        String userHome = System.getProperty("user.home");
+        return Path.of(userHome, ".karaed");
+    }
+
     public static SetupTools create() {
         return WindowsSetupTools.create();
     }

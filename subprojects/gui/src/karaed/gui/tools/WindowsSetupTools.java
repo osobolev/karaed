@@ -26,13 +26,8 @@ public final class WindowsSetupTools extends SetupTools {
         );
     }
 
-    public static WindowsSetupTools create(String folder) {
-        String userHome = System.getProperty("user.home");
-        return create(Path.of(userHome, folder));
-    }
-
     public static WindowsSetupTools create() {
-        return create(".karaed");
+        return create(appDir());
     }
 
     @Override
