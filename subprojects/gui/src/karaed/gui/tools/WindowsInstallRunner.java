@@ -15,13 +15,13 @@ import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-final class InstallRunner {
+final class WindowsInstallRunner {
 
     private final WindowsSetupTools tools;
     private final SoftSources sources;
     private final ToolRunner runner;
 
-    InstallRunner(WindowsSetupTools tools, SoftSources sources, ToolRunner runner) {
+    WindowsInstallRunner(WindowsSetupTools tools, SoftSources sources, ToolRunner runner) {
         this.tools = tools;
         this.sources = sources;
         this.runner = runner;

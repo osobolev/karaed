@@ -85,7 +85,7 @@ final class ToolActions {
     Map<Tool, String> installMissing(Set<Tool> tools) {
         if (this.tools instanceof WindowsSetupTools wintools) {
             try {
-                new InstallRunner(wintools, sources, runner).install(tools);
+                new WindowsInstallRunner(wintools, sources, runner).install(tools);
             } catch (IOException ex) {
                 error(ex);
             } catch (InterruptedException ex) {
