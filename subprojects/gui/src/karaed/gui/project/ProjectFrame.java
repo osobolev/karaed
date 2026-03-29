@@ -3,7 +3,7 @@ package karaed.gui.project;
 import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
 import karaed.engine.formats.ranges.Range;
-import karaed.gui.ErrorLogger;
+import karaed.gui.AppContext;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.backvocals.EditBackvocals;
 import karaed.gui.options.OptionsDialog;
@@ -77,24 +77,24 @@ public final class ProjectFrame extends BaseFrame {
         return panel;
     }
 
-    public static ProjectFrame create(ErrorLogger logger, boolean reopenStart, SetupTools tools, Path rootDir, Workdir workDir,
+    public static ProjectFrame create(AppContext ctx, boolean reopenStart, Workdir workDir,
                                       Consumer<String> onError) {
         DirStatus status = DirStatus.test(workDir);
         if (status != DirStatus.OK) {
             onError.accept(status.getText(workDir));
             return null;
         }
-        RecentItems.addRecentItem(logger, workDir.dir());
-        return new ProjectFrame(logger, tools, rootDir, workDir, reopenStart);
+        RecentItems.addRecentItem(ctx.logger(), workDir.dir());
+        return new ProjectFrame(ctx, workDir, reopenStart);
     }
 
-    private ProjectFrame(ErrorLogger logger, SetupTools tools, Path rootDir, Workdir workDir, boolean reopenStart) {
-        super(logger, "KaraEd");
+    private ProjectFrame(AppContext ctx, Workdir workDir, boolean reopenStart) {
+        super(ctx.logger(), "KaraEd");
         this.workDir = workDir;
-        this.runner = new ToolRunner(tools, rootDir, taLog::append);
+        this.runner = new ToolRunner(ctx.tools(), ctx.rootDir(), taLog::append);
         this.afterClose = () -> {
             if (reopenStart) {
-                new StartFrame(logger, tools, rootDir);
+                new StartFrame(ctx);
             }
         };
 
@@ -105,7 +105,7 @@ public final class ProjectFrame extends BaseFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = OptionsDialog.options(logger, ProjectFrame.this, workDir);
+                    OptionsDialog dlg = OptionsDialog.options(ctx, ProjectFrame.this, workDir);
                     if (dlg.isSaved()) {
                         refreshStepStates();
                     }
@@ -119,7 +119,7 @@ public final class ProjectFrame extends BaseFrame {
         toolBar.add(Box.createHorizontalStrut(5));
         toolBar.add(new JButton(stopAction));
         toolBar.add(Box.createHorizontalGlue());
-        toolBar.add(createToolsButton(this, tools));
+        toolBar.add(createToolsButton(this, ctx.tools()));
         add(toolBar, BorderLayout.NORTH);
 
         JPanel main = new JPanel(new BorderLayout());

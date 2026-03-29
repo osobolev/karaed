@@ -1,10 +1,9 @@
 package karaed.gui.start;
 
 import karaed.engine.formats.info.Info;
-import karaed.gui.ErrorLogger;
+import karaed.gui.AppContext;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
-import karaed.gui.tools.SetupTools;
 import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.TitleUtil;
@@ -24,19 +23,17 @@ import java.util.function.Consumer;
 
 public final class StartFrame extends BaseFrame {
 
-    private final SetupTools tools;
-    private final Path rootDir;
+    private final AppContext ctx;
 
-    public StartFrame(ErrorLogger logger, SetupTools tools, Path rootDir) {
-        super(logger, "KaraEd");
-        this.tools = tools;
-        this.rootDir = rootDir;
+    public StartFrame(AppContext ctx) {
+        super(ctx.logger(), "KaraEd");
+        this.ctx = ctx;
 
         JButton btnNew = new JButton(new AbstractAction("New project") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = OptionsDialog.newProject(logger, StartFrame.this, null, null);
+                    OptionsDialog dlg = OptionsDialog.newProject(ctx, StartFrame.this, null, null);
                     Workdir workDir = dlg.getWorkDir();
                     if (workDir == null)
                         return;
@@ -77,16 +74,16 @@ public final class StartFrame extends BaseFrame {
         topc.add(btnOpen);
         JPanel top = new JPanel(new TopLayout());
         top.add(topc);
-        top.add(ProjectFrame.createToolsButton(this, tools));
+        top.add(ProjectFrame.createToolsButton(this, ctx.tools()));
         add(top, BorderLayout.NORTH);
 
-        List<Path> recent = RecentItems.loadRecentItems(logger);
+        List<Path> recent = RecentItems.loadRecentItems(ctx.logger());
 
         JPanel rip = new JPanel();
         rip.setLayout(new BoxLayout(rip, BoxLayout.Y_AXIS));
         Consumer<RecentItem> onDelete = item -> {
             Path dir = item.dir;
-            RecentItems.removeRecentItem(logger, dir);
+            RecentItems.removeRecentItem(ctx.logger(), dir);
             rip.remove(item.getVisual());
             rip.revalidate();
             rip.repaint();
@@ -125,7 +122,7 @@ public final class StartFrame extends BaseFrame {
     }
 
     private void openProject(Workdir workDir, Consumer<String> onError) {
-        ProjectFrame pf = ProjectFrame.create(getLogger(), true, tools, rootDir, workDir, onError);
+        ProjectFrame pf = ProjectFrame.create(ctx, true, workDir, onError);
         if (pf == null)
             return;
         dispose();

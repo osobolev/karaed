@@ -85,12 +85,12 @@ public final class Main {
         return new Args(create, help, paths, uris);
     }
 
-    private static Workdir newProject(ErrorLogger logger, Workdir workDir, Args pargs) {
+    private static Workdir newProject(AppContext ctx, Workdir workDir, Args pargs) {
         OptionsDialog dlg;
         try {
-            dlg = OptionsDialog.newProject(logger, null, workDir.dir(), pargs.getDefaultURL());
+            dlg = OptionsDialog.newProject(ctx, null, workDir.dir(), pargs.getDefaultURL());
         } catch (Exception ex) {
-            ShowMessage.error(logger, null, ex);
+            ShowMessage.error(ctx.logger(), null, ex);
             return null;
         }
         if (!dlg.isSaved())
@@ -98,7 +98,7 @@ public final class Main {
         return dlg.getWorkDir();
     }
 
-    private static Workdir start(ErrorLogger logger, Args pargs, Runnable noArgs) {
+    private static Workdir start(AppContext ctx, Args pargs, Runnable noArgs) {
         if (pargs.create || !pargs.uris.isEmpty()) {
             Workdir existingWorkDir = pargs.getProjectDir();
             boolean openExisting;
@@ -119,7 +119,7 @@ public final class Main {
             if (openExisting) {
                 return existingWorkDir;
             } else {
-                return newProject(logger, existingWorkDir, pargs);
+                return newProject(ctx, existingWorkDir, pargs);
             }
         } else if (!pargs.paths.isEmpty()) {
             Workdir argsDir = pargs.getProjectDir();
@@ -130,7 +130,7 @@ public final class Main {
                 );
                 if (ans != JOptionPane.YES_OPTION)
                     return null;
-                return newProject(logger, argsDir, pargs);
+                return newProject(ctx, argsDir, pargs);
             } else {
                 return argsDir;
             }
@@ -168,6 +168,10 @@ public final class Main {
         ErrorLogger logger = new FileLogger("karaed.log");
         SetupTools tools = SetupTools.create();
 
+        String rootDirStr = System.getProperty("app.rootDir");
+        Path rootDir = rootDirStr == null ? null : Path.of(rootDirStr);
+        AppContext ctx = new AppContext(logger, tools, rootDir);
+
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
             Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
@@ -176,19 +180,17 @@ public final class Main {
                 help();
                 return;
             }
-            String rootDirStr = System.getProperty("app.rootDir");
-            if (rootDirStr == null) {
+            if (ctx.rootDir() == null) {
                 ShowMessage.error(null, "No root directory specified");
                 return;
             }
             if (!ToolsDialog.fastCheckIfInstalled(logger, tools))
                 return;
-            Path rootDir = Path.of(rootDirStr);
-            Workdir workDir = start(logger, pargs, () -> new StartFrame(logger, tools, rootDir));
+            Workdir workDir = start(ctx, pargs, () -> new StartFrame(ctx));
             if (workDir == null)
                 return;
             ProjectFrame pf = ProjectFrame.create(
-                logger, false, tools, rootDir, workDir,
+                ctx, false, workDir,
                 error -> ShowMessage.error(null, error)
             );
             if (pf != null) {

@@ -1,6 +1,6 @@
 package karaed.gui.options;
 
-import karaed.gui.ErrorLogger;
+import karaed.gui.AppContext;
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.VerticalLayout;
@@ -37,9 +37,9 @@ public final class OptionsDialog extends BaseDialog {
         panels.add(panel);
     }
 
-    private OptionsDialog(ErrorLogger logger, String title, Window owner, Workdir workDir,
+    private OptionsDialog(AppContext appCtx, String title, Window owner, Workdir workDir,
                           Path defaultDir, String defaultURL) throws IOException {
-        super(owner, logger, title);
+        super(owner, appCtx.logger(), title);
         this.ctx = new OptCtx(this, workDir);
 
         if (ctx.workDir == null) {
@@ -117,12 +117,12 @@ public final class OptionsDialog extends BaseDialog {
         setVisible(true);
     }
 
-    public static OptionsDialog newProject(ErrorLogger logger, Window owner, Path defaultDir, String defaultURL) throws IOException {
-        return new OptionsDialog(logger, "New project", owner, null, defaultDir, defaultURL);
+    public static OptionsDialog newProject(AppContext ctx, Window owner, Path defaultDir, String defaultURL) throws IOException {
+        return new OptionsDialog(ctx, "New project", owner, null, defaultDir, defaultURL);
     }
 
-    public static OptionsDialog options(ErrorLogger logger, Window owner, Workdir workdir) throws IOException {
-        return new OptionsDialog(logger, "Options", owner, workdir, null, null);
+    public static OptionsDialog options(AppContext ctx, Window owner, Workdir workdir) throws IOException {
+        return new OptionsDialog(ctx, "Options", owner, workdir, null, null);
     }
 
     private void save() {
