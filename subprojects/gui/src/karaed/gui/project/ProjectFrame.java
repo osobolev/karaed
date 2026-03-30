@@ -35,9 +35,9 @@ public final class ProjectFrame extends BaseFrame {
     private static final Icon ICON_PLAY = InputUtil.getIcon("/play.png");
     private static final Icon ICON_STOP = InputUtil.getIcon("/stop.png");
 
+    private final AppContext ctx;
     private final Workdir workDir;
     private final ToolRunner runner;
-    private final Path appDir;
     private final Runnable afterClose;
 
     private final JTextField tfTitle = new JTextField(40);
@@ -93,9 +93,9 @@ public final class ProjectFrame extends BaseFrame {
 
     private ProjectFrame(ErrorLogger projectLogger, AppContext ctx, Workdir workDir, boolean reopenStart) {
         super(projectLogger, "KaraEd");
+        this.ctx = ctx;
         this.workDir = workDir;
         this.runner = new ToolRunner(ctx.tools(), taLog::append);
-        this.appDir = ctx.appDir();
         this.afterClose = () -> {
             if (reopenStart) {
                 new StartFrame(ctx);
@@ -256,7 +256,7 @@ public final class ProjectFrame extends BaseFrame {
         Thread thread = new Thread(() -> {
             try {
                 StepRunner stepRunner = new StepRunner(
-                    workDir, runner, appDir, this::showTitle,
+                    workDir, runner, ctx.appDir(), this::showTitle,
                     this::editRanges, this::editBackvocals
                 );
                 long t0 = System.currentTimeMillis();
