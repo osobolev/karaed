@@ -8,16 +8,19 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public final class FileLogger implements ErrorLogger {
 
     private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
+    private final Path dir;
     private final String fileName;
 
     private PrintWriter out = null;
 
-    public FileLogger(String fileName) {
+    public FileLogger(Path dir, String fileName) {
+        this.dir = dir;
         this.fileName = fileName;
     }
 
@@ -30,7 +33,7 @@ public final class FileLogger implements ErrorLogger {
         if (out == null) {
             PrintWriter pw;
             try {
-                Path path = Path.of(fileName);
+                Path path = dir.resolve(fileName);
                 BufferedWriter w = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 pw = new PrintWriter(w, true);
                 String startMessage = "Log started: " + getTimestamp();
@@ -53,5 +56,20 @@ public final class FileLogger implements ErrorLogger {
         printMessage(out, "ERROR", ex.toString());
         ex.printStackTrace(out);
         out.println("-------------------------------");
+    }
+
+    @Override
+    public ErrorLogger derive(Path projectDir) {
+        boolean sameFile;
+        try {
+            sameFile = Files.isSameFile(dir, projectDir);
+        } catch (IOException ex) {
+            sameFile = Objects.equals(dir.toAbsolutePath(), projectDir.toAbsolutePath());
+        }
+        if (sameFile) {
+            return this;
+        } else {
+            return new FileLogger(projectDir, fileName);
+        }
     }
 }

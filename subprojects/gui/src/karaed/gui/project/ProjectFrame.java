@@ -4,6 +4,7 @@ import karaed.engine.KaraException;
 import karaed.engine.formats.info.Info;
 import karaed.engine.formats.ranges.Range;
 import karaed.gui.AppContext;
+import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.backvocals.EditBackvocals;
 import karaed.gui.options.OptionsDialog;
@@ -84,12 +85,13 @@ public final class ProjectFrame extends BaseFrame {
             onError.accept(status.getText(workDir));
             return null;
         }
-        RecentItems.addRecentItem(ctx.mainLogger(), workDir.dir());
-        return new ProjectFrame(ctx, workDir, reopenStart);
+        ErrorLogger projectLogger = ctx.mainLogger().derive(workDir.dir());
+        RecentItems.addRecentItem(projectLogger, workDir.dir());
+        return new ProjectFrame(projectLogger, ctx, workDir, reopenStart);
     }
 
-    private ProjectFrame(AppContext ctx, Workdir workDir, boolean reopenStart) {
-        super(ctx.mainLogger(), "KaraEd");
+    private ProjectFrame(ErrorLogger projectLogger, AppContext ctx, Workdir workDir, boolean reopenStart) {
+        super(projectLogger, "KaraEd");
         this.workDir = workDir;
         this.runner = new ToolRunner(ctx.tools(), ctx.rootDir(), taLog::append);
         this.afterClose = () -> {
@@ -105,7 +107,7 @@ public final class ProjectFrame extends BaseFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    OptionsDialog dlg = OptionsDialog.options(ctx.mainLogger(), ctx.tools(), ProjectFrame.this, workDir);
+                    OptionsDialog dlg = OptionsDialog.options(projectLogger, ctx.tools(), ProjectFrame.this, workDir);
                     if (dlg.isSaved()) {
                         refreshStepStates();
                     }

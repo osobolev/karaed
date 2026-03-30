@@ -165,7 +165,7 @@ public final class Main {
     public static void main(String[] args) {
         ToolRunner.registerShutdown();
 
-        ErrorLogger logger = new FileLogger("karaed.log");
+        ErrorLogger logger = new FileLogger(Path.of("."), "karaed.log");
         SetupTools tools = SetupTools.create();
 
         String rootDirStr = System.getProperty("app.rootDir");
