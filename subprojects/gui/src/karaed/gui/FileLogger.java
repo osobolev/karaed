@@ -64,7 +64,7 @@ public final class FileLogger implements ErrorLogger {
         try {
             sameFile = Files.isSameFile(dir, projectDir);
         } catch (IOException ex) {
-            sameFile = Objects.equals(dir.toAbsolutePath(), projectDir.toAbsolutePath());
+            sameFile = Objects.equals(dir.toAbsolutePath().normalize(), projectDir.toAbsolutePath().normalize());
         }
         if (sameFile) {
             return this;
