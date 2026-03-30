@@ -135,8 +135,9 @@ public final class OptionsDialog extends BaseDialog {
                 error("Enter a directory");
                 return;
             }
-            Path dir = Path.of(dirStr);
+            Path dir;
             try {
+                dir = Path.of(dirStr);
                 Files.createDirectories(dir);
             } catch (Exception ex) {
                 error("Cannot create directory");

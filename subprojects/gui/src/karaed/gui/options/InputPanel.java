@@ -115,7 +115,12 @@ final class InputPanel extends BasePanel<OInput> {
             if (file.trim().isEmpty()) {
                 throw new ValidationException("Input file path", tfFile);
             }
-            Path path = Path.of(file);
+            Path path;
+            try {
+                path = Path.of(file);
+            } catch (Exception ex) {
+                throw new ValidationException("Invalid file name", tfFile);
+            }
             if (!Files.exists(path)) {
                 throw new ValidationException("File does not exist", tfFile);
             }

@@ -89,7 +89,7 @@ final class LinuxPathsDialog extends BaseDialog {
         Path path;
         try {
             path = Path.of(text);
-        } catch (InvalidPathException ex) {
+        } catch (Exception ex) {
             showPathError(tf, "Invalid path");
             return null;
         }
