@@ -49,7 +49,8 @@ tasks.register("createDistr", Exec::class) {
         "--description", "Karaoke editor",
         "--app-version", release,
         "--icon", "karaed.ico",
-        "--java-options", "-Dapp.rootDir=\$APPDIR"
+        "--java-options", "-Dapp.rootDir=\$APPDIR",
+        "--java-options", "-Dapp.parentDir=\$ROOTDIR"
     )
     file("config/options.args")
         .readLines()
