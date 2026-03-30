@@ -23,13 +23,20 @@ import java.util.*;
 
 public final class Align {
 
+    private final ToolRunner runner;
+    private final Path tmpDir;
+
+    public Align(ToolRunner runner, Path tmpDir) {
+        this.runner = runner;
+        this.tmpDir = tmpDir;
+    }
+
     private static Path voice(Path tmpDir, int i) {
         return tmpDir.resolve("piece" + i + ".wav");
     }
 
-    private static Aligned alignRange(ToolRunner runner, Path tmpDir, float frameRate,
-                                      String language,
-                                      int i, Range range, String line) throws IOException, InterruptedException {
+    private Aligned alignRange(float frameRate, String language,
+                               int i, Range range, String line) throws IOException, InterruptedException {
         Path voice = voice(tmpDir, i);
 
         TransSegment segment = new TransSegment(0.0, AudioSource.frame2sec(range.to() - range.from(), frameRate), line);
@@ -49,7 +56,7 @@ public final class Align {
         return JsonUtil.readFile(aligned, Aligned.class);
     }
 
-    private static String detectLanguage(ToolRunner runner, Path tmpDir, List<Range> ranges) throws IOException, InterruptedException {
+    private String detectLanguage(List<Range> ranges) throws IOException, InterruptedException {
         LinkedHashMap<String, Double> langs = new LinkedHashMap<>();
         for (int i = 0; i < Math.min(ranges.size(), 3); i++) {
             Path voice = voice(tmpDir, i);
@@ -101,8 +108,7 @@ public final class Align {
         String getLanguage(List<Range> ranges) throws IOException, InterruptedException;
     }
 
-    public static void align(ToolRunner runner, Path vocals, Path rangesFile, Path tmpDir, Path alignedFile,
-                             GetLanguage getLanguage) throws IOException, UnsupportedAudioFileException, InterruptedException {
+    public void align(Path vocals, Path rangesFile, Path alignedFile, GetLanguage getLanguage) throws IOException, UnsupportedAudioFileException, InterruptedException {
         Ranges allRanges = JsonUtil.readFile(rangesFile, Ranges.class);
         FilteredRanges data = filterRanges(allRanges);
         List<Range> ranges = data.ranges();
@@ -123,7 +129,7 @@ public final class Align {
             runner.println(String.format("Aligning range %d of %d", i + 1, ranges.size()));
             Range range = ranges.get(i);
             String line = lines.get(i);
-            Aligned alignedData = alignRange(runner, tmpDir, frameRate, language, i, range, line);
+            Aligned alignedData = alignRange(frameRate, language, i, range, line);
             alignedRanges.add(alignedData);
         }
         List<AlignSegment> segments = new ArrayList<>();
@@ -150,12 +156,13 @@ public final class Align {
     }
 
     public static void align(ToolRunner runner, Path vocals, Path rangesFile, Path langFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
-        align(runner, vocals, rangesFile, tmpDir, alignedFile, ranges -> {
+        Align align = new Align(runner, tmpDir);
+        align.align(vocals, rangesFile, alignedFile, ranges -> {
             String lang = readLanguage(langFile);
             String language;
             if (lang == null) {
                 runner.println("Detecting language...");
-                language = detectLanguage(runner, tmpDir, ranges);
+                language = align.detectLanguage(ranges);
                 runner.println("Detected language: " + language);
                 writeLanguage(langFile, language);
             } else {
