@@ -4,8 +4,6 @@ KaraEd is an utility for generating karaoke videos from YouTube clips or local m
 
 ## 🚀 Getting Started
 
-> **Platform Support:** KaraEd is currently available for **Windows only**.
-
 KaraEd is designed to work **locally and offline**. 
 * **First Start:** The application automatically downloads FFmpeg, Python, and required audio processing packages.
 * **First Run:** AI models are downloaded upon the first project execution.
@@ -51,6 +49,20 @@ You can preserve original vocals for specific lyrics by wrapping the text in cur
 ### Command line
 
 Use `karaed --help` in your terminal for a full list of available command-line arguments.
+
+### Running on Linux
+
+You need **FFmpeg** and a **Python environment** installed.
+
+On Debian-based distros (Ubuntu, Mint, etc.), run:
+```
+sudo apt install ffmpeg python3-venv
+python3 -m venv ~/karaed_venv
+```
+
+Paths to use when setting up the application:
+- `/home/<user>/karaed_env/bin` for `Python` and `pip`
+- `/usr/bin` for `ffmpeg`
 
 ---
 
