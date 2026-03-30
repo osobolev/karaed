@@ -29,7 +29,7 @@ public final class FileLogger implements ErrorLogger {
     }
 
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    private PrintWriter getOut() {
+    private synchronized PrintWriter getOut() {
         if (out == null) {
             PrintWriter pw;
             try {
