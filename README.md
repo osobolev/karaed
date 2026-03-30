@@ -52,7 +52,16 @@ Use `karaed --help` in your terminal for a full list of available command-line a
 
 ### Running on Linux
 
-You need **FFmpeg** and a **Python environment** installed.
+
+To build from source (requires **full OpenJDK 21+**, do not use `-headless`):
+```
+export JAVA_HOME=<path_to_java_21>
+./gradlew jre distr
+```
+
+The application executable will be located at `distr/karaed/bin/karaed`.
+
+You need **FFmpeg** and a **Python environment** installed to run the application.
 
 On Debian-based distros (Ubuntu, Mint, etc.), run:
 ```
