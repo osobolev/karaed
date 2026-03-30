@@ -181,7 +181,7 @@ public final class StepRunner {
             try {
                 Files.deleteIfExists(path);
                 break;
-            } catch (IOException ex2) {
+            } catch (IOException ex) {
                 // ignore
             }
             try {

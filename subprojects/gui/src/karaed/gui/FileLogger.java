@@ -38,7 +38,7 @@ public final class FileLogger implements ErrorLogger {
                 pw = new PrintWriter(w, true);
                 String startMessage = "Log started: " + getTimestamp();
                 pw.println("------------------ " + startMessage + " ------------------");
-            } catch (IOException ex1) {
+            } catch (IOException ex) {
                 pw = new PrintWriter(System.err);
             }
             out = pw;
