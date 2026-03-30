@@ -11,14 +11,12 @@ import java.util.function.IntPredicate;
 public final class ProcRunner<T> {
 
     private final Tools tools;
-    private final Path rootDir;
     private final OutputCapture output;
     private final OutputProcessor<T> parseStdout;
     private final IntPredicate isOK;
 
-    ProcRunner(Tools tools, Path rootDir, OutputCapture output, OutputProcessor<T> parseStdout, IntPredicate isOK) {
+    ProcRunner(Tools tools, OutputCapture output, OutputProcessor<T> parseStdout, IntPredicate isOK) {
         this.tools = tools;
-        this.rootDir = rootDir;
         this.output = output;
         this.parseStdout = parseStdout;
         this.isOK = isOK;
@@ -63,9 +61,9 @@ public final class ProcRunner<T> {
         return python(what, List.of(args));
     }
 
-    public T pythonScript(String script, String... args) throws IOException, InterruptedException {
+    public T pythonScript(Path script, String... args) throws IOException, InterruptedException {
         List<String> list = new ArrayList<>();
-        list.add(rootDir.resolve(script).toString());
+        list.add(script.toString());
         list.addAll(List.of(args));
         return python("script " + script, list);
     }

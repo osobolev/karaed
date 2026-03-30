@@ -27,14 +27,16 @@ public final class StepRunner {
 
     private final Workdir workDir;
     private final ToolRunner runner;
+    private final Path appDir;
     private final Runnable showTitle;
     private final Editor editRanges;
     private final Editor editBackvocals;
 
-    public StepRunner(Workdir workDir, ToolRunner runner, Runnable showTitle,
+    public StepRunner(Workdir workDir, ToolRunner runner, Path appDir, Runnable showTitle,
                       Editor editRanges, Editor editBackvocals) {
         this.workDir = workDir;
         this.runner = runner;
+        this.appDir = appDir;
         this.showTitle = showTitle;
         this.editRanges = editRanges;
         this.editBackvocals = editBackvocals;
@@ -109,7 +111,7 @@ public final class StepRunner {
         Path ranges = workDir.file("ranges.json");
         Path lang = workDir.file("lang.json");
         try {
-            Align.align(runner, vocals, ranges, lang, workDir.file("tmp"), aligned);
+            Align.align(runner, appDir, vocals, ranges, lang, workDir.file("tmp"), aligned);
         } catch (IOException | InterruptedException ex) {
             deleteIfExists(aligned);
             throw ex;

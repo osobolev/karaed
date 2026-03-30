@@ -80,7 +80,7 @@ final class LyricsPanel extends BasePanel<String> {
             return;
         }
         try {
-            ToolRunner runner = new ToolRunner(tools, null, (stderr, text) -> {});
+            ToolRunner runner = new ToolRunner(tools, (stderr, text) -> {});
             String error = LRCLib.loadLyrics(
                 runner, input,
                 lyrics -> InputUtil.setText(taLyrics, lyrics)

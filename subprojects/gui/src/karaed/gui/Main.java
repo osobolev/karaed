@@ -192,9 +192,9 @@ public final class Main {
         ErrorLogger logger = new FileLogger(getMainLogDir(), "karaed.log");
         SetupTools tools = SetupTools.create();
 
-        String rootDirStr = System.getProperty("app.rootDir");
-        Path rootDir = rootDirStr == null ? null : Path.of(rootDirStr);
-        AppContext ctx = new AppContext(logger, tools, rootDir);
+        String appDirStr = System.getProperty("app.rootDir");
+        Path appDir = appDirStr == null ? null : Path.of(appDirStr);
+        AppContext ctx = new AppContext(logger, tools, appDir);
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
@@ -204,7 +204,7 @@ public final class Main {
                 help();
                 return;
             }
-            if (ctx.rootDir() == null) {
+            if (ctx.appDir() == null) {
                 ShowMessage.error(null, "No root directory specified");
                 return;
             }

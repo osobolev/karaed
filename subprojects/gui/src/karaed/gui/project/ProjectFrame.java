@@ -37,6 +37,7 @@ public final class ProjectFrame extends BaseFrame {
 
     private final Workdir workDir;
     private final ToolRunner runner;
+    private final Path appDir;
     private final Runnable afterClose;
 
     private final JTextField tfTitle = new JTextField(40);
@@ -93,7 +94,8 @@ public final class ProjectFrame extends BaseFrame {
     private ProjectFrame(ErrorLogger projectLogger, AppContext ctx, Workdir workDir, boolean reopenStart) {
         super(projectLogger, "KaraEd");
         this.workDir = workDir;
-        this.runner = new ToolRunner(ctx.tools(), ctx.rootDir(), taLog::append);
+        this.runner = new ToolRunner(ctx.tools(), taLog::append);
+        this.appDir = ctx.appDir();
         this.afterClose = () -> {
             if (reopenStart) {
                 new StartFrame(ctx);
@@ -254,7 +256,7 @@ public final class ProjectFrame extends BaseFrame {
         Thread thread = new Thread(() -> {
             try {
                 StepRunner stepRunner = new StepRunner(
-                    workDir, runner, this::showTitle,
+                    workDir, runner, appDir, this::showTitle,
                     this::editRanges, this::editBackvocals
                 );
                 long t0 = System.currentTimeMillis();

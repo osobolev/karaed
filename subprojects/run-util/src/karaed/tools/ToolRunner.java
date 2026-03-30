@@ -1,6 +1,5 @@
 package karaed.tools;
 
-import java.nio.file.Path;
 import java.util.function.IntPredicate;
 
 public final class ToolRunner {
@@ -8,12 +7,10 @@ public final class ToolRunner {
     private static final IntPredicate IS_SUCCESS = exitCode -> exitCode == 0;
 
     private final Tools tools;
-    private final Path rootDir;
     private final OutputCapture output;
 
-    public ToolRunner(Tools tools, Path rootDir, OutputCapture output) {
+    public ToolRunner(Tools tools, OutputCapture output) {
         this.tools = tools;
-        this.rootDir = rootDir;
         this.output = output;
     }
 
@@ -26,7 +23,7 @@ public final class ToolRunner {
     }
 
     public <T> ProcRunner<T> run(OutputProcessor<T> parseStdout, IntPredicate isOK) {
-        return new ProcRunner<>(tools, rootDir, output, parseStdout, isOK);
+        return new ProcRunner<>(tools, output, parseStdout, isOK);
     }
 
     public <T> ProcRunner<T> run(OutputProcessor<T> parseStdout) {
