@@ -34,7 +34,7 @@ public final class Youtube {
         String infoBasePath = infoFile.getParent() + File.separator + getBaseName(infoFile, ".info.json");
         runner.run().pythonTool(
             "yt-dlp",
-            "--no-mtime",
+            "--no-mtime", "--no-playlist",
             "--write-info-json",
             "--output", basePath + "." + suffix + "%(ext)s",
             "--output", "infojson:" + infoBasePath + ".%(ext)s",
@@ -102,6 +102,7 @@ public final class Youtube {
     private static Info youtubeMeta(ToolRunner runner, String url) throws IOException, InterruptedException {
         return runner.run(JsonUtil.parser(Info.class)).pythonTool(
             "yt-dlp",
+            "--no-playlist",
             "--print-json", "-s", url
         );
     }
