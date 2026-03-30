@@ -72,4 +72,11 @@ public final class FileLogger implements ErrorLogger {
             return new FileLogger(projectDir, fileName);
         }
     }
+
+    @Override
+    public void close() {
+        if (out != null) {
+            out.close();
+        }
+    }
 }

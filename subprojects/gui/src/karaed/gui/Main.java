@@ -189,16 +189,16 @@ public final class Main {
     public static void main(String[] args) {
         ToolRunner.registerShutdown();
 
-        ErrorLogger logger = new FileLogger(getMainLogDir(), "karaed.log");
+        ErrorLogger mainLogger = new FileLogger(getMainLogDir(), "karaed.log");
         SetupTools tools = SetupTools.create();
 
         String appDirStr = System.getProperty("app.rootDir");
         Path appDir = appDirStr == null ? null : Path.of(appDirStr);
-        AppContext ctx = new AppContext(logger, tools, appDir);
+        AppContext ctx = new AppContext(mainLogger, tools, appDir);
 
         Args pargs = parseArgs(args);
         SwingUtilities.invokeLater(() -> {
-            Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> logger.error(ex));
+            mainLogger.setDefault();
             ScaleUIDefaults.init();
             if (pargs.help) {
                 help();
@@ -208,7 +208,7 @@ public final class Main {
                 ShowMessage.error(null, "No root directory specified");
                 return;
             }
-            if (!ToolsDialog.fastCheckIfInstalled(logger, tools))
+            if (!ToolsDialog.fastCheckIfInstalled(mainLogger, tools))
                 return;
             Workdir workDir = start(ctx, pargs, () -> new StartFrame(ctx));
             if (workDir == null)

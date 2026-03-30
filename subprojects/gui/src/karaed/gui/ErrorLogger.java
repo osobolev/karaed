@@ -9,4 +9,11 @@ public interface ErrorLogger {
     default ErrorLogger derive(Path projectDir) {
         return this;
     }
+
+    default void close() {
+    }
+
+    default void setDefault() {
+        Thread.currentThread().setUncaughtExceptionHandler((t, ex) -> error(ex));
+    }
 }

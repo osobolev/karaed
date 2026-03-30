@@ -178,6 +178,7 @@ public final class ProjectFrame extends BaseFrame {
 
         pack();
         setLocationRelativeTo(null);
+        projectLogger.setDefault();
     }
 
     private void fileClicked(LinkType link) {
@@ -383,6 +384,12 @@ public final class ProjectFrame extends BaseFrame {
             return false;
         afterClose.run();
         hideNotifications();
+        ErrorLogger mainLogger = ctx.mainLogger();
+        mainLogger.setDefault();
+        ErrorLogger projectLogger = getLogger();
+        if (projectLogger != mainLogger) {
+            projectLogger.close();
+        }
         return true;
     }
 }
