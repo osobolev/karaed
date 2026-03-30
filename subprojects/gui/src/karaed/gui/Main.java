@@ -162,34 +162,10 @@ public final class Main {
         }
     }
 
-    private static boolean isInAppFolder(Path dir) {
-        String parentDirStr = System.getProperty("app.parentDir");
-        if (parentDirStr == null)
-            return false;
-        Path parentDir = Path.of(parentDirStr).toAbsolutePath().normalize();
-        Path absDir = dir.toAbsolutePath().normalize();
-        return absDir.startsWith(parentDir);
-    }
-
-    private static Path getMainLogDir() {
-        Path currentDir = Path.of(".");
-        boolean useCurrentDir;
-        if (isInAppFolder(currentDir)) {
-            useCurrentDir = false;
-        } else {
-            useCurrentDir = Files.isWritable(currentDir);
-        }
-        if (useCurrentDir) {
-            return currentDir;
-        } else {
-            return SetupTools.appDir();
-        }
-    }
-
     public static void main(String[] args) {
         ToolRunner.registerShutdown();
 
-        ErrorLogger mainLogger = new FileLogger(getMainLogDir(), "karaed.log");
+        ErrorLogger mainLogger = new FileLogger(SetupTools.appDir(), "karaed.log");
         SetupTools tools = SetupTools.create();
 
         String appDirStr = System.getProperty("app.rootDir");
