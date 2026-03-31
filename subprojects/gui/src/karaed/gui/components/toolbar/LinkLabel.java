@@ -1,4 +1,4 @@
-package karaed.gui.project;
+package karaed.gui.components.toolbar;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -7,7 +7,7 @@ import javax.swing.text.html.StyleSheet;
 import java.awt.Color;
 import java.util.function.Consumer;
 
-final class LinkLabel {
+public final class LinkLabel {
 
     private final JTextPane tpLabel = new JTextPane();
 
@@ -24,7 +24,7 @@ final class LinkLabel {
         return "#" + toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue());
     }
 
-    LinkLabel(JComponent parent, String fontFamily, int fontSize, Consumer<HyperlinkEvent> onClick) {
+    public LinkLabel(JComponent parent, String fontFamily, int fontSize, Consumer<HyperlinkEvent> onClick) {
         tpLabel.setEditable(false);
         tpLabel.setFocusable(false);
         tpLabel.setBorder(BorderFactory.createEmptyBorder());
@@ -56,14 +56,14 @@ final class LinkLabel {
         });
     }
 
-    static String linkText(Color linkColor, String href, String linkText) {
+    public static String linkText(Color linkColor, String href, String linkText) {
         return String.format(
             "<font color='%s'><u><a href='%s'>%s</a></u></font>",
             toHtml(linkColor), href, linkText
         );
     }
 
-    static String labelText(Color color, CharSequence text) {
+    public static String labelText(Color color, CharSequence text) {
         if (color == null) {
             return "<html><b>" + text + "</b></html>";
         } else {
@@ -71,11 +71,11 @@ final class LinkLabel {
         }
     }
 
-    void setText(String text) {
+    public void setText(String text) {
         tpLabel.setText(text);
     }
 
-    JComponent getVisual() {
+    public JComponent getVisual() {
         return tpLabel;
     }
 }

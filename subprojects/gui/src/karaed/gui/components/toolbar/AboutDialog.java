@@ -1,4 +1,4 @@
-package karaed.gui.project;
+package karaed.gui.components.toolbar;
 
 import karaed.gui.ScaleUIDefaults;
 import karaed.gui.util.BaseDialog;

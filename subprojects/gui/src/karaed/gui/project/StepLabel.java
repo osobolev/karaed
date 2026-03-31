@@ -1,6 +1,7 @@
 package karaed.gui.project;
 
 import karaed.gui.ScaleUIDefaults;
+import karaed.gui.components.toolbar.LinkLabel;
 import karaed.gui.util.InputUtil;
 import karaed.project.PipeStep;
 

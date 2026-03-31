@@ -7,13 +7,15 @@ import karaed.gui.AppContext;
 import karaed.gui.ErrorLogger;
 import karaed.gui.align.ManualAlign;
 import karaed.gui.backvocals.EditBackvocals;
+import karaed.gui.components.toolbar.ToolButtons;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.start.DirStatus;
 import karaed.gui.start.RecentItems;
 import karaed.gui.start.StartFrame;
-import karaed.gui.tools.SetupTools;
-import karaed.gui.tools.ToolsDialog;
-import karaed.gui.util.*;
+import karaed.gui.util.BaseFrame;
+import karaed.gui.util.InputUtil;
+import karaed.gui.util.LogArea;
+import karaed.gui.util.TitleUtil;
 import karaed.project.*;
 import karaed.tools.CommandException;
 import karaed.tools.ToolRunner;
@@ -61,24 +63,6 @@ public final class ProjectFrame extends BaseFrame {
         }
     };
 
-    public static JComponent createToolsButton(BaseWindow owner, SetupTools tools) {
-        JButton btnTools = new JButton(InputUtil.getIcon("/tools.png"));
-        btnTools.addActionListener(e -> new ToolsDialog(owner.getLogger(), owner.toWindow(), false, tools));
-        btnTools.setToolTipText("Tools setup");
-        btnTools.setMargin(new Insets(0, 3, 0, 3));
-
-        JButton btnAbout = new JButton(InputUtil.getIcon("/help.png"));
-        btnAbout.addActionListener(e -> new AboutDialog(owner).setVisible(true));
-        btnAbout.setToolTipText("About");
-        btnAbout.setMargin(new Insets(0, 3, 0, 3));
-
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        panel.add(btnTools);
-        panel.add(Box.createHorizontalStrut(5));
-        panel.add(btnAbout);
-        return panel;
-    }
-
     public static ProjectFrame create(AppContext ctx, boolean reopenStart, Workdir workDir,
                                       Consumer<String> onError) {
         DirStatus status = DirStatus.test(workDir);
@@ -123,7 +107,7 @@ public final class ProjectFrame extends BaseFrame {
         toolBar.add(Box.createHorizontalStrut(5));
         toolBar.add(new JButton(stopAction));
         toolBar.add(Box.createHorizontalGlue());
-        toolBar.add(createToolsButton(this, ctx.tools()));
+        toolBar.add(ToolButtons.create(this, ctx.tools()));
         add(toolBar, BorderLayout.NORTH);
 
         JPanel main = new JPanel(new BorderLayout());

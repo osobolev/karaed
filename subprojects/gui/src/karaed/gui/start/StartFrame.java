@@ -2,6 +2,7 @@ package karaed.gui.start;
 
 import karaed.engine.formats.info.Info;
 import karaed.gui.AppContext;
+import karaed.gui.components.toolbar.ToolButtons;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.project.ProjectFrame;
 import karaed.gui.util.BaseFrame;
@@ -74,7 +75,7 @@ public final class StartFrame extends BaseFrame {
         topc.add(btnOpen);
         JPanel top = new JPanel(new TopLayout());
         top.add(topc);
-        top.add(ProjectFrame.createToolsButton(this, ctx.tools()));
+        top.add(ToolButtons.create(this, ctx.tools()));
         add(top, BorderLayout.NORTH);
 
         List<Path> recent = RecentItems.loadRecentItems(ctx.mainLogger());
