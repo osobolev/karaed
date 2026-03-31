@@ -11,7 +11,6 @@ import karaed.gui.components.toolbar.ToolButtons;
 import karaed.gui.options.OptionsDialog;
 import karaed.gui.start.DirStatus;
 import karaed.gui.start.RecentItems;
-import karaed.gui.start.StartFrame;
 import karaed.gui.util.BaseFrame;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.LogArea;
@@ -63,8 +62,8 @@ public final class ProjectFrame extends BaseFrame {
         }
     };
 
-    public static ProjectFrame create(AppContext ctx, boolean reopenStart, Workdir workDir,
-                                      Consumer<String> onError) {
+    public static ProjectFrame create(AppContext ctx, Workdir workDir,
+                                      Consumer<String> onError, Runnable afterClose) {
         DirStatus status = DirStatus.test(workDir);
         if (status != DirStatus.OK) {
             onError.accept(status.getText(workDir));
@@ -72,19 +71,15 @@ public final class ProjectFrame extends BaseFrame {
         }
         ErrorLogger projectLogger = ctx.mainLogger().derive(workDir.dir());
         RecentItems.addRecentItem(projectLogger, workDir.dir());
-        return new ProjectFrame(projectLogger, ctx, workDir, reopenStart);
+        return new ProjectFrame(projectLogger, ctx, workDir, afterClose);
     }
 
-    private ProjectFrame(ErrorLogger projectLogger, AppContext ctx, Workdir workDir, boolean reopenStart) {
+    private ProjectFrame(ErrorLogger projectLogger, AppContext ctx, Workdir workDir, Runnable afterClose) {
         super(projectLogger, "KaraEd");
         this.ctx = ctx;
         this.workDir = workDir;
         this.runner = new ToolRunner(ctx.tools(), taLog::append);
-        this.afterClose = () -> {
-            if (reopenStart) {
-                new StartFrame(ctx);
-            }
-        };
+        this.afterClose = afterClose;
 
         JPanel toolBar = new JPanel();
         toolBar.setLayout(new BoxLayout(toolBar, BoxLayout.X_AXIS));

@@ -123,7 +123,7 @@ public final class StartFrame extends BaseFrame {
     }
 
     private void openProject(Workdir workDir, Consumer<String> onError) {
-        ProjectFrame pf = ProjectFrame.create(ctx, true, workDir, onError);
+        ProjectFrame pf = ProjectFrame.create(ctx, workDir, onError, () -> new StartFrame(ctx));
         if (pf == null)
             return;
         dispose();

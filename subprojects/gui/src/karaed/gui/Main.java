@@ -190,8 +190,9 @@ public final class Main {
             if (workDir == null)
                 return;
             ProjectFrame pf = ProjectFrame.create(
-                ctx, false, workDir,
-                error -> ShowMessage.error(null, error)
+                ctx, workDir,
+                error -> ShowMessage.error(null, error),
+                () -> {}
             );
             if (pf != null) {
                 pf.setVisible(true);
