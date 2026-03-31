@@ -8,7 +8,7 @@ import karaed.gui.components.MusicAndLyrics;
 import karaed.gui.components.model.BackvocalRanges;
 import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.model.RangesAndLyrics;
-import karaed.gui.util.BaseDialog;
+import karaed.gui.util.BaseFrame;
 import karaed.gui.util.TouchUtil;
 import karaed.json.JsonUtil;
 import karaed.project.Workdir;
@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public final class EditBackvocals extends BaseDialog {
+public final class EditBackvocals extends BaseFrame {
 
     private record DataFiles(
         Path backvocals,
@@ -49,10 +49,10 @@ public final class EditBackvocals extends BaseDialog {
         }
     };
 
-    private EditBackvocals(Window owner, ErrorLogger logger, boolean canContinue,
+    private EditBackvocals(ErrorLogger logger, boolean canContinue,
                            EditableRanges model, List<String> lines,
                            DataFiles files, BackvocalRanges ranges, boolean fromFile) {
-        super(owner, logger, "Backvocals");
+        super(logger, "Backvocals");
         this.files = files;
 
         Runnable onChange = () -> actionSave.setEnabled(true);
@@ -110,12 +110,12 @@ public final class EditBackvocals extends BaseDialog {
             return maybeData != null && !maybeData.ranges().isEmpty();
         }
 
-        private EditBackvocals create(Window owner, ErrorLogger logger, boolean canContinue) throws UnsupportedAudioFileException, IOException {
+        private EditBackvocals create(ErrorLogger logger, boolean canContinue) throws UnsupportedAudioFileException, IOException {
             RangesAndLyrics rl = RangesAndLyrics.load(files.vocals, files.ranges, Collections.emptyList());
             List<BackRange> backRanges = maybeData == null ? Collections.emptyList() : maybeData.ranges();
             BackvocalRanges ranges = BackvocalRanges.convert(backRanges, rl.ranges().source.frameRate());
             return new EditBackvocals(
-                owner, logger, canContinue,
+                logger, canContinue,
                 rl.ranges(), rl.rangeLines(),
                 files, ranges, maybeData != null
             );
@@ -126,8 +126,8 @@ public final class EditBackvocals extends BaseDialog {
                 files.touchBackvocalsIfSourceNewer();
                 return true;
             }
-            EditBackvocals ebv = create(owner, logger, canContinue);
-            ebv.setVisible(true);
+            EditBackvocals ebv = create(logger, canContinue);
+            ebv.showModal(owner);
             return ebv.isContinue();
         }
     }

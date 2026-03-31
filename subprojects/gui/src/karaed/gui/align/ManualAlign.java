@@ -6,7 +6,7 @@ import karaed.gui.ErrorLogger;
 import karaed.gui.components.EditorButtons;
 import karaed.gui.components.model.EditableRanges;
 import karaed.gui.components.model.RangesAndLyrics;
-import karaed.gui.util.BaseDialog;
+import karaed.gui.util.BaseFrame;
 import karaed.gui.util.TouchUtil;
 import karaed.json.JsonUtil;
 
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 // todo: undo/redo
-public final class ManualAlign extends BaseDialog {
+public final class ManualAlign extends BaseFrame {
 
     private final Path rangesFile;
     private final Path textFile;
@@ -41,11 +41,11 @@ public final class ManualAlign extends BaseDialog {
 
     private final EditorButtons butt;
 
-    private ManualAlign(Window owner, ErrorLogger logger, boolean canContinue,
+    private ManualAlign(ErrorLogger logger, boolean canContinue,
                         Path rangesFile, EditableRanges model, List<String> rangeLines, boolean fromFile,
                         Path textFile, List<String> textLines,
                         Path langFile, String languageCode) {
-        super(owner, logger, "Align vocals & lyrics");
+        super(logger, "Align vocals & lyrics");
         this.rangesFile = rangesFile;
         this.textFile = textFile;
         this.langFile = langFile;
@@ -71,7 +71,7 @@ public final class ManualAlign extends BaseDialog {
         return Files.readAllLines(textFile);
     }
 
-    private static ManualAlign create(Window owner, ErrorLogger logger, boolean canContinue,
+    private static ManualAlign create(ErrorLogger logger, boolean canContinue,
                                       Path vocals, Path textFile, Path rangesFile, Path langFile) throws IOException, UnsupportedAudioFileException {
         List<String> textLines = loadText(textFile);
 
@@ -80,7 +80,7 @@ public final class ManualAlign extends BaseDialog {
         String languageCode = Align.readLanguage(langFile);
 
         return new ManualAlign(
-            owner, logger, canContinue,
+            logger, canContinue,
             rangesFile, rl.ranges(), rl.rangeLines(), rl.fromFile(),
             textFile, textLines,
             langFile, languageCode
@@ -89,8 +89,8 @@ public final class ManualAlign extends BaseDialog {
 
     public static boolean manualAlign(Window owner, ErrorLogger logger, boolean canContinue,
                                       Path vocals, Path textFile, Path rangesFile, Path langFile) throws IOException, UnsupportedAudioFileException {
-        ManualAlign ma = create(owner, logger, canContinue, vocals, textFile, rangesFile, langFile);
-        ma.setVisible(true);
+        ManualAlign ma = create(logger, canContinue, vocals, textFile, rangesFile, langFile);
+        ma.showModal(owner);
         return ma.isContinue();
     }
 
