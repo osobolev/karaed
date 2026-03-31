@@ -71,8 +71,8 @@ public final class ManualAlign extends BaseDialog {
         return Files.readAllLines(textFile);
     }
 
-    public static ManualAlign create(Window owner, ErrorLogger logger, boolean canContinue,
-                                     Path vocals, Path textFile, Path rangesFile, Path langFile) throws IOException, UnsupportedAudioFileException {
+    private static ManualAlign create(Window owner, ErrorLogger logger, boolean canContinue,
+                                      Path vocals, Path textFile, Path rangesFile, Path langFile) throws IOException, UnsupportedAudioFileException {
         List<String> textLines = loadText(textFile);
 
         RangesAndLyrics rl = RangesAndLyrics.load(vocals, rangesFile, textLines);
@@ -85,6 +85,13 @@ public final class ManualAlign extends BaseDialog {
             textFile, textLines,
             langFile, languageCode
         );
+    }
+
+    public static boolean manualAlign(Window owner, ErrorLogger logger, boolean canContinue,
+                                      Path vocals, Path textFile, Path rangesFile, Path langFile) throws IOException, UnsupportedAudioFileException {
+        ManualAlign ma = create(owner, logger, canContinue, vocals, textFile, rangesFile, langFile);
+        ma.setVisible(true);
+        return ma.isContinue();
     }
 
     private void touchRangesIfTextNewer() throws IOException {

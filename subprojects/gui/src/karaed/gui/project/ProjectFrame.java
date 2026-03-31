@@ -332,9 +332,7 @@ public final class ProjectFrame extends BaseFrame {
         Path lang = workDir.file("lang.json");
         Path vocals = workDir.vocals();
         Path text = workDir.file("text.txt");
-        ManualAlign ma = ManualAlign.create(this, getLogger(), canContinue, vocals, text, ranges, lang);
-        ma.setVisible(true);
-        return ma.isContinue();
+        return ManualAlign.manualAlign(this, getLogger(), canContinue, vocals, text, ranges, lang);
     }
 
     private void editBackvocals() throws UnsupportedAudioFileException, IOException {
