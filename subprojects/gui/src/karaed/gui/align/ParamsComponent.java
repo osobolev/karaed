@@ -4,7 +4,6 @@ import karaed.engine.formats.ranges.AreaParams;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
-import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +19,6 @@ final class ParamsComponent {
     private final JSpinner chSilenceGap = new JSpinner(new SpinnerNumberModel(10, 10, 1000, 10));
     private final JCheckBox cbRangeDuration = new JCheckBox("Min range duration, millis:");
     private final JSpinner chRangeDuration = new JSpinner(new SpinnerNumberModel(10, 10, 1000, 10));
-    private final JPanel main = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
     private final List<Consumer<AreaParams>> listeners = new ArrayList<>();
 
@@ -55,13 +53,6 @@ final class ParamsComponent {
                 });
             }
         });
-
-        main.add(lblThreshold);
-        main.add(chThreshold);
-        main.add(lblSilenceGap);
-        main.add(chSilenceGap);
-        main.add(cbRangeDuration);
-        main.add(chRangeDuration);
     }
 
     private void fireParamsChanged() {
@@ -71,8 +62,13 @@ final class ParamsComponent {
         }
     }
 
-    JComponent getVisual() {
-        return main;
+    void addTo(JComponent parent) {
+        parent.add(lblThreshold);
+        parent.add(chThreshold);
+        parent.add(lblSilenceGap);
+        parent.add(chSilenceGap);
+        parent.add(cbRangeDuration);
+        parent.add(chRangeDuration);
     }
 
     void addListener(Consumer<AreaParams> listener) {

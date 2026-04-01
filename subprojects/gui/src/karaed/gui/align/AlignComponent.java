@@ -63,9 +63,9 @@ final class AlignComponent {
             4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 0), 0, 0
         ));
 
-        JPanel params = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel params = new JPanel(new WrapLayout(FlowLayout.LEFT));
         params.add(btnResplit);
-        params.add(paramsInput.getVisual());
+        paramsInput.addTo(params);
         params.add(btnCommit);
         params.add(btnRollback);
 
