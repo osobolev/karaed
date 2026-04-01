@@ -112,6 +112,8 @@ public final class OptionsDialog extends BaseDialog {
         }));
         add(butt, BorderLayout.SOUTH);
 
+        setGlassPane(SimpleGlassPane.create());
+
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
