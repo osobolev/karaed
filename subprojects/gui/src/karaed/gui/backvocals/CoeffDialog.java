@@ -2,6 +2,7 @@ package karaed.gui.backvocals;
 
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.BaseWindow;
+import karaed.gui.util.ButtonAreaLayout;
 
 import javax.swing.*;
 import java.awt.BorderLayout;
@@ -27,7 +28,7 @@ final class CoeffDialog extends BaseDialog {
         center.add(new JLabel("%"));
         add(center, BorderLayout.CENTER);
 
-        JPanel butt = new JPanel();
+        JPanel butt = ButtonAreaLayout.newButt();
         butt.add(new JButton(new AbstractAction("OK") {
             @Override
             public void actionPerformed(ActionEvent e) {

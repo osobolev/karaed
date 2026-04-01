@@ -2,6 +2,7 @@ package karaed.gui.tools;
 
 import karaed.gui.ErrorLogger;
 import karaed.gui.util.BaseDialog;
+import karaed.gui.util.ButtonAreaLayout;
 import karaed.gui.util.ShowMessage;
 
 import javax.swing.*;
@@ -94,7 +95,7 @@ public final class ToolsDialog extends BaseDialog {
                     dispose();
                 }
             });
-            JPanel butt = new  JPanel(new FlowLayout());
+            JPanel butt = ButtonAreaLayout.newButt();
             butt.add(btnGo);
             add(butt, BorderLayout.SOUTH);
         }

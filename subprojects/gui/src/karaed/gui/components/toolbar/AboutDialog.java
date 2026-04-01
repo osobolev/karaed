@@ -1,10 +1,7 @@
 package karaed.gui.components.toolbar;
 
 import karaed.gui.ScaleUIDefaults;
-import karaed.gui.util.BaseDialog;
-import karaed.gui.util.BaseWindow;
-import karaed.gui.util.InputUtil;
-import karaed.gui.util.VerticalLayout;
+import karaed.gui.util.*;
 
 import javax.swing.*;
 import java.awt.BorderLayout;
@@ -61,7 +58,7 @@ final class AboutDialog extends BaseDialog {
                 dispose();
             }
         });
-        JPanel butt = new JPanel();
+        JPanel butt = ButtonAreaLayout.newButt();
         butt.add(btnOk);
         add(butt, BorderLayout.SOUTH);
 

@@ -2,9 +2,7 @@ package karaed.gui.options;
 
 import karaed.gui.ErrorLogger;
 import karaed.gui.tools.SetupTools;
-import karaed.gui.util.BaseDialog;
-import karaed.gui.util.InputUtil;
-import karaed.gui.util.VerticalLayout;
+import karaed.gui.util.*;
 import karaed.project.Workdir;
 
 import javax.swing.*;
@@ -99,7 +97,7 @@ public final class OptionsDialog extends BaseDialog {
 
         add(tabs, BorderLayout.CENTER);
 
-        JPanel butt = new JPanel();
+        JPanel butt = ButtonAreaLayout.newButt();
         butt.add(new JButton(new AbstractAction("OK") {
             @Override
             public void actionPerformed(ActionEvent e) {

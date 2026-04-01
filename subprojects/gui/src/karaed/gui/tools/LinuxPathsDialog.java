@@ -2,6 +2,7 @@ package karaed.gui.tools;
 
 import karaed.gui.util.BaseDialog;
 import karaed.gui.util.BaseWindow;
+import karaed.gui.util.ButtonAreaLayout;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
@@ -56,7 +57,7 @@ final class LinuxPathsDialog extends BaseDialog {
             row++;
         }
 
-        JPanel butt = new JPanel();
+        JPanel butt = ButtonAreaLayout.newButt();
         butt.add(new JButton(new AbstractAction("OK") {
             @Override
             public void actionPerformed(ActionEvent e) {
