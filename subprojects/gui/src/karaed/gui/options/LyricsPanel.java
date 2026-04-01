@@ -5,6 +5,7 @@ import karaed.engine.opts.OInput;
 import karaed.gui.tools.SetupTools;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
+import karaed.gui.util.SimpleGlassPane;
 import karaed.tools.ToolRunner;
 
 import javax.swing.*;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 final class LyricsPanel extends BasePanel<String> {
@@ -79,17 +81,33 @@ final class LyricsPanel extends BasePanel<String> {
             ex.show(owner);
             return;
         }
-        try {
-            ToolRunner runner = new ToolRunner(tools, (stderr, text) -> {});
-            String error = LRCLib.loadLyrics(
-                runner, input,
-                lyrics -> InputUtil.setText(taLyrics, lyrics)
-            );
-            if (error != null) {
-                owner.error(error);
+        SimpleGlassPane glass = (SimpleGlassPane) owner.toRootPane().getGlassPane();
+        glass.show("Loading...");
+        new SwingWorker<String, Void>() {
+
+            @Override
+            protected String doInBackground() throws Exception {
+                ToolRunner runner = new ToolRunner(tools, (stderr, text) -> {});
+                return LRCLib.loadLyrics(
+                    runner, input,
+                    lyrics -> SwingUtilities.invokeLater(() -> InputUtil.setText(taLyrics, lyrics))
+                );
             }
-        } catch (Exception ex) {
-            owner.error(ex);
-        }
+
+            @Override
+            protected void done() {
+                glass.setVisible(false);
+                try {
+                    String error = get();
+                    if (error != null) {
+                        owner.error(error);
+                    }
+                } catch (InterruptedException ex) {
+                    // ignore
+                } catch (ExecutionException ex) {
+                    owner.error(ex.getCause());
+                }
+            }
+        }.execute();
     }
 }
