@@ -41,7 +41,6 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
     private RangeLike playingRange = null;
     private int playingY;
     private Clip playing = null;
-    private long playingStarted;
     private final Timer playingTimer = new Timer(100, e -> {
         if (playingRange != null) {
             Sizer s = newSizer();
@@ -197,7 +196,6 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
                 }
             });
             firePlayChanged();
-            playingStarted = System.currentTimeMillis();
             playingTimer.start();
             clip.start();
             repaint();
@@ -244,8 +242,8 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
         Painter painter = doPaint(g, width, height);
 
         painter.paintScale(totalSeconds(), width);
-        if (playingRange != null) {
-            painter.paintPlay(playingRange, playingY, System.currentTimeMillis() - playingStarted);
+        if (playingRange != null && playing != null && playing.isActive()) {
+            painter.paintPlay(playingRange, playingY, playing.getMicrosecondPosition() / 1000);
         }
     }
 
