@@ -2,7 +2,7 @@ plugins {
     id("common")
 }
 
-val release = "1.0.0"
+val release = "1.0.1"
 
 val app by configurations.creating
 
