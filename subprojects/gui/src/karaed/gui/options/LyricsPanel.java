@@ -44,7 +44,7 @@ final class LyricsPanel extends BasePanel<String> {
         LinkLabel lblHead = LinkLabel.create(main, e -> loadLyrics());
         lblHead.setText(LinkLabel.labelText(null, "Lyrics: " + LinkLabel.linkText("#", "(load from LRClib)")));
         main.add(lblHead.getVisual(), new GridBagConstraints(
-            0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 5, 5), 0, 0
+            0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 5, 5), 0, 0
         ));
         main.add(new JScrollPane(taLyrics), new GridBagConstraints(
             0, 1, 1, 1, 1.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0
