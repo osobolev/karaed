@@ -192,7 +192,7 @@ public abstract class MusicComponent extends JComponent implements Scrollable {
             playing = clip;
             clip.addLineListener(le -> {
                 if (le.getType() == LineEvent.Type.STOP) {
-                    stop();
+                    SwingUtilities.invokeLater(this::stop);
                 }
             });
             firePlayChanged();
