@@ -5,6 +5,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import java.awt.Color;
+import java.awt.Font;
 import java.util.function.Consumer;
 
 public final class LinkLabel {
@@ -54,6 +55,11 @@ public final class LinkLabel {
                 onClick.accept(e);
             }
         });
+    }
+
+    public static LinkLabel create(JComponent parent, Consumer<HyperlinkEvent> onClick) {
+        Font labelFont = UIManager.getFont("Label.font");
+        return new LinkLabel(parent, labelFont.getFontName(), labelFont.getSize(), onClick);
     }
 
     public static String linkText(Color linkColor, String href, String linkText) {
