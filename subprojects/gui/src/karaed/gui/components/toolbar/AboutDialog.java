@@ -37,7 +37,7 @@ final class AboutDialog extends BaseDialog {
             }
         });
         String url = "https://github.com/osobolev/karaed";
-        link.setText(LinkLabel.labelText(null, "GitHub: " + LinkLabel.linkText(Color.blue, url, url)));
+        link.setText(LinkLabel.labelText(null, "GitHub: " + LinkLabel.linkText(url, url)));
         plink.add(link.getVisual());
         plink.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 

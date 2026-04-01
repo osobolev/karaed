@@ -63,6 +63,10 @@ public final class LinkLabel {
         );
     }
 
+    public static String linkText(String href, String linkText) {
+        return linkText(Color.blue, href, linkText);
+    }
+
     public static String labelText(Color color, CharSequence text) {
         if (color == null) {
             return "<html><b>" + text + "</b></html>";
