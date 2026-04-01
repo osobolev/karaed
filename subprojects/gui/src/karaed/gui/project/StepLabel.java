@@ -8,6 +8,7 @@ import karaed.project.PipeStep;
 import javax.swing.*;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +33,7 @@ final class StepLabel {
 
     StepLabel(PipeStep step, Consumer<LinkType> onClick) {
         this.step = step;
-        this.tpLabel = new LinkLabel(panel, "Dialog", ScaleUIDefaults.isize(24), e -> {
+        this.tpLabel = new LinkLabel(panel, Font.DIALOG, ScaleUIDefaults.isize(24), e -> {
             String description = e.getDescription();
             try {
                 LinkType link = LinkType.valueOf(description.substring(1).toUpperCase());
