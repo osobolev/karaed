@@ -2,11 +2,14 @@ package karaed.gui.util;
 
 import karaed.gui.ErrorLogger;
 
+import javax.swing.*;
 import java.awt.Window;
 
 public interface BaseWindow {
 
     Window toWindow();
+
+    RootPaneContainer toRootPane();
 
     ErrorLogger getLogger();
 

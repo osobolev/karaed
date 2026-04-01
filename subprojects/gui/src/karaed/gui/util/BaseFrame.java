@@ -55,6 +55,11 @@ public class BaseFrame extends JFrame implements BaseWindow {
     }
 
     @Override
+    public RootPaneContainer toRootPane() {
+        return this;
+    }
+
+    @Override
     public ErrorLogger getLogger() {
         return logger;
     }

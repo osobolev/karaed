@@ -27,6 +27,11 @@ public class BaseDialog extends JDialog implements BaseWindow {
     }
 
     @Override
+    public RootPaneContainer toRootPane() {
+        return this;
+    }
+
+    @Override
     public ErrorLogger getLogger() {
         return logger;
     }
