@@ -32,10 +32,12 @@ abstract class BasePanel<T> {
             this.origData = defValue.get();
         }
 
-        main.setBorder(BorderFactory.createCompoundBorder(
-            title == null ? BorderFactory.createEmptyBorder() : BorderFactory.createTitledBorder(title),
-            BorderFactory.createEmptyBorder(5, 5, 0, 0)
-        ));
+        if (title != null) {
+            main.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(title),
+                BorderFactory.createEmptyBorder(5, 5, 0, 0)
+            ));
+        }
     }
 
     protected BasePanel(String title, Supplier<Path> getFile,

@@ -2,6 +2,7 @@ package karaed.gui.options;
 
 import karaed.engine.lyrics.LRCLib;
 import karaed.engine.opts.OInput;
+import karaed.gui.components.toolbar.LinkLabel;
 import karaed.gui.tools.SetupTools;
 import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
@@ -11,7 +12,6 @@ import karaed.tools.ToolRunner;
 import javax.swing.*;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +32,7 @@ final class LyricsPanel extends BasePanel<String> {
     }
 
     LyricsPanel(OptCtx ctx, SetupTools tools, InputPanel input) throws IOException {
-        super("Lyrics", () -> ctx.file("text.txt"), LyricsPanel::readLyrics, () -> "");
+        super(null, () -> ctx.file("text.txt"), LyricsPanel::readLyrics, () -> "");
         this.owner = ctx.owner;
         this.tools = tools;
         this.input = input;
@@ -41,19 +41,16 @@ final class LyricsPanel extends BasePanel<String> {
         taLyrics.setWrapStyleWord(true);
         InputUtil.undoable(taLyrics);
 
-        JButton btnLoad = new JButton(new AbstractAction("Load from LRClib") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                loadLyrics();
-            }
-        });
-
+        LinkLabel lblHead = LinkLabel.create(main, e -> loadLyrics());
+        lblHead.setText(LinkLabel.labelText(null, "Lyrics: " + LinkLabel.linkText("#", "(load from LRClib)")));
+        main.add(lblHead.getVisual(), new GridBagConstraints(
+            0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 5, 5), 0, 0
+        ));
         main.add(new JScrollPane(taLyrics), new GridBagConstraints(
-            0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0
+            0, 1, 1, 1, 1.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 0, 5, 5), 0, 0
         ));
-        main.add(btnLoad, new GridBagConstraints(
-            0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
-        ));
+
+        main.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         InputUtil.setText(taLyrics, origData);
     }

@@ -54,6 +54,8 @@ final class InputPanel extends BasePanel<OInput> {
             2, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
         ));
 
+        main.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+
         btnBrowse.setToolTipText("Browse URL");
         btnChoose.setToolTipText("Choose file");
 
