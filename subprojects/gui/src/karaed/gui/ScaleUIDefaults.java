@@ -5,6 +5,10 @@ import javax.swing.plaf.FontUIResource;
 
 public final class ScaleUIDefaults {
 
+    public static void resizeFont(JComponent comp, float size) {
+        comp.setFont(comp.getFont().deriveFont(size(size)));
+    }
+
     public static float size(float size) {
         return size * 1.25f;
     }

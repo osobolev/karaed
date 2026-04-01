@@ -21,12 +21,12 @@ final class AboutDialog extends BaseDialog {
         JPanel phead = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         phead.add(new JLabel(InputUtil.getIcon("/karaed.png")));
         JLabel lblHeader = new JLabel("KaraEd" + (version == null ? "" : " " + version));
-        lblHeader.setFont(lblHeader.getFont().deriveFont(ScaleUIDefaults.size(16f)));
+        ScaleUIDefaults.resizeFont(lblHeader, 16f);
         phead.add(lblHeader);
 
         JPanel pdesc = new JPanel(new BorderLayout());
         JLabel lblDesc = new JLabel("Karaoke Editor", JLabel.CENTER);
-        lblDesc.setFont(lblDesc.getFont().deriveFont(ScaleUIDefaults.size(24f)));
+        ScaleUIDefaults.resizeFont(lblDesc, 24f);
         pdesc.add(lblDesc, BorderLayout.CENTER);
 
         JPanel plink = new JPanel(new BorderLayout());
