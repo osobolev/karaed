@@ -7,7 +7,9 @@ import karaed.gui.util.InputUtil;
 import karaed.gui.util.VerticalLayout;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 
 final class AboutDialog extends BaseDialog {
@@ -19,17 +21,16 @@ final class AboutDialog extends BaseDialog {
         JPanel phead = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         phead.add(new JLabel(InputUtil.getIcon("/karaed.png")));
         JLabel lblHeader = new JLabel("KaraEd" + (version == null ? "" : " " + version));
-        Font defFont = lblHeader.getFont();
-        lblHeader.setFont(defFont.deriveFont(ScaleUIDefaults.size(16f)));
+        lblHeader.setFont(lblHeader.getFont().deriveFont(ScaleUIDefaults.size(16f)));
         phead.add(lblHeader);
 
         JPanel pdesc = new JPanel(new BorderLayout());
         JLabel lblDesc = new JLabel("Karaoke Editor", JLabel.CENTER);
-        lblDesc.setFont(defFont.deriveFont(ScaleUIDefaults.size(24f)));
+        lblDesc.setFont(lblDesc.getFont().deriveFont(ScaleUIDefaults.size(24f)));
         pdesc.add(lblDesc, BorderLayout.CENTER);
 
         JPanel plink = new JPanel(new BorderLayout());
-        LinkLabel link = new LinkLabel(plink, defFont.getFamily(), defFont.getSize(), e -> {
+        LinkLabel link = LinkLabel.create(plink, e -> {
             try {
                 Desktop.getDesktop().browse(e.getURL().toURI());
             } catch (Exception ex) {
