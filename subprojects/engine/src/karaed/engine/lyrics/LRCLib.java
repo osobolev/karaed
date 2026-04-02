@@ -50,7 +50,7 @@ public final class LRCLib {
     }
 
     private static String fullTrack(String artist, String track) {
-        return "'" + track + "' by " + artist;
+        return "\"" + track + "\" by " + artist;
     }
 
     public static String loadLyrics(ToolRunner runner, OInput input) throws IOException, InterruptedException, LRCException {
