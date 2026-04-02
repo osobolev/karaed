@@ -110,7 +110,7 @@ final class InputPanel extends BasePanel<OInput> {
             if (!valid) {
                 throw new ValidationException("Input valid URL", tfURL);
             }
-            return new OInput(url, null);
+            return new OInput(url, null, null);
         } else {
             String file = tfFile.getText();
             if (file.trim().isEmpty()) {
@@ -132,7 +132,7 @@ final class InputPanel extends BasePanel<OInput> {
             } catch (Exception ex) {
                 throw new ValidationException("File is not a video or audio file", tfFile);
             }
-            return new OInput(null, file);
+            return new OInput(null, file, hasVideo);
         }
     }
 
