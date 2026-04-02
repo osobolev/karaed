@@ -70,6 +70,18 @@ public final class Youtube {
         }
     }
 
+    private static void extractAudio(ToolRunner runner, Path video, Path audio) throws IOException, InterruptedException {
+        runner.println("Extracting audio.mp3...");
+        runner.run().ffmpeg(List.of(
+            "-y", "-stats",
+            "-i", video.toString(),
+            "-vn",
+            "-b:a", "192k",
+            "-f", "mp3",
+            audio.toString()
+        ));
+    }
+
     public static void download(ToolRunner runner, OInput input, OCut cut, Path audio, Path infoFile, VideoFinder finder) throws IOException, InterruptedException {
         CutRange range = CutRange.create(cut);
         if (input.url() != null) {
@@ -88,15 +100,8 @@ public final class Youtube {
 
                 video = cutVideo;
             }
-            runner.println("Extracting audio.mp3...");
-            runner.run().ffmpeg(List.of(
-                "-y", "-stats",
-                "-i", video.toString(),
-                "-vn",
-                "-b:a", "192k",
-                "-f", "mp3",
-                audio.toString()
-            ));
+
+            extractAudio(runner, video, audio);
         } else if (input.file() != null) {
             Path srcFile = Path.of(input.file());
             Info info = fileMeta(runner, srcFile);
