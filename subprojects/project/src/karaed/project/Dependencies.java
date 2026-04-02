@@ -93,7 +93,7 @@ final class Dependencies {
     }
 
     Dependencies(OInput input, OVideo video) {
-        this.hasVideo = input.url() != null;
+        this.hasVideo = input.hasVideo();
 
         fileDeps(video);
 
