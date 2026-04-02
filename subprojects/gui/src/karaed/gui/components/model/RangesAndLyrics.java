@@ -7,7 +7,6 @@ import karaed.json.JsonUtil;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -19,10 +18,7 @@ public record RangesAndLyrics(
 ) {
 
     public static Ranges loadData(Path rangesFile) throws IOException {
-        if (Files.exists(rangesFile)) {
-            return JsonUtil.readFile(rangesFile, Ranges.class);
-        }
-        return null;
+        return JsonUtil.readFile(rangesFile, Ranges.class, () -> null);
     }
 
     public static RangesAndLyrics load(Path vocals, Path rangesFile, List<String> textLines) throws IOException, UnsupportedAudioFileException {
