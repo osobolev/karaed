@@ -77,7 +77,7 @@ public final class MakeSubs {
         long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
         String audioPath;
         try {
-            audioPath = subsFile.relativize(audioFile).toString();
+            audioPath = subsFile.getParent().relativize(audioFile).toString();
         } catch (Exception ex) {
             audioPath = audioFile.toString();
         }
