@@ -68,7 +68,7 @@ public final class Youtube {
                 Path fullVideo = downloadTo(runner, input, infoFile, finder, "full.");
 
                 runner.println("Cutting downloaded video...");
-                CutRange realCut = new KeyRangeDetector(runner, range).getRealCut(fullVideo);
+                CutRange realCut = range.toRealCut(runner, fullVideo);
                 Path cutVideo = finder.getVideo("", true);
                 realCut.cutFile(runner, fullVideo, cutVideo);
                 Files.delete(fullVideo);

@@ -11,8 +11,8 @@ import java.util.List;
 
 final class CutRange {
 
-    final Double start;
-    final Double end;
+    private final Double start;
+    private final Double end;
 
     CutRange(Double start, Double end) {
         this.start = start;
@@ -37,6 +37,10 @@ final class CutRange {
         if (secStart == null && secEnd == null)
             return null;
         return new CutRange(secStart, secEnd);
+    }
+
+    CutRange toRealCut(ToolRunner runner, Path fullVideo) throws IOException, InterruptedException {
+        return new KeyRangeDetector(runner, start, end).getRealCut(fullVideo);
     }
 
     void cutFile(ToolRunner runner, Path file, Path outFile) throws IOException, InterruptedException {

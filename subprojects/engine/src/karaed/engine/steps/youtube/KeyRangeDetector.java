@@ -19,10 +19,10 @@ final class KeyRangeDetector {
     private final Double start;
     private final Double end;
 
-    KeyRangeDetector(ToolRunner runner, CutRange range) {
+    KeyRangeDetector(ToolRunner runner, Double start, Double end) {
         this.runner = runner;
-        this.start = range.start;
-        this.end = range.end;
+        this.start = start;
+        this.end = end;
     }
 
     private final class FrameAcc {
