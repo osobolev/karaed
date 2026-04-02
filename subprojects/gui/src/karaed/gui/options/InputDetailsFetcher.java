@@ -28,6 +28,10 @@ final class InputDetailsFetcher<R> {
         R fetch(ToolRunner runner, OInput input) throws Exception;
     }
 
+    static ToolRunner runner(SetupTools tools) {
+        return new ToolRunner(tools, (stderr, text) -> {});
+    }
+
     void fetch(boolean silenceErrors,
                FetchSupplier<R> fetcher,
                Consumer<R> showResult,
@@ -47,7 +51,7 @@ final class InputDetailsFetcher<R> {
 
             @Override
             protected R doInBackground() throws Exception {
-                ToolRunner runner = new ToolRunner(tools, (stderr, text) -> {});
+                ToolRunner runner = runner(tools);
                 return fetcher.fetch(runner, input);
             }
 
