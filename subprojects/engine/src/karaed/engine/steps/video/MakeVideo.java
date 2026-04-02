@@ -2,7 +2,7 @@ package karaed.engine.steps.video;
 
 import karaed.engine.formats.backvocals.Backvocals;
 import karaed.engine.formats.ffprobe.FFStream;
-import karaed.engine.formats.ffprobe.FFStreams;
+import karaed.engine.video.FileStreamUtil;
 import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
 import karaed.tools.ToolRunner;
@@ -41,13 +41,8 @@ public final class MakeVideo {
     }
 
     public static void doPrepareVideo(ToolRunner runner, Path video, Path preparedVideo) throws IOException, InterruptedException {
-        FFStreams streams = runner.run(JsonUtil.parser(FFStreams.class)).ffprobe(
-            "-print_format", "json",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=width,height",
-            video.toString()
-        );
-        FFStream stream = streams.streams().getFirst();
+        List<FFStream> streams = FileStreamUtil.listVideoStreams(runner, video);
+        FFStream stream = streams.getFirst();
         int width = stream.width();
         int height = stream.height();
         if (width < 1280) {
