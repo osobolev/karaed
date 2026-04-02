@@ -60,6 +60,16 @@ public final class Youtube {
         );
     }
 
+    private static void cutFile(ToolRunner runner, Path srcFile, Path file, CutRange range, boolean audioOnly) throws IOException, InterruptedException {
+        if (range == null) {
+            Files.copy(srcFile, file, StandardCopyOption.REPLACE_EXISTING);
+            Files.setLastModifiedTime(file, FileTime.from(Instant.now()));
+        } else {
+            runner.println("Cutting " + (audioOnly ? "audio" : "video") + " file...");
+            range.cutFile(runner, srcFile, file);
+        }
+    }
+
     public static void download(ToolRunner runner, OInput input, OCut cut, Path audio, Path infoFile, VideoFinder finder) throws IOException, InterruptedException {
         CutRange range = CutRange.create(cut);
         if (input.url() != null) {
@@ -92,13 +102,7 @@ public final class Youtube {
             Info info = fileMeta(runner, srcFile);
             JsonUtil.writeFile(infoFile, info);
 
-            if (range == null) {
-                Files.copy(srcFile, audio, StandardCopyOption.REPLACE_EXISTING);
-                Files.setLastModifiedTime(audio, FileTime.from(Instant.now()));
-            } else {
-                runner.println("Cutting file...");
-                range.cutFile(runner, srcFile, audio);
-            }
+            cutFile(runner, srcFile, audio, range, true);
         } else {
             throw new KaraException("Either URL or file must be specified");
         }
