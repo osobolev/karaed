@@ -90,6 +90,7 @@ public final class Youtube {
                 Files.copy(srcFile, audio, StandardCopyOption.REPLACE_EXISTING);
                 Files.setLastModifiedTime(audio, FileTime.from(Instant.now()));
             } else {
+                runner.println("Cutting file...");
                 range.cutFile(runner, srcFile, audio);
             }
             Info info = fileMeta(runner, audio);

@@ -45,7 +45,7 @@ final class CutRange {
 
     void cutFile(ToolRunner runner, Path file, Path outFile) throws IOException, InterruptedException {
         List<String> args = new ArrayList<>(List.of(
-            "-y",
+            "-y", "-stats",
             "-i", file.toString()
         ));
         if (start != null) {
