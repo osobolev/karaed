@@ -111,7 +111,7 @@ public final class StepRunner {
         Path ranges = workDir.file("ranges.json");
         Path lang = workDir.file("lang.json");
         try {
-            Align.align(runner, appDir, vocals, ranges, lang, workDir.file("tmp"), aligned);
+            Align.align(runner, appDir.resolve("scripts"), vocals, ranges, lang, workDir.file("tmp"), aligned);
         } catch (IOException | InterruptedException ex) {
             deleteIfExists(aligned);
             throw ex;

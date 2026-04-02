@@ -24,12 +24,12 @@ import java.util.*;
 public final class Align {
 
     private final ToolRunner runner;
-    private final Path appDir;
+    private final Path scriptDir;
     private final Path tmpDir;
 
-    public Align(ToolRunner runner, Path appDir, Path tmpDir) {
+    public Align(ToolRunner runner, Path scriptDir, Path tmpDir) {
         this.runner = runner;
-        this.appDir = appDir;
+        this.scriptDir = scriptDir;
         this.tmpDir = tmpDir;
     }
 
@@ -50,7 +50,7 @@ public final class Align {
         Path aligned = tmpDir.resolve("aligned" + i + ".json");
         // todo: possibly run transcription first for better voice range detection???
         runner.run(stdout -> null).pythonScript(
-            appDir.resolve("scripts/align.py"),
+            scriptDir.resolve("align.py"),
             voice.toAbsolutePath().toString(),
             fast.toAbsolutePath().toString(),
             aligned.toAbsolutePath().toString()
@@ -63,7 +63,7 @@ public final class Align {
         for (int i = 0; i < Math.min(ranges.size(), 3); i++) {
             Path voice = voice(tmpDir, i);
             LangDetect ld = runner.run(JsonUtil.parser(LangDetect.class)).pythonScript(
-                appDir.resolve("scripts/language.py"),
+                scriptDir.resolve("language.py"),
                 voice.toAbsolutePath().toString()
             );
             if (ld.langprob() > 0.5)
@@ -157,9 +157,9 @@ public final class Align {
         JsonUtil.writeFile(langFile, new Lang(language));
     }
 
-    public static void align(ToolRunner runner, Path appDir,
+    public static void align(ToolRunner runner, Path scriptDir,
                              Path vocals, Path rangesFile, Path langFile, Path tmpDir, Path alignedFile) throws IOException, UnsupportedAudioFileException, InterruptedException {
-        Align align = new Align(runner, appDir, tmpDir);
+        Align align = new Align(runner, scriptDir, tmpDir);
         align.align(vocals, rangesFile, alignedFile, ranges -> {
             String lang = readLanguage(langFile);
             String language;
