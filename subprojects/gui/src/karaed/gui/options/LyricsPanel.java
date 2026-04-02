@@ -3,8 +3,6 @@ package karaed.gui.options;
 import karaed.engine.lyrics.LRCException;
 import karaed.engine.lyrics.LRCLib;
 import karaed.gui.components.toolbar.LinkLabel;
-import karaed.gui.tools.SetupTools;
-import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
@@ -18,8 +16,6 @@ import java.util.stream.Collectors;
 
 final class LyricsPanel extends BasePanel<String> {
 
-    private final BaseWindow owner;
-    private final SetupTools tools;
     private final InputPanel input;
     private final JTextArea taLyrics = new JTextArea(22, 60);
 
@@ -30,8 +26,6 @@ final class LyricsPanel extends BasePanel<String> {
 
     LyricsPanel(OptCtx ctx, InputPanel input) throws IOException {
         super(ctx, null, () -> ctx.file("text.txt"), LyricsPanel::readLyrics, () -> "");
-        this.owner = ctx.owner;
-        this.tools = ctx.tools;
         this.input = input;
 
         taLyrics.setLineWrap(true);

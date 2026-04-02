@@ -2,8 +2,6 @@ package karaed.gui.options;
 
 import karaed.engine.opts.OInput;
 import karaed.engine.video.FileStreamUtil;
-import karaed.gui.tools.SetupTools;
-import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
 import karaed.tools.ToolRunner;
 
@@ -20,8 +18,6 @@ import java.nio.file.Path;
 
 final class InputPanel extends BasePanel<OInput> {
 
-    private final BaseWindow owner;
-    private final SetupTools tools;
     private final JRadioButton rbURL = new JRadioButton("URL:");
     private final JRadioButton rbFile = new JRadioButton("File:");
     private final JTextField tfURL = new JTextField(40);
@@ -36,8 +32,6 @@ final class InputPanel extends BasePanel<OInput> {
 
     InputPanel(OptCtx ctx, String defaultURL) throws IOException {
         super(ctx, null, () -> ctx.file("input.json"), OInput.class, OInput::new);
-        this.owner = ctx.owner;
-        this.tools = ctx.tools;
 
         main.add(rbURL, new GridBagConstraints(
             0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
@@ -149,7 +143,7 @@ final class InputPanel extends BasePanel<OInput> {
                 return;
             Desktop.getDesktop().browse(uri);
         } catch (Exception ex) {
-            owner.error(ex.toString());
+            ctx.owner.error(ex.toString());
         }
     }
 }

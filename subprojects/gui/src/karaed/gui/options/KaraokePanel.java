@@ -3,8 +3,6 @@ package karaed.gui.options;
 import karaed.engine.formats.info.Info;
 import karaed.engine.opts.OKaraoke;
 import karaed.engine.steps.youtube.Youtube;
-import karaed.gui.tools.SetupTools;
-import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
 import karaed.gui.util.TitleUtil;
 
@@ -16,8 +14,6 @@ import java.io.IOException;
 
 final class KaraokePanel extends BasePanel<OKaraoke> {
 
-    private final BaseWindow owner;
-    private final SetupTools tools;
     private final InputPanel input;
 
     private final FloatField tfBetweenGroups = new FloatField();
@@ -35,8 +31,6 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
 
     KaraokePanel(OptCtx ctx, InputPanel input) throws IOException {
         super(ctx, "Karaoke", () -> ctx.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
-        this.owner = ctx.owner;
-        this.tools = ctx.tools;
         this.input = input;
 
         Layouter layouter = new Layouter();
