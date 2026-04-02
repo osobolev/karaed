@@ -52,8 +52,11 @@ public final class Youtube {
         } else {
             artist = tags.album_artist();
         }
+        String fileName = audio.getFileName().toString();
+        int p = fileName.lastIndexOf('.');
+        String ext = p > 0 ? fileName.substring(p + 1) : "";
         return new Info(
-            artist, tags.title(), null, null, null
+            artist, tags.title(), null, null, ext
         );
     }
 
