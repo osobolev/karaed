@@ -21,8 +21,17 @@ public record OCut(
         return Integer.parseInt(str);
     }
 
-    public static Double parseTime(String t) {
-        String str = t.replaceAll("\\s+", "");
+    public static Double parseTime(String t, boolean allowNegative) {
+        String str0 = t.replaceAll("\\s+", "");
+        String str;
+        int sign;
+        if (str0.startsWith("-") && allowNegative) {
+            str = str0.substring(1);
+            sign = -1;
+        } else {
+            str = str0;
+            sign = 1;
+        }
         Matcher m1 = PATTERN1.matcher(str);
         int hours;
         int minutes;
@@ -41,6 +50,6 @@ public record OCut(
                 return null;
             }
         }
-        return (double) ((hours * 60 + minutes) * 60 + seconds);
+        return (double) ((hours * 60 + minutes) * 60 + seconds) * sign;
     }
 }

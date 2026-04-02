@@ -2,6 +2,7 @@ package karaed.engine.steps.youtube;
 
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.opts.OCut;
+import karaed.engine.video.FileStreamUtil;
 import karaed.tools.ToolRunner;
 
 import java.io.IOException;
@@ -11,11 +12,18 @@ import java.util.List;
 
 final class CutRange {
 
+    private final Double prepend;
     private final Double start;
     private final Double end;
 
     CutRange(Double start, Double end) {
-        this.start = start;
+        if (start != null && start.doubleValue() < 0) {
+            this.prepend = -start.doubleValue();
+            this.start = null;
+        } else {
+            this.prepend = null;
+            this.start = start;
+        }
         this.end = end;
     }
 
@@ -24,13 +32,13 @@ final class CutRange {
         String end = cut.to();
         Double secStart;
         if (start != null) {
-            secStart = OCut.parseTime(start);
+            secStart = OCut.parseTime(start, true);
         } else {
             secStart = null;
         }
         Double secEnd;
         if (end != null) {
-            secEnd = OCut.parseTime(end);
+            secEnd = OCut.parseTime(end, false);
         } else {
             secEnd = null;
         }
@@ -40,6 +48,10 @@ final class CutRange {
     }
 
     CutRange toRealCut(ToolRunner runner, Path fullVideo) throws IOException, InterruptedException {
+        if (start == null && end == null) {
+            // Special case: nothing is removed, only added
+            return this;
+        }
         return new KeyRangeDetector(runner, start, end).getRealCut(fullVideo);
     }
 
@@ -70,7 +82,9 @@ final class CutRange {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        if (start != null) {
+        if (prepend != null) {
+            buf.append('-').append(Range.formatTime(prepend.floatValue()));
+        } else if (start != null) {
             buf.append(Range.formatTime(start.floatValue()));
         } else {
             buf.append(Range.formatTime(0f));
