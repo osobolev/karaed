@@ -88,7 +88,7 @@ public final class OptionsDialog extends BaseDialog {
         add(new AlignPanel(ctx), options);
         add(new VideoPanel(ctx), options);
         add(new DemucsPanel(ctx), advanced);
-        add(new KaraokePanel(ctx), advanced);
+        add(new KaraokePanel(ctx, tools, input), advanced);
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Input", main);

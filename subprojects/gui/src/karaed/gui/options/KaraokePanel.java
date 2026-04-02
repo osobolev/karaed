@@ -1,18 +1,24 @@
 package karaed.gui.options;
 
+import karaed.engine.formats.info.Info;
 import karaed.engine.opts.OKaraoke;
-import karaed.engine.steps.karaoke.AssJoiner;
+import karaed.engine.steps.youtube.Youtube;
+import karaed.gui.tools.SetupTools;
+import karaed.gui.util.BaseWindow;
 import karaed.gui.util.InputUtil;
+import karaed.gui.util.TitleUtil;
 
 import javax.swing.*;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
 
 final class KaraokePanel extends BasePanel<OKaraoke> {
+
+    private final BaseWindow owner;
+    private final SetupTools tools;
+    private final InputPanel input;
 
     private final FloatField tfBetweenGroups = new FloatField();
     private final FloatField tfShift = new FloatField();
@@ -27,8 +33,11 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
     private final JCheckBox cbCustomTitle = new JCheckBox("Custom title:");
     private final JTextArea taTitle = new JTextArea(3, 20);
 
-    KaraokePanel(OptCtx ctx) throws IOException {
+    KaraokePanel(OptCtx ctx, SetupTools tools, InputPanel input) throws IOException {
         super("Karaoke", () -> ctx.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
+        this.owner = ctx.owner;
+        this.tools = tools;
+        this.input = input;
 
         Layouter layouter = new Layouter();
         layouter.add("Seconds between verses:", tfBetweenGroups);
@@ -63,9 +72,8 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
         } else {
             cbCustomTitle.setSelected(false);
             if (ctx.workDir != null) {
-                Path infoFile = ctx.workDir.info();
-                List<String> titles = AssJoiner.infoTitles(infoFile);
-                InputUtil.setText(taTitle, String.join("\n", titles));
+                Info info = TitleUtil.getInfo(ctx.workDir);
+                setTitles(info);
             }
         }
 
@@ -110,8 +118,23 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
 
     private void enableDisable() {
         boolean editable = cbCustomTitle.isSelected();
+        if (editable && taTitle.getText().isEmpty()) {
+            tryLoadTitles();
+        }
         taTitle.setEditable(editable);
         taTitle.setBackground(getUIColor(editable ? "TextField.background" : "TextField.inactiveBackground"));
+    }
+
+    private void tryLoadTitles() {
+        new InputDetailsFetcher<Info>(owner, tools, input).fetch(
+            true,
+            Youtube::metaInfo, this::setTitles,
+            ex -> false
+        );
+    }
+
+    private void setTitles(Info info) {
+        InputUtil.setText(taTitle, info == null ? "" : String.join("\n", info.getTitles()));
     }
 
     @Override
