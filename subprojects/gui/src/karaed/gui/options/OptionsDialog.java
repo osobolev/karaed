@@ -39,7 +39,7 @@ public final class OptionsDialog extends BaseDialog {
     private OptionsDialog(ErrorLogger logger, SetupTools tools, String title, Window owner, Workdir workDir,
                           Path defaultDir, String defaultURL) throws IOException {
         super(owner, logger, title);
-        this.ctx = new OptCtx(this, workDir);
+        this.ctx = new OptCtx(this, tools, workDir);
 
         if (ctx.workDir == null) {
             tfDir = new JTextField(40);
@@ -83,12 +83,12 @@ public final class OptionsDialog extends BaseDialog {
 
         InputPanel input = new InputPanel(ctx, defaultURL);
         add(input, main);
-        add(new LyricsPanel(ctx, tools, input), main);
+        add(new LyricsPanel(ctx, input), main);
         add(new CutPanel(ctx), options);
         add(new AlignPanel(ctx), options);
         add(new VideoPanel(ctx), options);
         add(new DemucsPanel(ctx), advanced);
-        add(new KaraokePanel(ctx, tools, input), advanced);
+        add(new KaraokePanel(ctx, input), advanced);
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Input", main);

@@ -28,10 +28,10 @@ final class LyricsPanel extends BasePanel<String> {
         return String.join("\n", lines);
     }
 
-    LyricsPanel(OptCtx ctx, SetupTools tools, InputPanel input) throws IOException {
+    LyricsPanel(OptCtx ctx, InputPanel input) throws IOException {
         super(null, () -> ctx.file("text.txt"), LyricsPanel::readLyrics, () -> "");
         this.owner = ctx.owner;
-        this.tools = tools;
+        this.tools = ctx.tools;
         this.input = input;
 
         taLyrics.setLineWrap(true);

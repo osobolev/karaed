@@ -33,10 +33,10 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
     private final JCheckBox cbCustomTitle = new JCheckBox("Custom title:");
     private final JTextArea taTitle = new JTextArea(3, 20);
 
-    KaraokePanel(OptCtx ctx, SetupTools tools, InputPanel input) throws IOException {
+    KaraokePanel(OptCtx ctx, InputPanel input) throws IOException {
         super("Karaoke", () -> ctx.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
         this.owner = ctx.owner;
-        this.tools = tools;
+        this.tools = ctx.tools;
         this.input = input;
 
         Layouter layouter = new Layouter();
