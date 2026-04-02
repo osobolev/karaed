@@ -72,7 +72,7 @@ final class LyricsPanel extends BasePanel<String> {
     }
 
     private void loadLyrics() {
-        new InputDetailsFetcher<String>(owner, tools, input).fetch(
+        new InputDetailsFetcher<String>(ctx, input).fetch(
             false,
             LRCLib::loadLyrics, this::setLyrics,
             ex -> ex instanceof LRCException

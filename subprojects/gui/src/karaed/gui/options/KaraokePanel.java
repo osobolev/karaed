@@ -126,7 +126,7 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
     }
 
     private void tryLoadTitles() {
-        new InputDetailsFetcher<Info>(owner, tools, input).fetch(
+        new InputDetailsFetcher<Info>(ctx, input).fetch(
             true,
             Youtube::metaInfo, this::setTitles,
             ex -> false

@@ -1,8 +1,6 @@
 package karaed.gui.options;
 
 import karaed.engine.opts.OInput;
-import karaed.gui.tools.SetupTools;
-import karaed.gui.util.BaseWindow;
 import karaed.gui.util.SimpleGlassPane;
 import karaed.tools.ToolRunner;
 
@@ -13,23 +11,17 @@ import java.util.function.Predicate;
 
 final class InputDetailsFetcher<R> {
 
-    private final BaseWindow owner;
-    private final SetupTools tools;
+    private final OptCtx ctx;
     private final InputPanel inputPanel;
 
-    InputDetailsFetcher(BaseWindow owner, SetupTools tools, InputPanel inputPanel) {
-        this.owner = owner;
-        this.tools = tools;
+    InputDetailsFetcher(OptCtx ctx, InputPanel inputPanel) {
+        this.ctx = ctx;
         this.inputPanel = inputPanel;
     }
 
     interface FetchSupplier<R> {
         
         R fetch(ToolRunner runner, OInput input) throws Exception;
-    }
-
-    static ToolRunner runner(SetupTools tools) {
-        return new ToolRunner(tools, (stderr, text) -> {});
     }
 
     void fetch(boolean silenceErrors,
@@ -41,18 +33,17 @@ final class InputDetailsFetcher<R> {
             input = inputPanel.newData();
         } catch (ValidationException ex) {
             if (!silenceErrors) {
-                ex.show(owner);
+                ex.show(ctx.owner);
             }
             return;
         }
-        SimpleGlassPane glass = (SimpleGlassPane) owner.toRootPane().getGlassPane();
+        SimpleGlassPane glass = (SimpleGlassPane) ctx.owner.toRootPane().getGlassPane();
         glass.show("Loading...");
         new SwingWorker<R, Void>() {
 
             @Override
             protected R doInBackground() throws Exception {
-                ToolRunner runner = runner(tools);
-                return fetcher.fetch(runner, input);
+                return fetcher.fetch(ctx.runner(), input);
             }
 
             @Override
@@ -67,9 +58,9 @@ final class InputDetailsFetcher<R> {
                     if (!silenceErrors) {
                         Throwable error = ex.getCause();
                         if (isMessageError.test(error)) {
-                            owner.error(error.getMessage());
+                            ctx.owner.error(error.getMessage());
                         } else {
-                            owner.error(error);
+                            ctx.owner.error(error);
                         }
                     }
                 }

@@ -133,7 +133,7 @@ final class InputPanel extends BasePanel<OInput> {
             }
             boolean hasVideo;
             try {
-                ToolRunner runner = InputDetailsFetcher.runner(tools);
+                ToolRunner runner = ctx.runner();
                 hasVideo = !FileStreamUtil.listVideoStreams(runner, path).isEmpty();
             } catch (Exception ex) {
                 throw new ValidationException("File is not a video or audio file", tfFile);
