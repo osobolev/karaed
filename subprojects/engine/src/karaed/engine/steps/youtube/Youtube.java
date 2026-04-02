@@ -89,6 +89,9 @@ public final class Youtube {
             ));
         } else if (input.file() != null) {
             Path srcFile = Path.of(input.file());
+            Info info = fileMeta(runner, srcFile);
+            JsonUtil.writeFile(infoFile, info);
+
             if (range == null) {
                 Files.copy(srcFile, audio, StandardCopyOption.REPLACE_EXISTING);
                 Files.setLastModifiedTime(audio, FileTime.from(Instant.now()));
@@ -96,8 +99,6 @@ public final class Youtube {
                 runner.println("Cutting file...");
                 range.cutFile(runner, srcFile, audio);
             }
-            Info info = fileMeta(runner, audio);
-            JsonUtil.writeFile(infoFile, info);
         } else {
             throw new KaraException("Either URL or file must be specified");
         }
