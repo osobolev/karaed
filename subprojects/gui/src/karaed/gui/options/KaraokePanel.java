@@ -1,11 +1,16 @@
 package karaed.gui.options;
 
 import karaed.engine.opts.OKaraoke;
+import karaed.engine.steps.karaoke.AssJoiner;
+import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 
 final class KaraokePanel extends BasePanel<OKaraoke> {
 
@@ -18,6 +23,9 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
     private final FloatField tfMinTitles = new FloatField();
     private final FloatField tfMaxTitles = new FloatField();
     private final FloatField tfMinAfterTitles = new FloatField();
+
+    private final JCheckBox cbCustomTitle = new JCheckBox("Custom title:");
+    private final JTextArea taTitle = new JTextArea(3, 20);
 
     KaraokePanel(OptCtx ctx) throws IOException {
         super("Karaoke", () -> ctx.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
@@ -35,6 +43,8 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
         layouter.add("Maximum seconds to show song title:", tfMaxTitles);
         layouter.add("Minimum seconds between title and song start:", tfMinAfterTitles);
 
+        layouter.addTitles();
+
         tfBetweenGroups.setValue(origData.betweenGroups());
         tfShift.setValue(origData.shift());
 
@@ -46,6 +56,21 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
         tfMinTitles.setValue(origData.minTitles());
         tfMaxTitles.setValue(origData.maxTitles());
         tfMinAfterTitles.setValue(origData.minAfterTitles());
+
+        if (origData.title() != null) {
+            cbCustomTitle.setSelected(true);
+            InputUtil.setText(taTitle, origData.title());
+        } else {
+            cbCustomTitle.setSelected(false);
+            if (ctx.workDir != null) {
+                Path infoFile = ctx.workDir.info();
+                List<String> titles = AssJoiner.infoTitles(infoFile);
+                InputUtil.setText(taTitle, String.join("\n", titles));
+            }
+        }
+
+        cbCustomTitle.addActionListener(e -> enableDisable());
+        enableDisable();
     }
 
     private final class Layouter {
@@ -62,6 +87,31 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
 
             row++;
         }
+
+        void addTitles() {
+            main.add(cbCustomTitle, new GridBagConstraints(
+                0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
+            ));
+            row++;
+
+            main.add(new JScrollPane(taTitle), new GridBagConstraints(
+                0, row, 2, 1, 1.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 5), 0, 0
+            ));
+            row++;
+        }
+    }
+
+    private static Color getUIColor(String key) {
+        Color bg = UIManager.getColor(key);
+        if (bg == null)
+            return null;
+        return new Color(bg.getRed(), bg.getGreen(), bg.getBlue(), bg.getAlpha());
+    }
+
+    private void enableDisable() {
+        boolean editable = cbCustomTitle.isSelected();
+        taTitle.setEditable(editable);
+        taTitle.setBackground(getUIColor(editable ? "TextField.background" : "TextField.inactiveBackground"));
     }
 
     @Override
@@ -78,10 +128,18 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
         double maxTitles = tfMaxTitles.requireValue();
         double minAfterTitles = tfMinAfterTitles.requireValue();
 
+        String title;
+        if (cbCustomTitle.isSelected()) {
+            title = taTitle.getText();
+        } else {
+            title = null;
+        }
+
         return new OKaraoke(
             betweenGroups, shift,
             preview1, preview, previewAfterSolo, minSoloLength,
-            minTitles, maxTitles, minAfterTitles
+            minTitles, maxTitles, minAfterTitles,
+            title
         );
     }
 }

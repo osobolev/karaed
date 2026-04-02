@@ -193,7 +193,12 @@ public final class AssJoiner {
     }
 
     public static void join(Path subsFile, Path infoFile, OKaraoke opts, Path newAssFile) throws IOException {
-        List<String> titles = infoTitles(infoFile);
+        List<String> titles;
+        if (opts.title() != null) {
+            titles = opts.title().lines().toList();
+        } else {
+            titles = infoTitles(infoFile);
+        }
         ParsedAss origAss = AssParser.parse(subsFile);
         List<DialogLine> newLines = join(origAss, titles, opts);
         ParsedAss newAss = origAss.withLines(newLines);

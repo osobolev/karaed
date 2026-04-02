@@ -11,7 +11,9 @@ public record OKaraoke(
 
     double minTitles,
     double maxTitles,
-    double minAfterTitles
+    double minAfterTitles,
+
+    String title
 ) {
 
     public OKaraoke() {
@@ -20,7 +22,9 @@ public record OKaraoke(
 
             2.0, 0.75, 0.75, 5.0,
 
-            1.0, 5.0, 1.0
+            1.0, 5.0, 1.0,
+
+            null
         );
     }
 }
