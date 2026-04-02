@@ -17,7 +17,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.function.Consumer;
 
 public final class LRCLib {
 
@@ -50,26 +49,29 @@ public final class LRCLib {
         }
     }
 
-    public static String loadLyrics(ToolRunner runner, OInput input, Consumer<String> onSuccess) throws IOException, InterruptedException {
+    private static String fullTrack(String artist, String track) {
+        return "'" + track + "' by " + artist;
+    }
+
+    public static String loadLyrics(ToolRunner runner, OInput input) throws IOException, InterruptedException, LRCException {
         Info info = Youtube.metaInfo(runner, input);
 
         String artist = info.artist();
         String track = info.track() != null ? info.track() : info.title();
         if (artist == null || track == null) {
-            return "No artist/track information";
+            throw new LRCException("No artist/track information");
         }
 
         LRCResult lrc = loadLyrics(artist, track);
         if (lrc == null) {
-            return "LRCLib does not have this song";
+            throw new LRCException("LRCLib does not have the song " + fullTrack(artist, track));
         }
 
         String lyrics = lrc.plainLyrics();
         if (lyrics == null) {
-            return "LRCLib does not have lyrics for this song";
+            throw new LRCException("LRCLib does not have lyrics for the song " + fullTrack(artist, track));
         }
 
-        onSuccess.accept(lyrics);
-        return null;
+        return lyrics;
     }
 }
