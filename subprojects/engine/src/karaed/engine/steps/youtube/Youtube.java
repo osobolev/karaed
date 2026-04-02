@@ -44,8 +44,8 @@ public final class Youtube {
         return finder.getVideo(suffix, true);
     }
 
-    private static Info fileMeta(ToolRunner runner, Path audio) throws IOException, InterruptedException {
-        FFFormat format = FileFormatUtil.getFormat(runner, audio);
+    private static Info fileMeta(ToolRunner runner, Path file, boolean needExtension) throws IOException, InterruptedException {
+        FFFormat format = FileFormatUtil.getFormat(runner, file);
         FFTags tags = format.tags();
         String artist;
         if (tags.artist() != null) {
@@ -53,9 +53,14 @@ public final class Youtube {
         } else {
             artist = tags.album_artist();
         }
-        String fileName = audio.getFileName().toString();
-        int p = fileName.lastIndexOf('.');
-        String ext = p > 0 ? fileName.substring(p + 1) : "";
+        String ext;
+        if (needExtension) {
+            String fileName = file.getFileName().toString();
+            int p = fileName.lastIndexOf('.');
+            ext = p > 0 ? fileName.substring(p + 1) : "";
+        } else {
+            ext = null;
+        }
         return new Info(
             artist, tags.title(), null, null, ext
         );
@@ -105,10 +110,11 @@ public final class Youtube {
             extractAudio(runner, video, audio);
         } else if (input.file() != null) {
             Path srcFile = Path.of(input.file());
-            Info info = fileMeta(runner, srcFile);
+            boolean audioOnly = FileStreamUtil.listVideoStreams(runner, srcFile).isEmpty();
+
+            Info info = fileMeta(runner, srcFile, !audioOnly);
             JsonUtil.writeFile(infoFile, info);
 
-            boolean audioOnly = FileStreamUtil.listVideoStreams(runner, srcFile).isEmpty();
             if (audioOnly) {
                 cutFile(runner, srcFile, audio, range, true);
             } else {
@@ -134,7 +140,7 @@ public final class Youtube {
         if (input.url() != null) {
             return youtubeMeta(runner, input.url());
         } else if (input.file() != null) {
-            return fileMeta(runner, Path.of(input.file()));
+            return fileMeta(runner, Path.of(input.file()), false);
         } else {
             throw new KaraException("Either URL or file must be specified");
         }
