@@ -2,7 +2,6 @@ package karaed.engine.steps.youtube;
 
 import karaed.engine.formats.ranges.Range;
 import karaed.engine.opts.OCut;
-import karaed.engine.video.FileStreamUtil;
 import karaed.tools.ToolRunner;
 
 import java.io.IOException;
@@ -55,13 +54,12 @@ final class CutRange {
         return new KeyRangeDetector(runner, start, end).getRealCut(fullVideo);
     }
 
-    void cutFile(ToolRunner runner, Path file, Path outFile) throws IOException, InterruptedException {
+    void cutFile(ToolRunner runner, Path file, Path outFile, boolean audioOnly) throws IOException, InterruptedException {
         List<String> args = new ArrayList<>(List.of(
             "-y", "-stats",
             "-i", file.toString()
         ));
         if (prepend != null) {
-            boolean audioOnly = FileStreamUtil.listVideoStreams(runner, file).isEmpty();
             int delay = Math.round(prepend.floatValue() * 1000);
             String vfilter;
             String afilter;

@@ -6,6 +6,7 @@ import karaed.engine.formats.ffprobe.FFTags;
 import karaed.engine.formats.info.Info;
 import karaed.engine.opts.OCut;
 import karaed.engine.opts.OInput;
+import karaed.engine.video.FileStreamUtil;
 import karaed.engine.video.VideoFinder;
 import karaed.json.JsonUtil;
 import karaed.tools.ToolRunner;
@@ -66,7 +67,7 @@ public final class Youtube {
             Files.setLastModifiedTime(file, FileTime.from(Instant.now()));
         } else {
             runner.println("Cutting " + (audioOnly ? "audio" : "video") + " file...");
-            range.cutFile(runner, srcFile, file);
+            range.cutFile(runner, srcFile, file, audioOnly);
         }
     }
 
@@ -95,7 +96,7 @@ public final class Youtube {
                 runner.println("Cutting downloaded video...");
                 CutRange realCut = range.toRealCut(runner, fullVideo);
                 Path cutVideo = finder.getVideo("", true);
-                realCut.cutFile(runner, fullVideo, cutVideo);
+                realCut.cutFile(runner, fullVideo, cutVideo, false);
                 Files.delete(fullVideo);
 
                 video = cutVideo;
@@ -107,7 +108,15 @@ public final class Youtube {
             Info info = fileMeta(runner, srcFile);
             JsonUtil.writeFile(infoFile, info);
 
-            cutFile(runner, srcFile, audio, range, true);
+            boolean audioOnly = FileStreamUtil.listVideoStreams(runner, srcFile).isEmpty();
+            if (audioOnly) {
+                cutFile(runner, srcFile, audio, range, true);
+            } else {
+                Path video = finder.getVideo("", true);
+                cutFile(runner, srcFile, video, range, false);
+
+                extractAudio(runner, video, audio);
+            }
         } else {
             throw new KaraException("Either URL or file must be specified");
         }
