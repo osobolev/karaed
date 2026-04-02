@@ -125,7 +125,8 @@ public final class StepRunner {
         Path aligned = workDir.file("aligned.json");
         OAlign options = workDir.option("align.json", OAlign.class, OAlign::new);
         runner.println("Making editable subtitles");
-        MakeSubs.makeSubs(text, aligned, options, subs, backvocals);
+        Path audio = options.vocalsOnly() ? workDir.vocals() : workDir.audio();
+        MakeSubs.makeSubs(text, aligned, options, subs, backvocals, audio);
     }
 
     private void karaokeSubs() throws IOException {

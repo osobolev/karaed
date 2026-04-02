@@ -21,7 +21,6 @@ public final class MakeSubs {
 
     private static final double VIDEO_FRAME_RATE = 23.976;
 
-    // todo: explore the effect of PlayResX/PlayResY
     private static final String HEADER = """
         [Script Info]
         ScriptType: v4.00+
@@ -30,7 +29,7 @@ public final class MakeSubs {
         ScaledBorderAndShadow: yes
 
         [Aegisub Project Garbage]
-        Audio File: audio.mp3
+        Audio File: %s
         Video File: ?dummy:%s:%s:640:480:47:163:254:
         Video AR Value: 1.333333
 
@@ -69,14 +68,20 @@ public final class MakeSubs {
     }
 
     public static void makeSubs(Path textFile, Path alignedFile, OAlign options,
-                                Path subsFile, Path backvocalsFile) throws IOException {
+                                Path subsFile, Path backvocalsFile, Path audioFile) throws IOException {
         SyncLyrics synced = SyncLyrics.create(textFile, alignedFile, options.words());
         List<List<TargetSegment>> lines = synced.getLines();
         double lastEnd = synced.lastEnd;
 
         List<String> assLines = new ArrayList<>();
         long dummyFrames = (long) Math.ceil((lastEnd + 5.0) * VIDEO_FRAME_RATE);
-        String header = String.format(HEADER, VIDEO_FRAME_RATE, dummyFrames);
+        String audioPath;
+        try {
+            audioPath = subsFile.relativize(audioFile).toString();
+        } catch (Exception ex) {
+            audioPath = audioFile.toString();
+        }
+        String header = String.format(HEADER, audioPath, VIDEO_FRAME_RATE, dummyFrames);
         header.lines().forEach(assLines::add);
         lines
             .stream()
