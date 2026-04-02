@@ -4,6 +4,7 @@ import karaed.engine.opts.OCut;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.IOException;
@@ -30,6 +31,11 @@ final class CutPanel extends BasePanel<OCut> {
         ));
         main.add(new JLabel("(format: 5m10s or 5:10 or simply number of seconds)"), new GridBagConstraints(
             4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
+        ));
+        JLabel lblNegative = new JLabel("\"From\" can be negative, it adds silence at the start of karaoke");
+        lblNegative.setForeground(Color.gray);
+        main.add(lblNegative, new GridBagConstraints(
+            1, 1, 4, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0
         ));
 
         InputUtil.setText(tfFrom, origData.from());
