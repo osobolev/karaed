@@ -60,22 +60,62 @@ final class CutRange {
             "-y", "-stats",
             "-i", file.toString()
         ));
-        if (start != null) {
+        if (prepend != null) {
+            boolean audioOnly = FileStreamUtil.listVideoStreams(runner, file).isEmpty();
+            int delay = Math.round(prepend.floatValue() * 1000);
+            String vfilter;
+            String afilter;
+            if (end == null) {
+                vfilter = String.format(
+                    "[0:v]tpad=start_duration=%s:start_mode=clone[v]",
+                    prepend
+                );
+                afilter = String.format(
+                    "[0:a]adelay=delays=%s:all=1[a]",
+                    delay
+                );
+            } else {
+                double duration = prepend.doubleValue() + end.doubleValue();
+                vfilter = String.format(
+                    "[0:v]tpad=start_duration=%s:start_mode=clone,trim=duration=%s[v]",
+                    prepend, duration
+                );
+                afilter = String.format(
+                    "[0:a]adelay=delays=%s:all=1,atrim=duration=%s[a]",
+                    delay, duration
+                );
+            }
+            if (audioOnly) {
+                args.addAll(List.of(
+                    "-filter_complex", afilter,
+                    "-map", "[a]",
+                    "-q:a", "2"
+                ));
+            } else {
+                args.addAll(List.of(
+                    "-filter_complex", vfilter + "; " + afilter,
+                    "-map", "[v]", "-map", "[a]",
+                    "-crf", "18"
+                ));
+            }
+        } else {
+            if (start != null) {
+                args.addAll(List.of(
+                    "-ss", start.toString()
+                ));
+            }
+            if (end != null) {
+                args.addAll(List.of(
+                    "-to", end.toString()
+                ));
+            }
             args.addAll(List.of(
-                "-ss", start.toString()
+                "-c:v", "copy",
+                "-c:a", "copy",
+                "-avoid_negative_ts", "make_zero"
             ));
         }
-        if (end != null) {
-            args.addAll(List.of(
-                "-to", end.toString()
-            ));
-        }
-        args.addAll(List.of(
-            "-c:v", "copy",
-            "-c:a", "copy",
-            "-avoid_negative_ts", "make_zero",
-            outFile.toString()
-        ));
+        args.add(outFile.toString());
         runner.run().ffmpeg(args);
     }
 
