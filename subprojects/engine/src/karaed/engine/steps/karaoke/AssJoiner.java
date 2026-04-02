@@ -183,12 +183,17 @@ public final class AssJoiner {
         return newLines;
     }
 
-    public static void join(Path subsFile, Path infoFile, OKaraoke opts, Path newAssFile) throws IOException {
-        List<String> titles = new ArrayList<>();
-        if (Files.exists(infoFile)) {
-            Info info = JsonUtil.readFile(infoFile, Info.class);
-            info.getTitles(titles);
+    public static List<String> infoTitles(Path infoFile) throws IOException {
+        Info info = JsonUtil.readFile(infoFile, Info.class, () -> null);
+        if (info != null) {
+            return info.getTitles();
+        } else {
+            return Collections.emptyList();
         }
+    }
+
+    public static void join(Path subsFile, Path infoFile, OKaraoke opts, Path newAssFile) throws IOException {
+        List<String> titles = infoTitles(infoFile);
         ParsedAss origAss = AssParser.parse(subsFile);
         List<DialogLine> newLines = join(origAss, titles, opts);
         ParsedAss newAss = origAss.withLines(newLines);
