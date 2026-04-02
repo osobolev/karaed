@@ -29,7 +29,7 @@ final class LyricsPanel extends BasePanel<String> {
     }
 
     LyricsPanel(OptCtx ctx, InputPanel input) throws IOException {
-        super(null, () -> ctx.file("text.txt"), LyricsPanel::readLyrics, () -> "");
+        super(ctx, null, () -> ctx.file("text.txt"), LyricsPanel::readLyrics, () -> "");
         this.owner = ctx.owner;
         this.tools = ctx.tools;
         this.input = input;

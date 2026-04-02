@@ -12,7 +12,7 @@ final class DemucsPanel extends BasePanel<ODemucs> {
     private final JSpinner chShifts = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1));
 
     DemucsPanel(OptCtx ctx) throws IOException {
-        super("Demucs", () -> ctx.option("demucs.json"), ODemucs.class, ODemucs::new);
+        super(ctx, "Demucs", () -> ctx.option("demucs.json"), ODemucs.class, ODemucs::new);
 
         main.add(new JLabel("Number of shifts:"), new GridBagConstraints(
             0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0

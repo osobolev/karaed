@@ -14,7 +14,7 @@ final class AlignPanel extends BasePanel<OAlign> {
     private final JRadioButton rbFull = new JRadioButton("Full audio");
 
     AlignPanel(OptCtx ctx) throws IOException {
-        super("Subtitles", () -> ctx.option("align.json"), OAlign.class, OAlign::new);
+        super(ctx, "Subtitles", () -> ctx.option("align.json"), OAlign.class, OAlign::new);
 
         ButtonGroup group = new ButtonGroup();
         group.add(rbVocals);

@@ -35,7 +35,7 @@ final class InputPanel extends BasePanel<OInput> {
     });
 
     InputPanel(OptCtx ctx, String defaultURL) throws IOException {
-        super(null, () -> ctx.file("input.json"), OInput.class, OInput::new);
+        super(ctx, null, () -> ctx.file("input.json"), OInput.class, OInput::new);
         this.owner = ctx.owner;
         this.tools = ctx.tools;
 

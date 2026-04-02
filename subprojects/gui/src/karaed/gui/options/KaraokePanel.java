@@ -34,7 +34,7 @@ final class KaraokePanel extends BasePanel<OKaraoke> {
     private final JTextArea taTitle = new JTextArea(3, 20);
 
     KaraokePanel(OptCtx ctx, InputPanel input) throws IOException {
-        super("Karaoke", () -> ctx.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
+        super(ctx, "Karaoke", () -> ctx.option("karaoke.json"), OKaraoke.class, OKaraoke::new);
         this.owner = ctx.owner;
         this.tools = ctx.tools;
         this.input = input;

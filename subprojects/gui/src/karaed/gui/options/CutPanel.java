@@ -15,7 +15,7 @@ final class CutPanel extends BasePanel<OCut> {
     private final JTextField tfTo = new JTextField(8);
 
     CutPanel(OptCtx ctx) throws IOException {
-        super("Cut", () -> ctx.option("cut.json"), OCut.class, OCut::new);
+        super(ctx, "Cut", () -> ctx.option("cut.json"), OCut.class, OCut::new);
 
         main.add(new JLabel("From:"), new GridBagConstraints(
             0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0

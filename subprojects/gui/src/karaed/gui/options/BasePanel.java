@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 abstract class BasePanel<T> {
 
+    final OptCtx ctx;
     private final Supplier<Path> getFile;
     final T origData;
     final JPanel main = new JPanel(new GridBagLayout());
@@ -21,8 +22,9 @@ abstract class BasePanel<T> {
         T read(Path file) throws IOException;
     }
 
-    protected BasePanel(String title, Supplier<Path> getFile,
+    protected BasePanel(OptCtx ctx, String title, Supplier<Path> getFile,
                         DataReader<T> reader, Supplier<T> defValue) throws IOException {
+        this.ctx = ctx;
         this.getFile = getFile;
 
         Path file = getFile.get();
@@ -40,9 +42,9 @@ abstract class BasePanel<T> {
         }
     }
 
-    protected BasePanel(String title, Supplier<Path> getFile,
+    protected BasePanel(OptCtx ctx, String title, Supplier<Path> getFile,
                         Class<T> cls, Supplier<T> defValue) throws IOException {
-        this(title, getFile, file -> JsonUtil.readFile(file, cls), defValue);
+        this(ctx, title, getFile, file -> JsonUtil.readFile(file, cls), defValue);
     }
 
     final JComponent getVisual() {

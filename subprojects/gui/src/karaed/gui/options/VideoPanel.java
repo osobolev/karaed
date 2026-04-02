@@ -12,7 +12,7 @@ final class VideoPanel extends BasePanel<OVideo> {
     private final JCheckBox cbVideo = new JCheckBox("Use original video");
 
     VideoPanel(OptCtx ctx) throws IOException {
-        super("Video", () -> ctx.option("video.json"), OVideo.class, OVideo::new);
+        super(ctx, "Video", () -> ctx.option("video.json"), OVideo.class, OVideo::new);
 
         main.add(
             cbVideo, new GridBagConstraints(
