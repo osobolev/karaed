@@ -60,7 +60,10 @@ public final class ManualAlign extends BaseFrame {
         tabs.addTab("Sync changes with text", syncComponent.getVisual());
         add(tabs, BorderLayout.CENTER);
 
-        this.butt = new EditorButtons(this, canContinue, actionSave, () -> save(true));
+        this.butt = new EditorButtons(canContinue, actionSave, () -> save(true), () -> {
+            stopPlaying();
+            dispose();
+        });
         add(butt.getVisual(), BorderLayout.SOUTH);
 
         pack();
@@ -162,9 +165,13 @@ public final class ManualAlign extends BaseFrame {
         return ok;
     }
 
+    private void stopPlaying() {
+        alignComponent.close();
+    }
+
     @Override
     public boolean onClosing() {
-        alignComponent.close();
+        stopPlaying();
         if (alignComponent.isSplitting()) {
             return confirm2("You have uncommitted changes. Really close?");
         }

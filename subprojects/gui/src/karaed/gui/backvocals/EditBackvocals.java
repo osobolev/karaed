@@ -85,7 +85,10 @@ public final class EditBackvocals extends BaseFrame {
 
         add(main, BorderLayout.CENTER);
 
-        this.butt = new EditorButtons(this, canContinue, actionSave, this::save);
+        this.butt = new EditorButtons(canContinue, actionSave, this::save, () -> {
+            stopPlaying();
+            dispose();
+        });
         add(butt.getVisual(), BorderLayout.SOUTH);
 
         pack();
@@ -168,9 +171,13 @@ public final class EditBackvocals extends BaseFrame {
         return ok;
     }
 
+    private void stopPlaying() {
+        ml.music.stop();
+    }
+
     @Override
     public boolean onClosing() {
-        ml.music.stop();
+        stopPlaying();
         if (!actionSave.isEnabled())
             return true;
         return confirm2("You have unsaved changes. Really close?");

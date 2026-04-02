@@ -1,7 +1,6 @@
 package karaed.gui.components;
 
 import javax.swing.*;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.function.BooleanSupplier;
 
@@ -11,7 +10,7 @@ public final class EditorButtons {
 
     private boolean isContinue = false;
 
-    public EditorButtons(Window window, boolean canContinue, Action actionSave, BooleanSupplier save) {
+    public EditorButtons(boolean canContinue, Action actionSave, BooleanSupplier save, Runnable close) {
         butt.add(new JButton(actionSave));
         if (canContinue) {
             butt.add(new JButton(new AbstractAction("Save & continue") {
@@ -19,7 +18,7 @@ public final class EditorButtons {
                 public void actionPerformed(ActionEvent e) {
                     if (save.getAsBoolean()) {
                         isContinue = true;
-                        window.dispose();
+                        close.run();
                     }
                 }
             }));
@@ -27,7 +26,7 @@ public final class EditorButtons {
         butt.add(new JButton(new AbstractAction(canContinue ? "Cancel" : "Close") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                window.dispose();
+                close.run();
             }
         }));
     }
