@@ -20,8 +20,15 @@ final class FileDnD {
 
             @Override
             public boolean canImport(TransferSupport support) {
-                if (isAvailable() && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
+                if (isAvailable() && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    int actions = support.getSourceDropActions();
+                    if ((actions & LINK) != 0) {
+                        support.setDropAction(LINK);
+                    } else if ((actions & COPY) != 0) {
+                        support.setDropAction(COPY);
+                    }
                     return true;
+                }
                 return th.canImport(support);
             }
 
@@ -31,7 +38,7 @@ final class FileDnD {
                     return false;
                 try {
                     List<?> files = (List<?>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
-                    if (files.size() > 0 && files.getFirst() instanceof File file) {
+                    if (!files.isEmpty() && files.getFirst() instanceof File file) {
                         File path = check.apply(file);
                         if (path != null) {
                             tf.setText(path.getAbsolutePath());
