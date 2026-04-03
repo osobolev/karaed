@@ -4,10 +4,10 @@ KaraEd is an utility for generating karaoke videos from YouTube clips or local m
 
 ## 🚀 Getting Started
 
-KaraEd is designed to work **locally and offline**. 
-* **First Start:** The application automatically downloads FFmpeg, Python, and required audio processing packages.
-* **First Run:** AI models are downloaded upon the first project execution.
-* **Subsequent Runs:** No internet connection is required. Tools are stored in `%USERPROFILE%\.karaed` and AI models are stored in `%USERPROFILE%\.cache`.
+**Why KaraEd?**
+- **Local & Offline**: KaraEd runs entirely on your machine. You don't need an internet connection to process your files.
+- **Precision over Automation**: Automated markup is rarely perfect. KaraEd opts for a "manual but easy" approach, trading a few minutes of effort for significantly better results.
+- **Tweakable Outputs**: Your project doesn't end at generation. You can easily tweak subtitles and post-process the resulting video.
 
 Watch [tutorial video](https://www.youtube.com/watch?v=VCAPqE7yk2I) with a step-by-step guide.
 
@@ -46,12 +46,18 @@ If `demucs` incorrectly identifies noise as vocals, you can suppress these segme
 
 You can preserve original vocals for specific lyrics by wrapping the text in curly braces `{like this}` during project creation.
 
+### Local storage
+
+KaraEd is designed to work **locally and offline**, but needs internet connection on the first run.
+* **First Start:** The application automatically downloads FFmpeg, Python, and required audio processing packages. Tools are stored in `%USERPROFILE%\.karaed`.
+* **First Run:** AI models are downloaded upon the first project execution. AI models are stored in `%USERPROFILE%\.cache`.
+* **Subsequent Runs:** No internet connection is required.
+
 ### Command line
 
 Use `karaed --help` in your terminal for a full list of available command-line arguments.
 
 ### Running on Linux
-
 
 To build from source (requires **full OpenJDK 21+**, do not use `-headless`):
 ```
