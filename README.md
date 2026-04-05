@@ -9,7 +9,7 @@ KaraEd is an utility for generating karaoke videos from YouTube clips or local m
 - **Precision over Automation**: Automated markup is rarely perfect. KaraEd opts for a "manual but easy" approach, trading a few minutes of effort for significantly better results.
 - **Tweakable Outputs**: Your project doesn't end at generation. You can easily tweak subtitles and post-process the resulting video.
 
-Watch [tutorial video](https://www.youtube.com/watch?v=VCAPqE7yk2I) with a step-by-step guide.
+Watch a [tutorial video](https://www.youtube.com/watch?v=VCAPqE7yk2I) with a step-by-step guide.
 
 ## 🛠 Core Technologies
 
@@ -48,9 +48,9 @@ You can preserve original vocals for specific lyrics by wrapping the text in cur
 
 ### Local storage
 
-KaraEd is designed to work **locally and offline**, but needs internet connection on the first run.
-* **First Start:** The application automatically downloads FFmpeg, Python, and required audio processing packages. Tools are stored in `%USERPROFILE%\.karaed`.
-* **First Run:** AI models are downloaded upon the first project execution. AI models are stored in `%USERPROFILE%\.cache`.
+KaraEd is designed to work **locally and offline**, but needs an internet connection on the first run.
+* **First Start:** The application automatically downloads FFmpeg, Python, and required audio processing packages. They are stored in `%USERPROFILE%\.karaed`.
+* **First Run:** AI models are downloaded upon the first project execution. They are stored in `%USERPROFILE%\.cache`.
 * **Subsequent Runs:** No internet connection is required.
 
 ### Command line
