@@ -48,7 +48,7 @@ You can preserve original vocals for specific lyrics by wrapping the text in cur
 
 ### Split parameters
 
-See [wiki on Split Parameters](https://github.com/osobolev/karaed/wiki/Split-parameters).
+See [wiki on Split Parameters](https://github.com/osobolev/karaed/wiki/Split-parameters) used in the `ranges` editor.
 
 ### Local storage
 
