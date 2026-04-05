@@ -29,7 +29,7 @@ public abstract class SetupTools implements Tools {
         };
     }
 
-    private boolean exeExists(Path exe) {
+    private static boolean exeExists(Path exe) {
         if (Files.exists(exe))
             return true;
         Path win = exe.resolveSibling(exe.getFileName() + ".exe");

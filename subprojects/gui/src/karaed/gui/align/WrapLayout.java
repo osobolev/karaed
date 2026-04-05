@@ -13,7 +13,6 @@ public class WrapLayout extends FlowLayout {
      * alignment and a default 5-unit horizontal and vertical gap.
      */
     public WrapLayout() {
-        super();
     }
 
     /**
@@ -65,7 +64,7 @@ public class WrapLayout extends FlowLayout {
     @Override
     public Dimension minimumLayoutSize(Container target) {
         Dimension minimum = layoutSize(target, false);
-        minimum.width -= (getHgap() + 1);
+        minimum.width -= getHgap() + 1;
         return minimum;
     }
 
@@ -128,7 +127,7 @@ public class WrapLayout extends FlowLayout {
             //  correctly. Removing the horizontal gap is an easy way to do this.
             Container scrollPane = SwingUtilities.getAncestorOfClass(JScrollPane.class, target);
             if (scrollPane != null && target.isValid()) {
-                dim.width -= (hgap + 1);
+                dim.width -= hgap + 1;
             }
 
             return dim;
