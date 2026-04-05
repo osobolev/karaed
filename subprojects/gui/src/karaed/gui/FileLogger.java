@@ -74,7 +74,7 @@ public final class FileLogger implements ErrorLogger {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         if (out != null) {
             out.close();
         }
