@@ -46,6 +46,10 @@ If `demucs` incorrectly identifies noise as vocals, you can suppress these segme
 
 You can preserve original vocals for specific lyrics by wrapping the text in curly braces `{like this}` during project creation.
 
+### Split parameters
+
+See [wiki on Split Parameters](https://github.com/osobolev/karaed/wiki/Split-parameters).
+
 ### Local storage
 
 KaraEd is designed to work **locally and offline**, but needs an internet connection on the first run.
