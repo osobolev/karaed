@@ -53,7 +53,7 @@ public final class EditableRanges {
             if (!r1.equals(r2))
                 return true;
         }
-        return true;
+        return false;
     }
 
     private void resplit(boolean fireNotChanged) {
