@@ -13,6 +13,14 @@ public record Info(
     String ext
 ) {
 
+    public String shortTitle() {
+        return title != null ? title : fulltitle;
+    }
+
+    public String longTitle() {
+        return fulltitle != null ? fulltitle : title;
+    }
+
     public List<String> getTitles() {
         List<String> titles = new ArrayList<>();
         if (track != null) {
@@ -20,10 +28,8 @@ public record Info(
             if (artist != null) {
                 titles.add("by " + artist);
             }
-        } else if (fulltitle != null) {
-            titles.add(fulltitle);
-        } else if (title != null) {
-            titles.add(title);
+        } else if (longTitle() != null) {
+            titles.add(longTitle());
         }
         return titles;
     }
@@ -32,10 +38,10 @@ public record Info(
     public String toString() {
         if (track != null && artist != null) {
             return artist + " - " + track;
-        } else if (fulltitle != null) {
-            return fulltitle;
+        } else if (longTitle() != null) {
+            return longTitle();
         } else {
-            return title;
+            return "-";
         }
     }
 }

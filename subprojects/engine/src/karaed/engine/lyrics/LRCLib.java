@@ -78,7 +78,7 @@ public final class LRCLib {
     }
 
     public LRCResult[] search(Info info) throws IOException, InterruptedException {
-        String title = info.title() != null ? info.title() : info.fulltitle();
+        String title = info.shortTitle();
         if (info.track() == null && title == null)
             return null;
         return get(
