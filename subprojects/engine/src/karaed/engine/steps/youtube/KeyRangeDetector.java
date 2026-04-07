@@ -94,7 +94,7 @@ final class KeyRangeDetector {
         double duration;
         {
             FFFormat format = FileFormatUtil.getFormat(runner, file);
-            duration = Double.parseDouble(format.duration());
+            duration = format.parsedDuration();
         }
         {
             return runner.run(stdout -> parseFrameStream(duration, stdout)).ffprobe(
