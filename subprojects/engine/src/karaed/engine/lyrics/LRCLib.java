@@ -103,16 +103,22 @@ public final class LRCLib {
         }
     }
 
-    private static String fullTrack(Info info) {
+    private static LRCException error(String message, Info info) {
+        String add;
         if (info.artist() != null && info.track() != null) {
-            return "\"" + info.track() + "\" by " + info.artist();
-        } else if (info.title() != null) {
-            return "\"" + info.title() + "\"";
-        } else if (info.fulltitle() != null) {
-            return "\"" + info.fulltitle() + "\"";
+            add = "\"" + info.track() + "\" by " + info.artist();
+        } else if (info.shortTitle() != null) {
+            add = "\"" + info.shortTitle() + "\"";
         } else {
-            return "";
+            add = "";
         }
+        String finalMessage;
+        if (add.isEmpty()) {
+            finalMessage = message;
+        } else {
+            finalMessage = message + " " + add;
+        }
+        return new LRCException(finalMessage, info);
     }
 
     public static String loadLyrics(ToolRunner runner, OInput input) throws IOException, InterruptedException, LRCException {
@@ -120,12 +126,12 @@ public final class LRCLib {
 
         LRCResult lrc = loadLyrics(info);
         if (lrc == null) {
-            throw new LRCException("LRCLib does not have the song " + fullTrack(info));
+            throw error("LRCLib does not have the song", info);
         }
 
         String lyrics = lrc.plainLyrics();
         if (lyrics == null) {
-            throw new LRCException("LRCLib does not have lyrics for the song " + fullTrack(info));
+            throw error("LRCLib does not have lyrics for the song", info);
         }
 
         return lyrics;
