@@ -6,9 +6,13 @@ import karaed.gui.components.toolbar.LinkLabel;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -69,7 +73,34 @@ final class LyricsPanel extends BasePanel<String> {
         new InputDetailsFetcher<String>(ctx, input).fetch(
             false,
             LRCLib::loadLyrics, this::setLyrics,
-            ex -> ex instanceof LRCException
+            ex -> {
+                if (ex instanceof LRCException lex) {
+                    searchGoogle(lex);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         );
+    }
+
+    private void searchGoogle(LRCException lex) {
+        String title = lex.info.shortTitle();
+        if (title == null) {
+            ctx.owner.error(lex.getMessage());
+            return;
+        }
+        int ans = JOptionPane.showConfirmDialog(
+            ctx.owner.toWindow(), lex.getMessage() + "\nGoogle for lyrics?", "Error",
+            JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE
+        );
+        if (ans != JOptionPane.YES_OPTION)
+            return;
+        try {
+            URI uri = URI.create("https://www.google.com/search?q=" + URLEncoder.encode(title + " lyrics", StandardCharsets.UTF_8));
+            Desktop.getDesktop().browse(uri);
+        } catch (Exception ex) {
+            ctx.owner.error(ex);
+        }
     }
 }

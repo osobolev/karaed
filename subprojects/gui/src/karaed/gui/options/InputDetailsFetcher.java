@@ -27,7 +27,7 @@ final class InputDetailsFetcher<R> {
     void fetch(boolean silenceErrors,
                FetchSupplier<R> fetcher,
                Consumer<R> showResult,
-               Predicate<Throwable> isMessageError) {
+               Predicate<Throwable> customHandler) {
         OInput input;
         try {
             input = inputPanel.newData();
@@ -57,9 +57,7 @@ final class InputDetailsFetcher<R> {
                 } catch (ExecutionException ex) {
                     if (!silenceErrors) {
                         Throwable error = ex.getCause();
-                        if (isMessageError.test(error)) {
-                            ctx.owner.error(error.getMessage());
-                        } else {
+                        if (!customHandler.test(error)) {
                             ctx.owner.error(error);
                         }
                     }
