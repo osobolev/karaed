@@ -5,9 +5,11 @@ import java.util.List;
 
 public record Info(
     String artist,
+    String album,
     String track,
     String title,
     String fulltitle,
+    Double duration,
     String ext
 ) {
 

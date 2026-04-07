@@ -47,12 +47,7 @@ public final class Youtube {
     private static Info fileMeta(ToolRunner runner, Path file, boolean needExtension) throws IOException, InterruptedException {
         FFFormat format = FileFormatUtil.getFormat(runner, file);
         FFTags tags = format.tags();
-        String artist;
-        if (tags.artist() != null) {
-            artist = tags.artist();
-        } else {
-            artist = tags.album_artist();
-        }
+        String artist = tags.artist() != null ? tags.artist() : tags.album_artist();
         String ext;
         if (needExtension) {
             String fileName = file.getFileName().toString();
@@ -61,8 +56,14 @@ public final class Youtube {
         } else {
             ext = null;
         }
+        Double duration = null;
+        try {
+            duration = format.parsedDuration();
+        } catch (NumberFormatException ex) {
+            // ignore
+        }
         return new Info(
-            artist, tags.title(), null, null, ext
+            artist, tags.album(), tags.title(), null, null, duration, ext
         );
     }
 
