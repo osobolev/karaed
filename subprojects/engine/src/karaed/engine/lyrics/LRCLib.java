@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public final class LRCLib {
 
@@ -90,7 +91,7 @@ public final class LRCLib {
         );
     }
 
-    public static LRCResult loadLyrics(Info info) throws IOException, InterruptedException {
+    public static LRCResult loadLyrics(Info info, Function<LRCResult[], LRCResult> choose) throws IOException, InterruptedException {
         try (HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(1)).build()) {
             LRCLib lib = new LRCLib(client);
             LRCResult exact = lib.exact(info);
@@ -99,7 +100,9 @@ public final class LRCLib {
             LRCResult[] found = lib.search(info);
             if (found == null || found.length <= 0)
                 return null;
-            return found[0];
+            if (found.length == 1)
+                return found[0];
+            return choose.apply(found);
         }
     }
 
@@ -121,10 +124,10 @@ public final class LRCLib {
         return new LRCException(finalMessage, info);
     }
 
-    public static String loadLyrics(ToolRunner runner, OInput input) throws IOException, InterruptedException, LRCException {
+    public static String loadLyrics(ToolRunner runner, OInput input, Function<LRCResult[], LRCResult> choose) throws IOException, InterruptedException, LRCException {
         Info info = Youtube.metaInfo(runner, input);
 
-        LRCResult lrc = loadLyrics(info);
+        LRCResult lrc = loadLyrics(info, choose);
         if (lrc == null) {
             throw error("LRCLib does not have the song", info);
         }
@@ -135,5 +138,9 @@ public final class LRCLib {
         }
 
         return lyrics;
+    }
+
+    public static String loadLyrics(ToolRunner runner, OInput input) throws IOException, InterruptedException, LRCException {
+        return loadLyrics(runner, input, choice -> choice[0]);
     }
 }
