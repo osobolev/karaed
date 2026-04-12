@@ -8,6 +8,8 @@ import java.nio.file.attribute.FileTime;
 public final class TouchUtil {
 
     public static void touchIfSourceNewer(Path target, Path... sources) throws IOException {
+        if (!Files.exists(target))
+            return;
         FileTime targetTime = Files.getLastModifiedTime(target);
         FileTime maxSourceTime = null;
         for (Path source : sources) {
