@@ -53,7 +53,7 @@ final class BackvocalsComponent extends MusicComponent {
                 int frames = to - from;
                 if (frames <= 0)
                     return true;
-                int min = m.sec2frame(1f);
+                int min = m.sec2frame(0.5f);
                 return frames < min;
             }
 
