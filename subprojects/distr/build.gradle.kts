@@ -4,7 +4,7 @@ plugins {
 
 val release = "1.0.2"
 
-val app by configurations.creating
+val app = configurations.create("app")
 
 dependencies {
     app(project(":gui"))
