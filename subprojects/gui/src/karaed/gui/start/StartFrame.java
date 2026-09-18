@@ -35,6 +35,8 @@ public final class StartFrame extends BaseFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     OptionsDialog dlg = OptionsDialog.newProject(ctx.mainLogger(), ctx.tools(), StartFrame.this, null, null);
+                    if (!dlg.isSaved())
+                        return;
                     Workdir workDir = dlg.getWorkDir();
                     if (workDir == null)
                         return;
