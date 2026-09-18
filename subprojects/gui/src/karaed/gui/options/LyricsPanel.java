@@ -6,22 +6,46 @@ import karaed.gui.components.toolbar.LinkLabel;
 import karaed.gui.util.InputUtil;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 final class LyricsPanel extends BasePanel<String> {
 
+    private static final Color WARN_COLOR = new Color(255, 120, 120);
+
     private final InputPanel input;
-    private final JTextArea taLyrics = new JTextArea(22, 60);
+    private final JTextArea taLyrics = new JTextArea(22, 60) {
+        @Override
+        public String getToolTipText(MouseEvent event) {
+            int i = viewToModel2D(event.getPoint());
+            if (i < 0)
+                return null;
+            SequencedCollection<String> warnings = getWarnings(i);
+            if (warnings == null)
+                return null;
+            if (warnings.size() == 1)
+                return warnings.getFirst();
+            return "<html>" + String.join("<br>\n", warnings) + "</html>";
+        }
+    };
+
+    private NavigableMap<Integer, BadRange> badRanges = Collections.emptyNavigableMap();
 
     private static String readLyrics(Path file) throws IOException {
         List<String> lines = Files.readAllLines(file);
@@ -48,6 +72,31 @@ final class LyricsPanel extends BasePanel<String> {
         main.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         setLyrics(origData);
+
+        taLyrics.getDocument().addDocumentListener(new DocumentListener() {
+
+            private void changed() {
+                // todo: do it with delay???
+                markSuspiciousSymbols();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changed();
+            }
+        });
+        markSuspiciousSymbols();
+        ToolTipManager.sharedInstance().registerComponent(taLyrics);
     }
 
     private void setLyrics(String lyrics) {
@@ -101,6 +150,92 @@ final class LyricsPanel extends BasePanel<String> {
             Desktop.getDesktop().browse(uri);
         } catch (Exception ex) {
             ctx.owner.error(ex);
+        }
+    }
+
+    private static final class BadRange {
+
+        final int from;
+        int to;
+        final LinkedHashSet<String> warnings = new LinkedHashSet<>();
+
+        BadRange(int index, String warning) {
+            this.from = index;
+            this.to = index;
+            this.warnings.add(warning);
+        }
+    }
+
+    private void markSuspiciousSymbols() {
+        String text = taLyrics.getText();
+        TreeMap<Integer, BadRange> badRanges = new TreeMap<>();
+        checkSymbols(text, (i, warning) -> {
+            if (!badRanges.isEmpty()) {
+                BadRange last = badRanges.lastEntry().getValue();
+                if (last.to + 1 == i) {
+                    last.to = i;
+                    last.warnings.add(warning);
+                    return;
+                }
+            }
+            badRanges.put(i, new BadRange(i, warning));
+        });
+        Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(WARN_COLOR);
+        Highlighter hl = taLyrics.getHighlighter();
+        hl.removeAllHighlights();
+        for (BadRange range : badRanges.values()) {
+            int from = range.from;
+            int to = range.to + 1;
+            try {
+                hl.addHighlight(from, to, painter);
+            } catch (BadLocationException ex) {
+                // ignore
+            }
+        }
+        this.badRanges = badRanges;
+    }
+
+    private SequencedCollection<String> getWarnings(int i) {
+        Map.Entry<Integer, BadRange> beforeEntry = badRanges.floorEntry(i);
+        Map.Entry<Integer, BadRange> afterEntry = badRanges.higherEntry(i);
+        BadRange before = beforeEntry == null ? null : beforeEntry.getValue();
+        BadRange after = afterEntry == null ? null : afterEntry.getValue();
+        int leftDistance = before == null ? Integer.MAX_VALUE : i - before.to;
+        int rightDistance = after == null ? Integer.MAX_VALUE : after.from - i;
+        if (leftDistance < rightDistance) {
+            if (leftDistance < 2) {
+                return before.warnings;
+            }
+        } else if (leftDistance > rightDistance) {
+            if (rightDistance < 2) {
+                return after.warnings;
+            }
+        }
+        return null;
+    }
+
+    private interface WarningConsumer {
+
+        void accept(int i, String warning);
+    }
+
+    private static void checkSymbols(String text, WarningConsumer warn) {
+        Character.UnicodeBlock currentWord = null;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(ch);
+            if (!Character.isLetterOrDigit(ch)) {
+                if (ch >= 127) {
+                    warn.accept(i, "Non-ASCII punctuation '" + ch + "'");
+                }
+                currentWord = null;
+            } else {
+                if (currentWord == null) {
+                    currentWord = block;
+                } else if (!currentWord.equals(block)) {
+                    warn.accept(i, "Suspicious letter '" + ch + "' from " + block + " in a word of " + currentWord);
+                }
+            }
         }
     }
 }
