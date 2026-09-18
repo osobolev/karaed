@@ -15,9 +15,16 @@ final class ValidationException extends Exception {
     }
 
     void show(BaseWindow owner) {
+        focus(component);
+        String message = getMessage();
+        if (message != null) {
+            owner.error(message);
+        }
+    }
+
+    static void focus(JComponent component) {
         openTabContaining(component);
         component.requestFocusInWindow();
-        owner.error(getMessage());
     }
 
     private static void openTabContaining(JComponent comp) {

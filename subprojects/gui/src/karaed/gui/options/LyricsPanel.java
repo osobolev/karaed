@@ -4,6 +4,7 @@ import karaed.engine.lyrics.LRCException;
 import karaed.engine.lyrics.LRCLib;
 import karaed.gui.components.toolbar.LinkLabel;
 import karaed.gui.util.InputUtil;
+import karaed.gui.util.ShowMessage;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -11,10 +12,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
@@ -23,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 final class LyricsPanel extends BasePanel<String> {
@@ -76,7 +75,6 @@ final class LyricsPanel extends BasePanel<String> {
         taLyrics.getDocument().addDocumentListener(new DocumentListener() {
 
             private void changed() {
-                // todo: do it with delay???
                 markSuspiciousSymbols();
             }
 
@@ -105,10 +103,18 @@ final class LyricsPanel extends BasePanel<String> {
 
     @Override
     String newData() throws ValidationException {
+        boolean hasSuspicious = markSuspiciousSymbols();
         String text = taLyrics.getText();
         boolean hasText = text.lines().anyMatch(line -> !line.trim().isEmpty());
         if (!hasText) {
             throw new ValidationException("Input lyrics", taLyrics);
+        }
+        if (hasSuspicious) {
+            ValidationException.focus(taLyrics);
+            Window window = SwingUtilities.windowForComponent(taLyrics);
+            if (!ShowMessage.confirm2(window, "The lyrics contains suspicious symbols that can cause problems. Continue?")) {
+                throw new ValidationException(null, taLyrics);
+            }
         }
         return text.lines().collect(Collectors.joining("\n"));
     }
@@ -166,7 +172,7 @@ final class LyricsPanel extends BasePanel<String> {
         }
     }
 
-    private void markSuspiciousSymbols() {
+    private boolean markSuspiciousSymbols() {
         String text = taLyrics.getText();
         TreeMap<Integer, BadRange> badRanges = new TreeMap<>();
         checkSymbols(text, (i, warning) -> {
@@ -193,6 +199,7 @@ final class LyricsPanel extends BasePanel<String> {
             }
         }
         this.badRanges = badRanges;
+        return !badRanges.isEmpty();
     }
 
     private SequencedCollection<String> getWarnings(int i) {
