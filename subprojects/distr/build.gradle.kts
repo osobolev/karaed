@@ -69,8 +69,8 @@ tasks.register("distr") {
 tasks.register("releaseZip", Zip::class) {
     dependsOn("distr")
     val baseName = "karaed-$release"
-    archiveFileName.set("$baseName-windows_x64.zip")
-    destinationDirectory.set(file("$rootDir/distr"))
+    archiveFileName = "$baseName-windows_x64.zip"
+    destinationDirectory = file("$rootDir/distr")
     from("$rootDir/distr/karaed") {
         into(baseName)
     }
