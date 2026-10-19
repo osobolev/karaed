@@ -66,14 +66,14 @@ final class Download {
         }
     }
 
+    // todo: reuse???
     static void download(String url, IntConsumer progress, ContentHandler handler) throws IOException, InterruptedException {
         URLConnection conn = URI.create(url).toURL().openConnection();
         try {
             try (InputStream is = conn.getInputStream()) {
                 InputStream src;
                 if (progress != null) {
-                    long contentLength;
-                    contentLength = conn.getHeaderFieldLong("Content-Length", -1L);
+                    long contentLength = conn.getHeaderFieldLong("Content-Length", -1L);
                     if (contentLength > 0) {
                         src = new ProgressInputStream(is, contentLength, progress);
                     } else {
